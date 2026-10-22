@@ -241,6 +241,8 @@ button:focus-visible { outline: 2px solid var(--gold-1); outline-offset: 3px; }
   background: linear-gradient(transparent, rgba(5,31,32,.95) 40%);
 }
 .primary { flex: 1; max-width: 26rem; height: 56px; border-radius: 999px; background: var(--gold); color: #2a1a00; font-weight: 800; font-size: 17px; }
+.wipe { color: #ffb4a8; }
+.wipe.sure { background: #a33a2c; color: #fff; }
 .secondary { height: 56px; padding: 0 20px; border-radius: 999px; background: rgba(244,239,226,.15); font-weight: 800; }
 .toggle { display: flex; justify-content: space-between; align-items: center; font-weight: 700; }
 .toggle input { width: 22px; height: 22px; accent-color: var(--gold-2); }
@@ -785,6 +787,19 @@ button:focus-visible { outline: 2px solid var(--gold-1); outline-offset: 3px; }
     de: {"scrollSnd": "Scroll-Ton", "sndChime": "Glockenspiel", "sndDial": "Kamera-Rad", "sndOff": "Lautlos"},
   };
   for (const k of Object.keys(SND_T)) Object.assign(T[k].ui, SND_T[k]);
+  const WIPE_T = {
+    en: {"wipe": "Reset everything", "wipeSure": "Tap again to erase all progress", "wiped": "Everything is back to zero"},
+    ar: {"wipe": "إعادة ضبط كل شيء", "wipeSure": "اضغط مرة أخرى لمسح كل التقدّم", "wiped": "عاد كل شيء إلى الصفر"},
+    fr: {"wipe": "Tout réinitialiser", "wipeSure": "Appuie encore pour tout effacer", "wiped": "Tout est remis à zéro"},
+    es: {"wipe": "Reiniciar todo", "wipeSure": "Toca otra vez para borrar todo el progreso", "wiped": "Todo vuelve a cero"},
+    tr: {"wipe": "Her şeyi sıfırla", "wipeSure": "Tüm ilerlemeyi silmek için tekrar dokun", "wiped": "Her şey sıfırlandı"},
+    ur: {"wipe": "سب کچھ ری سیٹ کریں", "wipeSure": "تمام پیش رفت مٹانے کے لیے دوبارہ دبائیں", "wiped": "سب کچھ صفر ہو گیا"},
+    id: {"wipe": "Atur ulang semuanya", "wipeSure": "Ketuk lagi untuk menghapus semua progres", "wiped": "Semuanya kembali ke nol"},
+    bn: {"wipe": "সবকিছু রিসেট করো", "wipeSure": "সব অগ্রগতি মুছতে আবার ট্যাপ করো", "wiped": "সবকিছু শূন্যে ফিরে গেছে"},
+    ru: {"wipe": "Сбросить всё", "wipeSure": "Нажми ещё раз, чтобы стереть весь прогресс", "wiped": "Всё снова с нуля"},
+    de: {"wipe": "Alles zurücksetzen", "wipeSure": "Tippe noch einmal, um alles zu löschen", "wiped": "Alles ist wieder bei null"},
+  };
+  for (const k of Object.keys(WIPE_T)) Object.assign(T[k].ui, WIPE_T[k]);
   // Language in use. Falls back to the browser language, then English.
   const pickLang = () => { const b = (navigator.language || "en").slice(0, 2).toLowerCase(); return LANGS[b] ? b : "en"; };
   let lang = "en";
@@ -1509,9 +1524,10 @@ button:focus-visible { outline: 2px solid var(--gold-1); outline-offset: 3px; }
             <button class="secondary" id="backupBtn" style="height:44px">💾 ${esc(t("backup"))}</button>
             <button class="secondary" id="restoreBtn" style="height:44px">📂 ${esc(t("restore"))}</button>
             <input type="file" id="restoreFile" accept=".json,application/json" hidden>
+            <button class="secondary wipe" id="wipeBtn" style="height:44px">${esc(t("wipe"))}</button>
             <button class="secondary" id="swapBtn" style="height:44px">${esc(life.gender === "f" ? t("swapBoy") : t("swapGirl"))}</button>
           </div>
-          <p class="note">${esc(t("disclaimer"))}<br>${esc(t("saved"))}<br>v22</p>
+          <p class="note">${esc(t("disclaimer"))}<br>${esc(t("saved"))}<br>v23</p>
         </div>
       </div>
       <div class="actions"><button class="primary" id="closeBtn">${esc(t("back"))}</button></div>`;
@@ -1524,12 +1540,29 @@ button:focus-visible { outline: 2px solid var(--gold-1); outline-offset: 3px; }
       wakeAudio(); [1, 6, 12].forEach((c, i) => setTimeout(() => scrollSound(c), i * 260));   // a short preview
     };
     $("hapT").onchange = e => { life.haptics = e.target.checked; save(); buzz(10); };
+    $("wipeBtn").onclick = e => {
+      const b = e.currentTarget;
+      if (!b.classList.contains("sure")) {
+        b.classList.add("sure"); b.textContent = t("wipeSure");
+        setTimeout(() => { if (b.isConnected) { b.classList.remove("sure"); b.textContent = t("wipe"); } }, 4000);
+        return;
+      }
+      wipeEverything();
+    };
     $("backupBtn").onclick = backupProgress;
     $("restoreBtn").onclick = () => $("restoreFile").click();
     $("restoreFile").onchange = e => { const f = e.target.files[0]; if (f) restoreProgress(f); };
     $("swapBtn").onclick = () => { life.gender = life.gender === "f" ? "m" : "f"; save(); buddyKey = ""; renderBuddy(); showProgress(); };
   }
   // ---------- Backup: progress lives in this browser only, so let people save it as a file ----------
+  // Back to zero. The buddy, language and sound choices stay, since those are settings, not progress.
+  function wipeEverything() {
+    const keep = { gender: life.gender, lang: life.lang, sound: life.sound, haptics: life.haptics, scrollSound: life.scrollSound };
+    life = Object.assign(fresh(), keep);
+    S = newSession(); undo = null; clearCheers();
+    save(); buddyKey = ""; renderHud(false); renderBuddy(); renderDebt(false);
+    showProgress(); toast("🌱", t("wiped"), "");
+  }
   async function backupProgress() {
     const name = `dhikr-scroll-backup-${new Date().toISOString().slice(0, 10)}.json`;
     // Include the points from the session in progress.
