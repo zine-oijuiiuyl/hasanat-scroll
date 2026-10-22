@@ -773,16 +773,16 @@ button:focus-visible { outline: 2px solid var(--gold-1); outline-offset: 3px; }
   };
   for (const k of Object.keys(EXTRA_T)) Object.assign(T[k].ui, EXTRA_T[k]);
   const SND_T = {
-    en: {"scrollSnd": "Scroll sound", "sndChime": "Chime", "sndDial": "Camera dial"},
-    ar: {"scrollSnd": "صوت التمرير", "sndChime": "رنين", "sndDial": "قرص الكاميرا"},
-    fr: {"scrollSnd": "Son du défilement", "sndChime": "Carillon", "sndDial": "Molette d'appareil photo"},
-    es: {"scrollSnd": "Sonido al deslizar", "sndChime": "Campanilla", "sndDial": "Rueda de cámara"},
-    tr: {"scrollSnd": "Kaydırma sesi", "sndChime": "Çan", "sndDial": "Kamera kadranı"},
-    ur: {"scrollSnd": "اسکرول کی آواز", "sndChime": "گھنٹی", "sndDial": "کیمرہ ڈائل"},
-    id: {"scrollSnd": "Suara gulir", "sndChime": "Lonceng", "sndDial": "Putaran kamera"},
-    bn: {"scrollSnd": "স্ক্রলের শব্দ", "sndChime": "ঘণ্টাধ্বনি", "sndDial": "ক্যামেরা ডায়াল"},
-    ru: {"scrollSnd": "Звук прокрутки", "sndChime": "Колокольчик", "sndDial": "Диск фотоаппарата"},
-    de: {"scrollSnd": "Scroll-Ton", "sndChime": "Glockenspiel", "sndDial": "Kamera-Rad"},
+    en: {"scrollSnd": "Scroll sound", "sndChime": "Chime", "sndDial": "Camera dial", "sndOff": "Silent"},
+    ar: {"scrollSnd": "صوت التمرير", "sndChime": "رنين", "sndDial": "قرص الكاميرا", "sndOff": "صامت"},
+    fr: {"scrollSnd": "Son du défilement", "sndChime": "Carillon", "sndDial": "Molette d'appareil photo", "sndOff": "Silencieux"},
+    es: {"scrollSnd": "Sonido al deslizar", "sndChime": "Campanilla", "sndDial": "Rueda de cámara", "sndOff": "Silencio"},
+    tr: {"scrollSnd": "Kaydırma sesi", "sndChime": "Çan", "sndDial": "Kamera kadranı", "sndOff": "Sessiz"},
+    ur: {"scrollSnd": "اسکرول کی آواز", "sndChime": "گھنٹی", "sndDial": "کیمرہ ڈائل", "sndOff": "خاموش"},
+    id: {"scrollSnd": "Suara gulir", "sndChime": "Lonceng", "sndDial": "Putaran kamera", "sndOff": "Senyap"},
+    bn: {"scrollSnd": "স্ক্রলের শব্দ", "sndChime": "ঘণ্টাধ্বনি", "sndDial": "ক্যামেরা ডায়াল", "sndOff": "নীরব"},
+    ru: {"scrollSnd": "Звук прокрутки", "sndChime": "Колокольчик", "sndDial": "Диск фотоаппарата", "sndOff": "Без звука"},
+    de: {"scrollSnd": "Scroll-Ton", "sndChime": "Glockenspiel", "sndDial": "Kamera-Rad", "sndOff": "Lautlos"},
   };
   for (const k of Object.keys(SND_T)) Object.assign(T[k].ui, SND_T[k]);
   // Language in use. Falls back to the browser language, then English.
@@ -1242,6 +1242,7 @@ button:focus-visible { outline: 2px solid var(--gold-1); outline-offset: 3px; }
   const SCROLL_SOUNDS = {
     chime: c => fx.tap(c),
     dial: c => wind(c),
+    off: () => {},
   };
   const scrollSound = c => (SCROLL_SOUNDS[life.scrollSound] || SCROLL_SOUNDS.dial)(c);
   // The click climbs in pitch as the combo builds, and drops back when it resets.
@@ -1503,14 +1504,14 @@ button:focus-visible { outline: 2px solid var(--gold-1); outline-offset: 3px; }
             <button class="secondary" id="debtOpen" style="height:48px">🪶 ${esc(life.debt ? t("debtNew") : t("debtTitle"))}</button>
             ${langSelect()}
             <label class="toggle" for="soundT">${esc(t("sounds"))}<input type="checkbox" id="soundT" ${life.sound ? "checked" : ""}></label>
-            <label class="langRow" for="sndSel"><span>🔊 ${esc(t("scrollSnd"))}</span><select id="sndSel">${[["dial", "sndDial"], ["chime", "sndChime"]].map(([k, n]) => `<option value="${k}"${(life.scrollSound || "dial") === k ? " selected" : ""}>${esc(t(n))}</option>`).join("")}</select></label>
+            <label class="langRow" for="sndSel"><span>🔊 ${esc(t("scrollSnd"))}</span><select id="sndSel">${[["dial", "sndDial"], ["chime", "sndChime"], ["off", "sndOff"]].map(([k, n]) => `<option value="${k}"${(life.scrollSound || "dial") === k ? " selected" : ""}>${esc(t(n))}</option>`).join("")}</select></label>
             <label class="toggle" for="hapT">${esc(t("haptics"))}<input type="checkbox" switch id="hapT" ${life.haptics ? "checked" : ""}></label>
             <button class="secondary" id="backupBtn" style="height:44px">💾 ${esc(t("backup"))}</button>
             <button class="secondary" id="restoreBtn" style="height:44px">📂 ${esc(t("restore"))}</button>
             <input type="file" id="restoreFile" accept=".json,application/json" hidden>
             <button class="secondary" id="swapBtn" style="height:44px">${esc(life.gender === "f" ? t("swapBoy") : t("swapGirl"))}</button>
           </div>
-          <p class="note">${esc(t("disclaimer"))}<br>${esc(t("saved"))}<br>v21</p>
+          <p class="note">${esc(t("disclaimer"))}<br>${esc(t("saved"))}<br>v22</p>
         </div>
       </div>
       <div class="actions"><button class="primary" id="closeBtn">${esc(t("back"))}</button></div>`;
