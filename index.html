@@ -1228,8 +1228,6 @@ button:focus-visible { outline: 2px solid var(--gold-1); outline-offset: 3px; }
       for (let k = 1; k < n; k++) setTimeout(hapTick, k * 110);
     } catch (e) {}
   };
-  // iOS refuses the tick once a touch has turned into a scroll, so the feed ticks when the finger lands.
-  feed.addEventListener("touchstart", () => { if (!openView) hapTick(); }, { passive: true });
   document.addEventListener("click", e => { if (e.target.closest && e.target.closest("button")) hapTick(); });
   const fx = {
     seen: () => { tone(880, .08, "sine", .05); buzz(6); },
@@ -1463,7 +1461,7 @@ button:focus-visible { outline: 2px solid var(--gold-1); outline-offset: 3px; }
             <input type="file" id="restoreFile" accept=".json,application/json" hidden>
             <button class="secondary" id="swapBtn" style="height:44px">${esc(life.gender === "f" ? t("swapBoy") : t("swapGirl"))}</button>
           </div>
-          <p class="note">${esc(t("disclaimer"))}<br>${esc(t("saved"))}<br>v17</p>
+          <p class="note">${esc(t("disclaimer"))}<br>${esc(t("saved"))}<br>v18</p>
         </div>
       </div>
       <div class="actions"><button class="primary" id="closeBtn">${esc(t("back"))}</button></div>`;
