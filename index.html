@@ -1461,7 +1461,6 @@ button:focus-visible { outline: 2px solid var(--gold-1); outline-offset: 3px; }
             <div style="font-size:12px;color:var(--ink-faint)">${esc(t("sessLine", { s: life.sessions, d: life.bestStreak }))}</div>
           </div>
           <div class="panel">${langSelect()}</div>
-          <div class="panel"><button class="secondary" id="copyBtn" style="height:44px">${esc(t("copy"))}</button></div>
           <p class="note">${esc(t("disclaimer"))}</p>
         </div>
       </div>
@@ -1474,9 +1473,6 @@ button:focus-visible { outline: 2px solid var(--gold-1); outline-offset: 3px; }
       undo = null; closeSheet();
     };
     $("resetBtn").onclick = () => { undo = null; closeSheet(); };
-    $("copyBtn").onclick = async e => {
-      try { await navigator.clipboard.writeText(t("copyText", { n: sm.taps })); e.target.textContent = t("copied"); } catch (err) { e.target.textContent = t("copyFail"); }
-    };
     if (sm.taps > 0) {
       const el = $("countUp"), steps = Math.min(30, sm.taps); let i = 0;
       const iv = setInterval(() => {
@@ -1527,7 +1523,7 @@ button:focus-visible { outline: 2px solid var(--gold-1); outline-offset: 3px; }
             <button class="secondary wipe" id="wipeBtn" style="height:44px">${esc(t("wipe"))}</button>
             <button class="secondary" id="swapBtn" style="height:44px">${esc(life.gender === "f" ? t("swapBoy") : t("swapGirl"))}</button>
           </div>
-          <p class="note">${esc(t("disclaimer"))}<br>${esc(t("saved"))}<br>v23</p>
+          <p class="note">${esc(t("disclaimer"))}<br>${esc(t("saved"))}<br>v24</p>
         </div>
       </div>
       <div class="actions"><button class="primary" id="closeBtn">${esc(t("back"))}</button></div>`;
