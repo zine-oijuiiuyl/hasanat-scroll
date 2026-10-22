@@ -244,6 +244,7 @@ button:focus-visible { outline: 2px solid var(--gold-1); outline-offset: 3px; }
 .secondary { height: 56px; padding: 0 20px; border-radius: 999px; background: rgba(244,239,226,.15); font-weight: 800; }
 .toggle { display: flex; justify-content: space-between; align-items: center; font-weight: 700; }
 .toggle input { width: 22px; height: 22px; accent-color: var(--gold-2); }
+.toggle input[switch] { width: auto; height: auto; }
 
 
 
@@ -1206,23 +1207,35 @@ button:focus-visible { outline: 2px solid var(--gold-1); outline-offset: 3px; }
     g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol, t + .01); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
     o.connect(g).connect(ac.destination); o.start(t); o.stop(t + dur + .02);
   }
-  // iPhone Safari has no vibrate(). Since iOS 18, toggling a hidden switch control gives a real haptic tap.
+  // iPhone Safari has no vibrate(). Since iOS 18, toggling a switch control gives a real haptic tap,
+  // but only while the finger is on the glass (touchend or click), never from a scroll callback.
   const hapSwitch = (() => {
     const l = document.createElement("label"), i = document.createElement("input");
-    i.type = "checkbox"; i.setAttribute("switch", ""); l.appendChild(i);
-    l.setAttribute("aria-hidden", "true");
-    l.style.cssText = "position:fixed;left:-9999px;top:0;width:1px;height:1px;overflow:hidden;opacity:0;pointer-events:none";
+    i.type = "checkbox"; i.setAttribute("switch", ""); i.tabIndex = -1; l.appendChild(i);
+    l.setAttribute("aria-hidden", "true"); l.className = "hapSw";
+    l.style.cssText = "position:fixed;left:0;bottom:0;width:1px;height:1px;overflow:hidden;opacity:0.01;z-index:-1";
     document.body.appendChild(l);
     return l;
   })();
+  const hapTick = () => { if (life.haptics && !navigator.vibrate) try { hapSwitch.click(); } catch (e) {} };
   const buzz = p => {
     if (!life.haptics) return;
     try {
       if (navigator.vibrate) { navigator.vibrate(p); return; }
-      const n = Array.isArray(p) ? Math.ceil(p.length / 2) : 1;
-      for (let k = 0; k < n; k++) setTimeout(() => hapSwitch.click(), k * 110);
+      // On iPhone a single tick is given by the swipe itself (below); patterns add extra ticks while allowed.
+      const n = Array.isArray(p) ? Math.ceil(p.length / 2) : 0;
+      for (let k = 1; k < n; k++) setTimeout(hapTick, k * 110);
     } catch (e) {}
   };
+  // One tick each time a swipe ends, and on every button press.
+  let touchY = null;
+  document.addEventListener("touchstart", e => { touchY = e.touches[0].clientY; }, { passive: true });
+  document.addEventListener("touchend", e => {
+    if (touchY === null || openView) return;
+    const dy = touchY - e.changedTouches[0].clientY; touchY = null;
+    if (Math.abs(dy) > 25) hapTick();
+  }, { passive: true });
+  document.addEventListener("click", e => { if (e.target.closest && e.target.closest("button")) hapTick(); });
   const fx = {
     seen: () => { tone(880, .08, "sine", .05); buzz(6); },
     tap: c => { tone(520 + Math.min(c, 24) * 22, .09, "triangle", .1); buzz(10 + Math.min(c, 10)); },
@@ -1449,7 +1462,7 @@ button:focus-visible { outline: 2px solid var(--gold-1); outline-offset: 3px; }
             <button class="secondary" id="debtOpen" style="height:48px">🪶 ${esc(life.debt ? t("debtNew") : t("debtTitle"))}</button>
             ${langSelect()}
             <label class="toggle" for="soundT">${esc(t("sounds"))}<input type="checkbox" id="soundT" ${life.sound ? "checked" : ""}></label>
-            <label class="toggle" for="hapT">${esc(t("haptics"))}<input type="checkbox" id="hapT" ${life.haptics ? "checked" : ""}></label>
+            <label class="toggle" for="hapT">${esc(t("haptics"))}<input type="checkbox" switch id="hapT" ${life.haptics ? "checked" : ""}></label>
             <button class="secondary" id="backupBtn" style="height:44px">💾 ${esc(t("backup"))}</button>
             <button class="secondary" id="restoreBtn" style="height:44px">📂 ${esc(t("restore"))}</button>
             <input type="file" id="restoreFile" accept=".json,application/json" hidden>
