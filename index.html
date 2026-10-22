@@ -1058,7 +1058,7 @@ button:focus-visible { outline: 2px solid var(--gold-1); outline-offset: 3px; }
     if (isMilestone(pts)) { fx.party(); confetti(false); cheerBuddy(); toast("🎉", t("mileT", { n: pts }), t("mileS")); big = true; }
     if (cleared) { celebrate({ key: "debt" + life.debtsCleared, icon: "🪶", title: t("debtDoneT"), sub: t("debtDoneS"), confetti: "gold", sound: fx.evolve, evolve: true }); big = true; }
     if (afterChange(before)) big = true;
-    if (!big) wind();
+    if (!big) wind(S.combo);
   }
 
   // Checks level, badges and buddy growth after anything changed. Returns how many celebrations it queued.
@@ -1225,9 +1225,10 @@ button:focus-visible { outline: 2px solid var(--gold-1); outline-offset: 3px; }
     og.gain.setValueAtTime(vol * .18, t); og.gain.exponentialRampToValueAtTime(.0001, t + .05);
     o.connect(og).connect(ac.destination); o.start(t); o.stop(t + .06);
   }
-  function wind() {
+  // The click climbs in pitch as the combo builds, and drops back when it resets.
+  function wind(combo = 1) {
     if (!ac || !life.sound) return;
-    const t = ac.currentTime, j = 1 + (Math.random() - .5) * .08;
+    const t = ac.currentTime, j = (1 + Math.min(combo, 24) * .035) * (1 + (Math.random() - .5) * .04);
     ratchetClick(t, 3400 * j, .5);
     ratchetClick(t + .055, 2500 * j, .32);
   }
@@ -1489,7 +1490,7 @@ button:focus-visible { outline: 2px solid var(--gold-1); outline-offset: 3px; }
             <input type="file" id="restoreFile" accept=".json,application/json" hidden>
             <button class="secondary" id="swapBtn" style="height:44px">${esc(life.gender === "f" ? t("swapBoy") : t("swapGirl"))}</button>
           </div>
-          <p class="note">${esc(t("disclaimer"))}<br>${esc(t("saved"))}<br>v19</p>
+          <p class="note">${esc(t("disclaimer"))}<br>${esc(t("saved"))}<br>v20</p>
         </div>
       </div>
       <div class="actions"><button class="primary" id="closeBtn">${esc(t("back"))}</button></div>`;
