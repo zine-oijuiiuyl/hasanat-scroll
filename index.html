@@ -772,6 +772,19 @@ button:focus-visible { outline: 2px solid var(--gold-1); outline-offset: 3px; }
     de: {"haptics": "Vibration", "backup": "Fortschritt sichern", "restore": "Sicherung laden", "restored": "Fortschritt wiederhergestellt", "badFile": "Diese Datei ist keine Sicherung"},
   };
   for (const k of Object.keys(EXTRA_T)) Object.assign(T[k].ui, EXTRA_T[k]);
+  const SND_T = {
+    en: {"scrollSnd": "Scroll sound", "sndChime": "Chime", "sndDial": "Camera dial"},
+    ar: {"scrollSnd": "صوت التمرير", "sndChime": "رنين", "sndDial": "قرص الكاميرا"},
+    fr: {"scrollSnd": "Son du défilement", "sndChime": "Carillon", "sndDial": "Molette d'appareil photo"},
+    es: {"scrollSnd": "Sonido al deslizar", "sndChime": "Campanilla", "sndDial": "Rueda de cámara"},
+    tr: {"scrollSnd": "Kaydırma sesi", "sndChime": "Çan", "sndDial": "Kamera kadranı"},
+    ur: {"scrollSnd": "اسکرول کی آواز", "sndChime": "گھنٹی", "sndDial": "کیمرہ ڈائل"},
+    id: {"scrollSnd": "Suara gulir", "sndChime": "Lonceng", "sndDial": "Putaran kamera"},
+    bn: {"scrollSnd": "স্ক্রলের শব্দ", "sndChime": "ঘণ্টাধ্বনি", "sndDial": "ক্যামেরা ডায়াল"},
+    ru: {"scrollSnd": "Звук прокрутки", "sndChime": "Колокольчик", "sndDial": "Диск фотоаппарата"},
+    de: {"scrollSnd": "Scroll-Ton", "sndChime": "Glockenspiel", "sndDial": "Kamera-Rad"},
+  };
+  for (const k of Object.keys(SND_T)) Object.assign(T[k].ui, SND_T[k]);
   // Language in use. Falls back to the browser language, then English.
   const pickLang = () => { const b = (navigator.language || "en").slice(0, 2).toLowerCase(); return LANGS[b] ? b : "en"; };
   let lang = "en";
@@ -837,7 +850,7 @@ button:focus-visible { outline: 2px solid var(--gold-1); outline-offset: 3px; }
 
   // ---------- Storage (this browser only) ----------
   const KEY = "hasanat.lifetime.v2";
-  const fresh = () => ({ seen: 0, said: 0, sessions: 0, best: 0, per: {}, streak: 0, bestStreak: 0, lastDay: null, badges: [], golden: 0, sound: true, gender: null, lang: null, debt: null, debtsCleared: 0, haptics: true });
+  const fresh = () => ({ seen: 0, said: 0, sessions: 0, best: 0, per: {}, streak: 0, bestStreak: 0, lastDay: null, badges: [], golden: 0, sound: true, gender: null, lang: null, debt: null, debtsCleared: 0, haptics: true, scrollSound: "dial" });
   let life = fresh();
   try { const raw = localStorage.getItem(KEY); if (raw) life = Object.assign(fresh(), JSON.parse(raw)); } catch (e) {}
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(life)); } catch (e) {} };
@@ -1058,7 +1071,7 @@ button:focus-visible { outline: 2px solid var(--gold-1); outline-offset: 3px; }
     if (isMilestone(pts)) { fx.party(); confetti(false); cheerBuddy(); toast("🎉", t("mileT", { n: pts }), t("mileS")); big = true; }
     if (cleared) { celebrate({ key: "debt" + life.debtsCleared, icon: "🪶", title: t("debtDoneT"), sub: t("debtDoneS"), confetti: "gold", sound: fx.evolve, evolve: true }); big = true; }
     if (afterChange(before)) big = true;
-    if (!big) wind(S.combo);
+    if (!big) scrollSound(S.combo);
   }
 
   // Checks level, badges and buddy growth after anything changed. Returns how many celebrations it queued.
@@ -1225,6 +1238,12 @@ button:focus-visible { outline: 2px solid var(--gold-1); outline-offset: 3px; }
     og.gain.setValueAtTime(vol * .18, t); og.gain.exponentialRampToValueAtTime(.0001, t + .05);
     o.connect(og).connect(ac.destination); o.start(t); o.stop(t + .06);
   }
+  // The sound each new card makes, picked on the progress screen.
+  const SCROLL_SOUNDS = {
+    chime: c => fx.tap(c),
+    dial: c => wind(c),
+  };
+  const scrollSound = c => (SCROLL_SOUNDS[life.scrollSound] || SCROLL_SOUNDS.dial)(c);
   // The click climbs in pitch as the combo builds, and drops back when it resets.
   function wind(combo = 1) {
     if (!ac || !life.sound) return;
@@ -1484,13 +1503,14 @@ button:focus-visible { outline: 2px solid var(--gold-1); outline-offset: 3px; }
             <button class="secondary" id="debtOpen" style="height:48px">🪶 ${esc(life.debt ? t("debtNew") : t("debtTitle"))}</button>
             ${langSelect()}
             <label class="toggle" for="soundT">${esc(t("sounds"))}<input type="checkbox" id="soundT" ${life.sound ? "checked" : ""}></label>
+            <label class="langRow" for="sndSel"><span>🔊 ${esc(t("scrollSnd"))}</span><select id="sndSel">${[["dial", "sndDial"], ["chime", "sndChime"]].map(([k, n]) => `<option value="${k}"${(life.scrollSound || "dial") === k ? " selected" : ""}>${esc(t(n))}</option>`).join("")}</select></label>
             <label class="toggle" for="hapT">${esc(t("haptics"))}<input type="checkbox" switch id="hapT" ${life.haptics ? "checked" : ""}></label>
             <button class="secondary" id="backupBtn" style="height:44px">💾 ${esc(t("backup"))}</button>
             <button class="secondary" id="restoreBtn" style="height:44px">📂 ${esc(t("restore"))}</button>
             <input type="file" id="restoreFile" accept=".json,application/json" hidden>
             <button class="secondary" id="swapBtn" style="height:44px">${esc(life.gender === "f" ? t("swapBoy") : t("swapGirl"))}</button>
           </div>
-          <p class="note">${esc(t("disclaimer"))}<br>${esc(t("saved"))}<br>v20</p>
+          <p class="note">${esc(t("disclaimer"))}<br>${esc(t("saved"))}<br>v21</p>
         </div>
       </div>
       <div class="actions"><button class="primary" id="closeBtn">${esc(t("back"))}</button></div>`;
@@ -1498,6 +1518,10 @@ button:focus-visible { outline: 2px solid var(--gold-1); outline-offset: 3px; }
     $("closeBtn").onclick = closeSheet;
     $("debtOpen").onclick = showDebt;
     $("soundT").onchange = e => { life.sound = e.target.checked; save(); if (!life.sound) ac = null; };
+    $("sndSel").onchange = e => {
+      life.scrollSound = e.target.value; save();
+      wakeAudio(); [1, 6, 12].forEach((c, i) => setTimeout(() => scrollSound(c), i * 260));   // a short preview
+    };
     $("hapT").onchange = e => { life.haptics = e.target.checked; save(); buzz(10); };
     $("backupBtn").onclick = backupProgress;
     $("restoreBtn").onclick = () => $("restoreFile").click();
