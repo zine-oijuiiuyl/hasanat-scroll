@@ -1,0 +1,1582 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Hasanat Scroll</title>
+<meta name="theme-color" content="#0b3b36">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Hasanat">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-192.png">
+<style>*,*::before,*::after{box-sizing:border-box}html,body{margin:0;height:100%}</style>
+</head>
+<body>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&display=swap">
+<style>
+/* Layout: one full-screen snap feed, a floating HUD over it, and sheet overlays for summary and progress. Deliberately dark only, like the iOS app. */
+:root {
+  --ink: #f4efe2;
+  --ink-soft: rgba(244, 239, 226, .72);
+  --ink-faint: rgba(244, 239, 226, .48);
+  --night: #061a18;
+  --glass: rgba(6, 26, 24, .55);
+  --line: rgba(244, 239, 226, .14);
+  --gold-1: #ffe08a;
+  --gold-2: #f5b83d;
+  --gold-3: #c98a1b;
+  --flame: #ff9f2e;
+  --gold: linear-gradient(135deg, var(--gold-1), var(--gold-2) 55%, var(--gold-3));
+  --f-ar: "Amiri", "Geeza Pro", "Noto Naskh Arabic", "Traditional Arabic", serif;
+  --f-ui: "Bricolage Grotesque", ui-rounded, "SF Pro Rounded", system-ui, sans-serif;
+  color-scheme: dark;
+}
+*, *::before, *::after { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { height: 100%; }
+body {
+  background: var(--night);
+  color: var(--ink);
+  font-family: var(--f-ui);
+  margin: 0;
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
+}
+button { font: inherit; color: inherit; border: 0; background: none; cursor: pointer; }
+button:focus-visible { outline: 2px solid var(--gold-1); outline-offset: 3px; }
+
+#app { position: relative; height: 100%; overflow: hidden; }
+
+/* Feed */
+#feed {
+  height: 100%;
+  overflow-y: scroll;
+  scroll-snap-type: y mandatory;
+  scrollbar-width: none;
+  overscroll-behavior: contain;
+}
+#feed::-webkit-scrollbar { display: none; }
+.card {
+  position: relative;
+  height: 100%;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 18px;
+  padding-block: 120px 56px;
+  padding-left: max(24px, env(safe-area-inset-left, 0px));
+  padding-right: max(24px, env(safe-area-inset-right, 0px));
+  overflow: hidden;
+}
+.card::before {
+  content: "";
+  position: absolute; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='70' height='70'%3E%3Cg fill='none' stroke='%23fff' stroke-opacity='.06'%3E%3Crect x='19' y='19' width='32' height='32'/%3E%3Crect x='19' y='19' width='32' height='32' transform='rotate(45 35 35)'/%3E%3C/g%3E%3C/svg%3E");
+  pointer-events: none;
+}
+.card > * { position: relative; max-width: 34rem; min-width: 0; }
+.kind {
+  margin-top: auto;
+  font-size: 11px; font-weight: 800; letter-spacing: .16em;
+  color: var(--ink-faint);
+}
+.ar {
+  font-family: var(--f-ar);
+  font-weight: 700;
+  direction: rtl;
+  line-height: 1.65;
+  text-wrap: balance;
+  text-shadow: 0 8px 28px rgba(0,0,0,.28);
+  transition: transform .14s cubic-bezier(.3,1.6,.5,1);
+}
+.ar.s { font-size: clamp(46px, 13vw, 76px); }
+.ar.m { font-size: clamp(34px, 9vw, 56px); }
+.ar.l { font-size: clamp(26px, 7vw, 42px); }
+.card.pressed .ar { transform: scale(.94); }
+.meta { display: grid; gap: 6px; }
+.tr { font-size: 19px; font-weight: 700; font-style: italic; color: var(--ink); }
+.en { font-size: 16px; color: var(--ink-soft); line-height: 1.45; }
+.src { font-size: 12px; color: var(--ink-faint); margin-top: 2px; }
+
+.counter { margin-top: auto; display: grid; justify-items: center; gap: 10px; max-width: 100%; }
+.swipe { width: 64px; height: 64px; opacity: .3; animation: swipeUp 1.8s ease-in-out infinite; }
+.swipe svg { width: 100%; height: 100%; fill: none; stroke: var(--ink); stroke-width: 4.5; stroke-linecap: round; stroke-linejoin: round; }
+@keyframes swipeUp { 0%, 100% { transform: translateY(6px); opacity: .18; } 50% { transform: translateY(-6px); opacity: .38; } }
+.hint { font-size: 13px; font-weight: 700; color: var(--ink-faint); animation: breathe 2.2s ease-in-out infinite;  max-width: 44vw; text-align: center; line-height: 1.3;}
+@keyframes breathe { 50% { opacity: .35; } }
+
+.card.golden .ar, .card.golden .kind {
+  background: var(--gold); -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.card.golden .ar { text-shadow: none; filter: drop-shadow(0 0 18px rgba(255, 200, 80, .45)); }
+.card.golden::after {
+  content: ""; position: absolute; inset: -20% -60%;
+  background: linear-gradient(105deg, transparent 40%, rgba(255,240,200,.16) 50%, transparent 60%);
+  animation: sweep 2.4s linear infinite; pointer-events: none;
+}
+@keyframes sweep { from { transform: translateX(-40%); } to { transform: translateX(40%); } }
+
+/* HUD */
+#hud {
+  position: absolute; top: 0; left: 0; right: 0; z-index: 5;
+  padding-top: calc(env(safe-area-inset-top, 0px) + 10px);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid; justify-items: center; gap: 10px;
+  pointer-events: none;
+}
+#hud > * { pointer-events: auto; }
+.bar { width: 100%; display: grid; grid-template-columns: 76px 1fr 76px; align-items: center; }
+.lvl { width: 76px; display: grid; justify-items: center; gap: 3px; }
+.lvl .av { width: 76px; height: 41px; display: block; }
+.lvl .av svg { width: 100%; height: 100%; overflow: hidden; }
+.lvl .lvbar { position: relative; width: 62px; height: 14px; border-radius: 999px; background: rgba(244,239,226,.18); overflow: hidden; }
+.lvl .lvbar b { position: absolute; inset-block: 0; inset-inline-start: 0; width: 0; background: var(--gold); opacity: .85; transition: width .4s ease; }
+.lvl .lvbar span { position: relative; display: block; text-align: center; font-size: 10px; font-weight: 800; line-height: 14px; letter-spacing: .04em; text-shadow: 0 1px 2px rgba(0,0,0,.55); }
+.score { text-align: center; }
+.score .pts { font-size: 36px; font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1; display: inline-flex; gap: 6px; align-items: center; }
+.score .pts i { font-style: normal; font-size: 22px; background: var(--gold); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.score .pts.bump { animation: bump .35s cubic-bezier(.3,1.8,.5,1); }
+@keyframes bump { 40% { transform: scale(1.14); } }
+.score .sub { font-size: 12px; font-weight: 700; color: var(--ink-soft); margin-top: 3px; }
+.done {
+  justify-self: end; font-size: 14px; font-weight: 800; padding: 9px 13px;
+  border-radius: 999px; background: rgba(244,239,226,.16); backdrop-filter: blur(10px);
+}
+.combo {
+  display: flex; align-items: center; gap: 8px;
+  padding: 7px 14px; border-radius: 999px; background: var(--glass); backdrop-filter: blur(10px);
+  font-size: 14px; font-weight: 800;
+  transition: opacity .25s, transform .3s cubic-bezier(.3,1.6,.5,1);
+}
+.combo[data-off] { opacity: 0; transform: scale(.7); pointer-events: none; }
+.combo .flame { font-size: 16px; }
+.combo .drain { width: 70px; height: 6px; border-radius: 999px; background: var(--line); overflow: hidden; }
+.combo .drain b { display: block; height: 100%; background: var(--flame); border-radius: inherit; transform-origin: left; }
+
+.toast {
+  display: flex; align-items: center; gap: 10px; text-align: start;
+  padding: 10px 18px; border-radius: 999px;
+  background: rgba(10, 30, 26, .78); backdrop-filter: blur(14px);
+  border: 1.5px solid var(--gold-2);
+  box-shadow: 0 10px 30px rgba(0,0,0,.35);
+  animation: drop .45s cubic-bezier(.3,1.5,.5,1);
+}
+.toast .ic { font-size: 22px; }
+.toast b { display: block; font-size: 15px; }
+.toast small { display: block; font-size: 12px; color: var(--ink-soft); }
+@keyframes drop { from { opacity: 0; transform: translateY(-20px) scale(.85); } }
+
+.floater {
+  position: absolute; z-index: 6; left: 50%; top: 70%;
+  font-size: 30px; font-weight: 800; pointer-events: none;
+  text-shadow: 0 4px 14px rgba(0,0,0,.4);
+  animation: rise .9s ease-out forwards;
+}
+.floater.g { font-size: 40px; background: var(--gold); -webkit-background-clip: text; background-clip: text; color: transparent; text-shadow: none; }
+@keyframes rise { from { transform: translate(-50%, 0) scale(.6); opacity: 1; } to { transform: translate(-50%, -160px) scale(1.15); opacity: 0; } }
+
+#confetti { position: absolute; inset: 0; z-index: 20; pointer-events: none; width: 100%; height: 100%; }
+
+/* Sheets */
+.sheet {
+  position: absolute; inset: 0; z-index: 10;
+  overflow-y: auto;
+  background: linear-gradient(180deg, #0b2b26, #163832 45%, #051f20);
+  padding-block: calc(env(safe-area-inset-top, 0px) + 28px) 140px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  animation: up .45s cubic-bezier(.2,1,.3,1);
+}
+@keyframes up { from { transform: translateY(40px); opacity: 0; } }
+.sheet { overflow-x: hidden; }
+.sheet .inner { max-width: 32rem; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr); gap: 22px; }
+.sheet .inner > * { min-width: 0; }
+.hero { text-align: center; display: grid; gap: 6px; }
+.hero .arh { font-family: var(--f-ar); font-weight: 700; font-size: 46px; direction: rtl; background: var(--gold); -webkit-background-clip: text; background-clip: text; color: transparent; line-height: 1.5; }
+.hero .big { font-size: 66px; font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1; }
+.hero .cap { color: var(--ink-soft); font-weight: 700; font-size: 14px; }
+.panel { min-width: 0; grid-template-columns: minmax(0, 1fr); background: rgba(244,239,226,.07); border-radius: 20px; padding: 16px; display: grid; gap: 12px; }
+.panel.gold { border: 1.5px solid var(--gold-2); background: rgba(245,184,61,.08); display: flex; align-items: center; gap: 14px; }
+.label { font-size: 11px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-faint); }
+.tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.tile { background: rgba(244,239,226,.08); border-radius: 16px; padding: 14px 6px; text-align: center; display: grid; gap: 4px; }
+.tile .v { font-size: 22px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.tile .k { font-size: 12px; color: var(--ink-faint); }
+.tile .i { font-size: 15px; }
+.row { display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; min-width: 0; }
+.row .top { display: flex; align-items: baseline; gap: 10px; }
+.row .top .t { font-size: 14px; font-weight: 700; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.row .top .a { font-family: var(--f-ar); font-size: 19px; direction: rtl; white-space: nowrap; overflow: hidden; max-width: 45%; text-overflow: ellipsis; }
+.row .top .n { font-weight: 800; font-variant-numeric: tabular-nums; }
+.row .meter { height: 6px; border-radius: 999px; background: rgba(244,239,226,.1); overflow: hidden; }
+.row .meter b { display: block; height: 100%; background: var(--gold); border-radius: inherit; width: 0; transition: width .9s ease-out .3s; }
+.badges { display: grid; grid-template-columns: repeat(auto-fill, minmax(88px, 1fr)); gap: 14px; }
+.badge { text-align: center; display: grid; justify-items: center; gap: 4px; }
+.badge .disc { width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center; font-size: 26px; background: rgba(244,239,226,.12); }
+.badge.locked .disc { background: rgba(244,239,226,.05); filter: grayscale(1); opacity: .45; }
+.badge b { font-size: 12px; }
+.badge small { font-size: 11px; color: var(--ink-faint); line-height: 1.3; }
+.progress { height: 8px; border-radius: 999px; background: rgba(244,239,226,.1); overflow: hidden; }
+.progress b { display: block; height: 100%; background: var(--gold); border-radius: inherit; }
+.note { text-align: center; font-size: 13px; color: var(--ink-faint); line-height: 1.5; }
+.actions {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 11;
+  display: flex; gap: 12px; justify-content: center;
+  padding-top: 16px;
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 14px);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  background: linear-gradient(transparent, rgba(5,31,32,.95) 40%);
+}
+.primary { flex: 1; max-width: 26rem; height: 56px; border-radius: 999px; background: var(--gold); color: #2a1a00; font-weight: 800; font-size: 17px; }
+.secondary { height: 56px; padding: 0 20px; border-radius: 999px; background: rgba(244,239,226,.15); font-weight: 800; }
+.toggle { display: flex; justify-content: space-between; align-items: center; font-weight: 700; }
+.toggle input { width: 22px; height: 22px; accent-color: var(--gold-2); }
+
+
+
+
+/* Lighten the load */
+.debt {
+  display: flex; align-items: center; gap: 10px; padding: 9px 16px; border-radius: 999px;
+  background: var(--glass); backdrop-filter: blur(10px); border: 1.5px solid var(--line);
+  font-size: 18px; font-weight: 800; font-variant-numeric: tabular-nums;
+}
+.debt .dIcon { font-size: 20px; }
+.debt .dBar { width: 64px; height: 6px; border-radius: 999px; background: var(--line); overflow: hidden; }
+.debt .dBar b { display: block; height: 100%; background: var(--gold); width: 0; transition: width .4s ease; }
+.debtAdd {
+  display: flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: 999px; font-size: 15px; font-weight: 800;
+  background: var(--glass); backdrop-filter: blur(10px); border: 1.5px dashed var(--gold-2);
+}
+.debt.done { border-color: var(--gold-2); }
+.debt.tick { animation: bump .3s cubic-bezier(.3,1.8,.5,1); }
+.numIn {
+  width: 100%; padding: 14px; border-radius: 16px; font: inherit; font-size: 30px; font-weight: 800; text-align: center;
+  color: var(--ink); background: rgba(244,239,226,.1); border: 1.5px solid var(--line); font-variant-numeric: tabular-nums;
+}
+.numIn:focus { outline: 2px solid var(--gold-2); }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { padding: 8px 13px; border-radius: 999px; font-weight: 800; font-size: 14px; background: rgba(244,239,226,.1); border: 1.5px solid var(--line); font-variant-numeric: tabular-nums; }
+.chip.on { border-color: var(--gold-2); background: rgba(245,184,61,.18); }
+
+/* Language */
+.langRow { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-weight: 700; }
+.langRow select {
+  appearance: none; -webkit-appearance: none; max-width: 60%; padding: 9px 14px; border-radius: 12px; font: inherit; font-weight: 700;
+  color: var(--ink); background: rgba(244,239,226,.14); border: 1px solid var(--line);
+}
+.langRow select option { color: #111; }
+.picker .langRow { width: min(100%, 26rem); }
+.en, .src { unicode-bidi: plaintext; }
+
+/* Buddy */
+.char { display: block; width: 100%; height: auto; overflow: visible; }
+.char .bob { animation: bob 2.4s ease-in-out infinite; }
+@keyframes bob { 50% { transform: translateY(-3px); } }
+.char .flap { transform-box: view-box; transform-origin: 0 0; animation: flap 1.8s ease-in-out infinite; }
+@keyframes flap { 50% { transform: rotate(-7deg); } }
+@keyframes flapfast { 50% { transform: rotate(-17deg); } }
+.char .halo { animation: halo 2.6s ease-in-out infinite; }
+@keyframes halo { 50% { transform: translateY(-2.5px); } }
+.char .blink { transform-box: fill-box; transform-origin: center; animation: blink 4.2s infinite; }
+@keyframes blink { 0%, 94%, 100% { transform: scaleY(1); } 96.5% { transform: scaleY(.1); } }
+.char .sp { transform-box: fill-box; transform-origin: center; animation: twinkle 2.2s ease-in-out infinite; }
+@keyframes twinkle { 0%, 100% { transform: scale(.2); opacity: 0; } 50% { transform: scale(1); opacity: 1; } }
+.char .armR { transform-box: view-box; }
+.cheer .char .jump { animation: hop .55s ease-out 2; }
+@keyframes hop { 40% { transform: translateY(-20px); } }
+.cheer .char .armR { animation: wave 1.2s ease-in-out; }
+@keyframes wave { 0% { transform: rotate(0); } 15%, 45%, 75% { transform: rotate(-150deg); } 30%, 60% { transform: rotate(-125deg); } 100% { transform: rotate(0); } }
+.cheer .char .flap { animation: flapfast .35s ease-in-out infinite; }
+.tap .char .jump { animation: hop2 .22s ease-out; }
+@keyframes hop2 { 40% { transform: translateY(-8px); } }
+
+#buddy {
+  position: absolute; z-index: 4; left: max(6px, env(safe-area-inset-left, 0px));
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 26px);
+  width: 128px; pointer-events: none; transition: opacity .25s, transform .25s;
+}
+
+#cheerSlot {
+  position: absolute; z-index: 9; left: max(12px, env(safe-area-inset-left, 0px));
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 150px);
+  width: min(78vw, 20rem); pointer-events: none;
+}
+.cheerCard {
+  pointer-events: none; display: block; transform-origin: 20% 100%;
+  animation: popin .5s cubic-bezier(.3,1.5,.5,1);
+}
+@keyframes popin { from { opacity: 0; transform: translateY(40px) scale(.8); } }
+.bubble {
+  position: relative; display: flex; align-items: center; gap: 12px; text-align: start;
+  padding: 12px 16px; border-radius: 22px; background: rgba(10, 30, 26, .88); backdrop-filter: blur(14px);
+  border: 1.5px solid var(--gold-2); box-shadow: 0 12px 34px rgba(0,0,0,.4);
+}
+.bubble::after {
+  content: ""; position: absolute; left: 36px; bottom: -9px; width: 16px; height: 16px;
+  background: rgba(10, 30, 26, .95); border-right: 1.5px solid var(--gold-2); border-bottom: 1.5px solid var(--gold-2);
+  transform: rotate(45deg);
+}
+.bubble .bi { font-size: 30px; }
+.bubble b { display: block; font-size: 17px; }
+.bubble small { display: block; font-size: 12.5px; color: var(--ink-soft); line-height: 1.35; margin-top: 2px; }
+.cheerChar { display: block; width: 168px; margin-top: 8px; }
+#buddy.evolve .char { animation: evolve 1s ease-out; }
+@keyframes evolve { 0% { filter: brightness(3); transform: scale(.7); } 50% { filter: brightness(1.8); transform: scale(1.12); } 100% { filter: none; transform: none; } }
+
+.heroChar { width: min(60vw, 230px); margin: 0 auto; }
+.journey { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.stage { text-align: center; display: grid; gap: 4px; padding: 8px 4px; border-radius: 14px; }
+.stage .sv { width: 100%; }
+.stage b { font-size: 11px; }
+.stage.now { background: rgba(245,184,61,.14); outline: 1.5px solid var(--gold-2); }
+.stage.locked .sv { filter: brightness(0) opacity(.3); }
+.stage.locked .char * { animation: none !important; }
+
+.picker {
+  position: absolute; inset: 0; z-index: 30; overflow-y: auto;
+  background: linear-gradient(180deg, #0b2b26, #163832 55%, #051f20);
+  display: grid; align-content: center; justify-items: center; gap: 14px; text-align: center;
+  padding-block: calc(env(safe-area-inset-top, 0px) + 24px) calc(env(safe-area-inset-bottom, 0px) + 24px);
+  padding-left: max(20px, env(safe-area-inset-left, 0px));
+  padding-right: max(20px, env(safe-area-inset-right, 0px));
+}
+.picker .arh { font-family: var(--f-ar); font-weight: 700; font-size: 44px; direction: rtl; background: var(--gold); -webkit-background-clip: text; background-clip: text; color: transparent; line-height: 1.5; }
+.picker h1 { margin: 0; font-size: 28px; line-height: 1.15; text-wrap: balance; }
+.picker p { margin: 0; max-width: 26rem; color: var(--ink-soft); font-size: 15px; line-height: 1.45; text-wrap: balance; }
+.picker small { color: var(--ink-faint); font-size: 12px; }
+.choices { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; width: min(100%, 26rem); }
+.choice { display: grid; justify-items: center; gap: 6px; padding: 14px 8px 12px; border-radius: 24px; background: rgba(244,239,226,.08); border: 1.5px solid var(--line); transition: transform .15s, border-color .15s; }
+.choice:active { transform: scale(.96); border-color: var(--gold-2); }
+.choice b { font-size: 18px; }
+.choice .pv { display: block; width: 100%; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+}
+</style>
+
+<div id="app">
+  <div id="feed" aria-label="Dhikr feed"></div>
+
+  <div id="hud">
+    <div class="bar">
+      <button class="lvl" id="lvlBtn" aria-label="Show your progress and buddy">
+        <span class="av" id="lvlAv"></span>
+        <span class="lvbar"><b id="lvFill"></b><span id="lvNum">Lv 1</span></span>
+      </button>
+      <div class="score">
+        <div class="pts" id="pts"><i>✦</i><span id="ptsNum">0</span></div>
+        <div class="sub" id="ptsSub">points · Seed</div>
+      </div>
+      <button class="done" id="doneBtn">Done</button>
+    </div>
+    <button class="debtAdd" id="debtAdd"><span>🪶</span><span id="debtAddT">Lighten the load</span></button>
+    <button class="debt" id="debtBtn" hidden><span class="dIcon">🪶</span><span id="debtNum"></span><span class="dBar"><b id="debtFill"></b></span></button>
+    <div class="combo" id="combo" data-off>
+      <span class="flame">🔥</span><span id="comboNum">0 combo</span>
+      <span class="drain"><b id="drain"></b></span>
+    </div>
+    <div id="toastSlot"></div>
+  </div>
+
+  <div id="buddy" aria-hidden="true"></div>
+  <div id="cheerSlot"></div>
+  <canvas id="confetti"></canvas>
+  <div id="sheetSlot"></div>
+  <div id="pickerSlot"></div>
+</div>
+
+<script>
+(() => {
+  "use strict";
+
+  // ---------- Content ----------
+  const PALETTES = [
+    ["#0F3D3E", "#1B6B5F"], ["#1D2B53", "#3E5C9A"], ["#3B1E54", "#7A4BA0"], ["#123524", "#3E7B27"],
+    ["#2C1A12", "#8B5A2B"], ["#0B2447", "#19376D"], ["#1A3636", "#40534C"], ["#3A0519", "#8E1C3B"],
+    ["#022C43", "#115173"], ["#27374D", "#526D82"],
+  ];
+  const D = (id, ar, tr, en, src, kind, pal, w = 1) => ({ id, ar, tr, en, src, kind, pal, w });
+  const LIB = [
+    D("subhanallah", "سُبْحَانَ ٱللَّٰهِ", "SubhanAllah", "Glory be to Allah", null, "dhikr", 0, 3),
+    D("alhamdulillah", "ٱلْحَمْدُ لِلَّٰهِ", "Alhamdulillah", "All praise is for Allah", null, "dhikr", 1, 3),
+    D("allahuakbar", "ٱللَّٰهُ أَكْبَرُ", "Allahu Akbar", "Allah is the Greatest", null, "dhikr", 2, 3),
+    D("astaghfirullah", "أَسْتَغْفِرُ ٱللَّٰهَ", "Astaghfirullah", "I seek forgiveness from Allah", null, "dhikr", 3, 3),
+    D("tahlil", "لَا إِلَٰهَ إِلَّا ٱللَّٰهُ", "La ilaha illa Allah", "There is no god but Allah", null, "dhikr", 4, 3),
+    D("subhanallahwabihamdihi", "سُبْحَانَ ٱللَّٰهِ وَبِحَمْدِهِ", "SubhanAllahi wa bihamdihi", "Glory be to Allah and praise be to Him", "Sahih al-Bukhari 6405", "dhikr", 5, 2),
+    D("subhanallahilazim", "سُبْحَانَ ٱللَّٰهِ ٱلْعَظِيمِ", "SubhanAllahil-'Azim", "Glory be to Allah, the Magnificent", "Light on the tongue, heavy on the scale · Bukhari 6406", "dhikr", 6, 2),
+    D("hawqala", "لَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِٱللَّٰهِ", "La hawla wa la quwwata illa billah", "There is no power and no strength except with Allah", "A treasure of Paradise · Bukhari 4205", "dhikr", 7, 2),
+    D("astaghfirullahwaatubu", "أَسْتَغْفِرُ ٱللَّٰهَ وَأَتُوبُ إِلَيْهِ", "Astaghfirullaha wa atubu ilayh", "I seek Allah's forgiveness and turn to Him in repentance", "Sahih al-Bukhari 6307", "dhikr", 3),
+    D("salawat", "ٱللَّٰهُمَّ صَلِّ عَلَىٰ مُحَمَّدٍ", "Allahumma salli 'ala Muhammad", "O Allah, send blessings upon Muhammad ﷺ", null, "salawat", 8, 2),
+    D("bismillah", "بِسْمِ ٱللَّٰهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ", "Bismillahir-Rahmanir-Rahim", "In the name of Allah, the Most Gracious, the Most Merciful", "Al-Fatiha 1:1", "quran", 9),
+    D("hasbunallah", "حَسْبُنَا ٱللَّٰهُ وَنِعْمَ ٱلْوَكِيلُ", "Hasbunallahu wa ni'mal-wakil", "Allah is sufficient for us, and He is the best Disposer of affairs", "Al 'Imran 3:173", "quran", 2),
+    D("rabbanaatina", "رَبَّنَا آتِنَا فِي ٱلدُّنْيَا حَسَنَةً وَفِي ٱلْآخِرَةِ حَسَنَةً وَقِنَا عَذَابَ ٱلنَّارِ", "Rabbana atina fid-dunya hasanah, wa fil-akhirati hasanah, wa qina 'adhaban-nar", "Our Lord, give us good in this world and good in the Hereafter, and protect us from the punishment of the Fire", "Al-Baqarah 2:201", "dua", 5),
+    D("rabbizidniilma", "رَّبِّ زِدْنِي عِلْمًا", "Rabbi zidni 'ilma", "My Lord, increase me in knowledge", "Ta-Ha 20:114", "dua", 6),
+    D("yunus", "لَّا إِلَٰهَ إِلَّا أَنتَ سُبْحَانَكَ إِنِّي كُنتُ مِنَ ٱلظَّالِمِينَ", "La ilaha illa anta, subhanaka, inni kuntu minaz-zalimin", "There is no god but You, glory be to You, I have been among the wrongdoers", "Dua of Yunus · Al-Anbiya 21:87", "dua", 7),
+    D("afw", "ٱللَّٰهُمَّ إِنَّكَ عَفُوٌّ تُحِبُّ ٱلْعَفْوَ فَٱعْفُ عَنِّي", "Allahumma innaka 'afuwwun tuhibbul-'afwa fa'fu 'anni", "O Allah, You are Pardoning and love to pardon, so pardon me", "Jami' at-Tirmidhi 3513", "dua", 8),
+    D("yahayyu", "يَا حَيُّ يَا قَيُّومُ بِرَحْمَتِكَ أَسْتَغِيثُ", "Ya Hayyu ya Qayyum, bi rahmatika astaghith", "O Ever-Living, O Sustainer, in Your mercy I seek relief", "Jami' at-Tirmidhi 3524", "dua", 1),
+    D("udhkuruni", "فَٱذْكُرُونِيٓ أَذْكُرْكُمْ", "Fadhkuruni adhkurkum", "So remember Me; I will remember you", "Al-Baqarah 2:152", "quran", 0),
+    D("tatmainnu", "أَلَا بِذِكْرِ ٱللَّٰهِ تَطْمَئِنُّ ٱلْقُلُوبُ", "Ala bidhikrillahi tatma'innul-qulub", "Verily, in the remembrance of Allah do hearts find rest", "Ar-Ra'd 13:28", "quran", 4),
+    D("yusra", "إِنَّ مَعَ ٱلْعُسْرِ يُسْرًا", "Inna ma'al-'usri yusra", "Indeed, with hardship comes ease", "Ash-Sharh 94:6", "quran", 9),
+  ];
+  const BY_ID = Object.fromEntries(LIB.map(d => [d.id, d]));
+  LIB.forEach((d, i) => { d.i = i; });
+  // Source notes whose descriptive part is translated separately.
+  Object.assign(BY_ID.subhanallahilazim, { src: "Bukhari 6406", srcKey: "srcLight" });
+  Object.assign(BY_ID.hawqala, { src: "Bukhari 4205", srcKey: "srcTreasure" });
+  Object.assign(BY_ID.yunus, { src: "Al-Anbiya 21:87", srcKey: "srcYunus" });
+
+  // ---------- Languages ----------
+  // To add a language: add an entry to LANGS and a matching block to T (missing keys fall back to English).
+  // Dhikr meanings are short plain-language renderings; check them against a translation you trust.
+  const LANGS = {
+    en: { name: "English", dir: "ltr" }, ar: { name: "العربية", dir: "rtl" }, fr: { name: "Français", dir: "ltr" },
+    es: { name: "Español", dir: "ltr" }, tr: { name: "Türkçe", dir: "ltr" }, ur: { name: "اردو", dir: "rtl" },
+    id: { name: "Bahasa Indonesia", dir: "ltr" }, bn: { name: "বাংলা", dir: "ltr" }, ru: { name: "Русский", dir: "ltr" },
+    de: { name: "Deutsch", dir: "ltr" },
+  };
+  const T = {
+    en: {
+      ui: {
+        pickTitle: "Who is scrolling today?", pickText: "Pick your buddy. It starts out normal, then grows wings and a halo as you scroll through more dhikr and earn badges.",
+        boy: "Boy", girl: "Girl", pickHint: "You can switch any time from your progress screen.", language: "Language",
+        done: "Done", pointsSub: "points · {t}", lv: "Lv {n}", combo: "{n} combo", swipe: "Swipe up for the next",
+        golden: "★ GOLDEN", goldenT: "Golden card!", goldenS: "A rare find", comboT: "{n} combo!", comboS: "You're on a roll",
+        mileT: "{n} points, ما شاء الله", mileS: "Beautiful consistency", lvT: "Level {n}: {t}", badgeT: "Badge: {t}", growT: "Your buddy is growing!",
+        kDhikr: "DHIKR · ذِكْر", kDua: "DUA · دُعَاء", kQuran: "QURAN · قُرْآن", kSalawat: "SALAWAT · صَلَوَات",
+        srcLight: "Light on the tongue, heavy on the scale", srcTreasure: "A treasure of Paradise", srcYunus: "Dua of Yunus",
+        complete: "Session complete", start: "Scroll through the cards to start your score", ptsSession: "points this session",
+        grew: "Your buddy grew!", lvUp: "Level up!", lvLine: "Level {n} · {t}", allPts: "All-time points", bestCombo: "Best combo", time: "Time",
+        goldenTile: "Golden", streak: "Day streak", types: "Different dhikr", newBadges: "New badges", perDhikr: "Points per dhikr",
+        nothing: "Nothing yet. Scroll to the next card and it will show up here.", allTime: "All time", pointsWord: "points",
+        sessLine: "{s} sessions · best streak {d} days", copy: "Copy", copied: "Copied", copyFail: "Copy failed", again: "Keep scrolling", reset: "Reset",
+        copyText: "I scored {n} points scrolling through dhikr on Hasanat Scroll. سُبْحَانَ ٱللَّٰهِ",
+        disclaimer: "Your score is just the number of dhikr you scrolled through. The true reward (حسنات) is with Allah alone.",
+        progress: "Your progress", levelCap: "Level · {t}", toNext: "{n} points to level {l}", journey: "Buddy journey",
+        reach: "Level up and earn badges to reach “{n}”", fullAngel: "Your buddy is a full angel. ما شاء الله!",
+        pointsTile: "Points", levelTile: "Level", sessions: "Sessions", bestSession: "Best session", badgesH: "Badges · {a}/{b}",
+        mostScrolled: "Most scrolled", sounds: "Sounds", swapBoy: "Switch to the boy buddy", swapGirl: "Switch to the girl buddy",
+        back: "Back to scrolling", saved: "Progress is saved in this browser on this device.",
+      },
+      levels: ["Seed", "Sprout", "Sapling", "Young Tree", "Palm", "Grove", "Garden", "Orchard", "Oasis", "Rawdah", "Firdaws"],
+      stages: [["Little believer", "Bismillah, let's begin!"], ["Glowing heart", "I feel a warm glow!"], ["Wing buds", "Something is sprouting on my back!"], ["Young wings", "I have little wings now!"], ["Rising angel", "My wings are getting big, and a halo!"], ["Angel of dhikr", "Look at me, a full angel!"]],
+      lines: ["ما شاء الله! You did it!", "Keep going, you're doing great!", "Bismillah, onward!", "Allah loves the consistent deeds, even if small. (Bukhari 6464)"],
+      badges: [["First Light", "Score your first point"], ["Tasbih", "33 points in one session"], ["Century", "100 points in one session"], ["Marathon", "500 points in one session"], ["On Fire", "Reach a 25 combo"], ["Unstoppable", "Reach a 50 combo"], ["Golden Find", "Discover a golden card"], ["Treasure Hunter", "Discover 10 golden cards"], ["Consistent", "3 day streak"], ["Steadfast", "7 day streak"], ["Devoted", "30 day streak"], ["Thousand", "1,000 points all time"], ["Ten Thousand", "10,000 points all time"], ["Palm", "Reach level 5"], ["Rawdah", "Reach level 10"], ["First Wings", "Your buddy grows wings"], ["Halo", "Your buddy becomes an angel"]],
+    },
+    ar: {
+      ui: {
+        pickTitle: "من يتصفح اليوم؟", pickText: "اختر رفيقك. يبدأ عاديًا ثم تنبت له أجنحة وهالة كلما تصفحت المزيد من الأذكار وكسبت الأوسمة.",
+        boy: "ولد", girl: "بنت", pickHint: "يمكنك التبديل في أي وقت من شاشة التقدّم.", language: "اللغة",
+        done: "إنهاء", pointsSub: "نقطة · {t}", lv: "م {n}", combo: "{n} تتابع", swipe: "اسحب للأعلى للتالي",
+        golden: "★ ذهبية", goldenT: "بطاقة ذهبية!", goldenS: "اكتشاف نادر", comboT: "تتابع {n}!", comboS: "أنت في أفضل حالاتك",
+        mileT: "{n} نقطة، ما شاء الله", mileS: "ثبات جميل", lvT: "المستوى {n}: {t}", badgeT: "وسام: {t}", growT: "رفيقك يكبر!",
+        kDhikr: "ذِكْر · DHIKR", kDua: "دُعَاء · DUA", kQuran: "قُرْآن · QURAN", kSalawat: "صَلَوَات · SALAWAT",
+        srcLight: "خفيفتان على اللسان ثقيلتان في الميزان", srcTreasure: "كنز من كنوز الجنة", srcYunus: "دعاء يونس",
+        complete: "انتهت الجلسة", start: "تصفّح البطاقات لتبدأ نتيجتك", ptsSession: "نقطة في هذه الجلسة",
+        grew: "رفيقك كبر!", lvUp: "ارتقيت مستوى!", lvLine: "المستوى {n} · {t}", allPts: "إجمالي النقاط", bestCombo: "أفضل تتابع", time: "الوقت",
+        goldenTile: "ذهبية", streak: "أيام متتالية", types: "أذكار مختلفة", newBadges: "أوسمة جديدة", perDhikr: "النقاط لكل ذكر",
+        nothing: "لا شيء بعد. انتقل إلى البطاقة التالية وسيظهر هنا.", allTime: "الإجمالي", pointsWord: "نقطة",
+        sessLine: "{s} جلسة · أفضل تتابع {d} يوم", copy: "نسخ", copied: "تم النسخ", copyFail: "تعذّر النسخ", again: "تابع التصفح", reset: "إعادة تعيين",
+        copyText: "حصلت على {n} نقطة وأنا أتصفح الأذكار في تطبيق حسنات سكرول. سُبْحَانَ ٱللَّٰهِ",
+        disclaimer: "نتيجتك هي عدد الأذكار التي تصفحتها فقط. والأجر الحقيقي (الحسنات) عند الله وحده.",
+        progress: "تقدّمك", levelCap: "المستوى · {t}", toNext: "{n} نقطة للمستوى {l}", journey: "رحلة الرفيق",
+        reach: "ارتقِ بالمستوى واكسب الأوسمة لتصل إلى «{n}»", fullAngel: "رفيقك أصبح ملاكًا كاملًا. ما شاء الله!",
+        pointsTile: "النقاط", levelTile: "المستوى", sessions: "الجلسات", bestSession: "أفضل جلسة", badgesH: "الأوسمة · {a}/{b}",
+        mostScrolled: "الأكثر مرورًا", sounds: "الأصوات", swapBoy: "التبديل إلى رفيق الولد", swapGirl: "التبديل إلى رفيقة البنت",
+        back: "العودة للتصفح", saved: "يُحفظ تقدّمك في هذا المتصفح على هذا الجهاز.",
+      },
+      levels: ["بذرة", "برعم", "شتلة", "شجرة فتية", "نخلة", "بستان صغير", "حديقة", "بستان", "واحة", "روضة", "فردوس"],
+      stages: [["مؤمن صغير", "بسم الله، لنبدأ!"], ["قلب متوهج", "أشعر بدفء جميل!"], ["براعم أجنحة", "شيء ينبت على ظهري!"], ["أجنحة صغيرة", "صار لي أجنحة صغيرة!"], ["ملاك صاعد", "أجنحتي تكبر، ومعها هالة!"], ["ملاك الذكر", "انظر إليّ، ملاك كامل!"]],
+      lines: ["ما شاء الله! أحسنت!", "واصل، أنت رائع!", "بسم الله، إلى الأمام!", "أحب الأعمال إلى الله أدومها وإن قلّ. (البخاري 6464)"],
+      badges: [["أول نور", "احصل على أول نقطة"], ["تسبيح", "33 نقطة في جلسة واحدة"], ["مئة", "100 نقطة في جلسة واحدة"], ["ماراثون", "500 نقطة في جلسة واحدة"], ["مشتعل", "بلوغ تتابع 25"], ["لا يُوقَف", "بلوغ تتابع 50"], ["اكتشاف ذهبي", "اكتشف بطاقة ذهبية"], ["صائد الكنوز", "اكتشف 10 بطاقات ذهبية"], ["مواظب", "3 أيام متتالية"], ["ثابت", "7 أيام متتالية"], ["مداوم", "30 يومًا متتاليًا"], ["ألف", "1,000 نقطة في المجموع"], ["عشرة آلاف", "10,000 نقطة في المجموع"], ["نخلة", "بلوغ المستوى 5"], ["روضة", "بلوغ المستوى 10"], ["أول أجنحة", "رفيقك ينبت له أجنحة"], ["هالة", "رفيقك يصبح ملاكًا"]],
+      dhikr: ["تنزيه الله عن كل نقص وعيب", "الثناء على الله شكرًا وتعظيمًا", "الله أعظم من كل شيء", "أطلب من الله المغفرة", "لا معبود بحق إلا الله", "أنزّه الله وأحمده", "أنزّه الله العظيم عن كل نقص", "لا تحوّل من حال إلى حال ولا قوة إلا بعون الله", "أطلب مغفرة الله وأرجع إليه تائبًا", "اللهم أثنِ على محمد ﷺ وارفع ذكره", "أبدأ باسم الله الرحمن الرحيم", "الله كافينا ونعم المتوكَّل عليه", "ربنا أعطنا خير الدنيا وخير الآخرة واحفظنا من عذاب النار", "يا ربّ زدني علمًا", "لا معبود بحق إلا أنت، تنزيهًا لك، إني كنت من الظالمين", "اللهم إنك كثير العفو تحب العفو فاعفُ عني", "يا حيّ يا قيّوم، برحمتك أطلب الغوث", "اذكروني بطاعتي أذكركم بمغفرتي", "بذكر الله تسكن القلوب وتطمئن", "مع الشدة فرج وتيسير"],
+    },
+    fr: {
+      ui: {
+        pickTitle: "Qui fait défiler aujourd'hui ?", pickText: "Choisis ton compagnon. Il commence tout simple, puis gagne des ailes et une auréole à mesure que tu parcours des dhikr et gagnes des badges.",
+        boy: "Garçon", girl: "Fille", pickHint: "Tu peux changer à tout moment depuis l'écran de progression.", language: "Langue",
+        done: "Terminer", pointsSub: "points · {t}", lv: "Niv {n}", combo: "combo {n}", swipe: "Glisse vers le haut pour la suite",
+        golden: "★ DORÉE", goldenT: "Carte dorée !", goldenS: "Une trouvaille rare", comboT: "Combo {n} !", comboS: "Tu es lancé",
+        mileT: "{n} points, ما شاء الله", mileS: "Belle régularité", lvT: "Niveau {n} : {t}", badgeT: "Badge : {t}", growT: "Ton compagnon grandit !",
+        kDhikr: "DHIKR · ذِكْر", kDua: "DOUA · دُعَاء", kQuran: "CORAN · قُرْآن", kSalawat: "SALAWAT · صَلَوَات",
+        srcLight: "Légères sur la langue, lourdes dans la balance", srcTreasure: "Un trésor du Paradis", srcYunus: "Invocation de Yunus",
+        complete: "Session terminée", start: "Fais défiler les cartes pour lancer ton score", ptsSession: "points cette session",
+        grew: "Ton compagnon a grandi !", lvUp: "Niveau supérieur !", lvLine: "Niveau {n} · {t}", allPts: "Points au total", bestCombo: "Meilleur combo", time: "Durée",
+        goldenTile: "Dorées", streak: "Jours d'affilée", types: "Dhikr différents", newBadges: "Nouveaux badges", perDhikr: "Points par dhikr",
+        nothing: "Rien pour l'instant. Passe à la carte suivante et elle apparaîtra ici.", allTime: "Au total", pointsWord: "points",
+        sessLine: "{s} sessions · meilleure série {d} jours", copy: "Copier", copied: "Copié", copyFail: "Échec de la copie", again: "Continuer", reset: "Réinitialiser",
+        copyText: "J'ai marqué {n} points en faisant défiler des dhikr sur Hasanat Scroll. سُبْحَانَ ٱللَّٰهِ",
+        disclaimer: "Ton score est simplement le nombre de dhikr parcourus. La vraie récompense (حسنات) appartient à Allah seul.",
+        progress: "Ta progression", levelCap: "Niveau · {t}", toNext: "{n} points avant le niveau {l}", journey: "Parcours du compagnon",
+        reach: "Monte de niveau et gagne des badges pour atteindre « {n} »", fullAngel: "Ton compagnon est un ange complet. ما شاء الله !",
+        pointsTile: "Points", levelTile: "Niveau", sessions: "Sessions", bestSession: "Meilleure session", badgesH: "Badges · {a}/{b}",
+        mostScrolled: "Les plus parcourus", sounds: "Sons", swapBoy: "Passer au compagnon garçon", swapGirl: "Passer à la compagne fille",
+        back: "Retour au défilement", saved: "Ta progression est enregistrée dans ce navigateur, sur cet appareil.",
+      },
+      levels: ["Graine", "Pousse", "Jeune plant", "Jeune arbre", "Palmier", "Bosquet", "Jardin", "Verger", "Oasis", "Rawdah", "Firdaws"],
+      stages: [["Petit croyant", "Bismillah, commençons !"], ["Cœur lumineux", "Je sens une douce lueur !"], ["Bourgeons d'ailes", "Quelque chose pousse dans mon dos !"], ["Jeunes ailes", "J'ai de petites ailes !"], ["Ange en devenir", "Mes ailes grandissent, et j'ai une auréole !"], ["Ange du dhikr", "Regarde, un vrai ange !"]],
+      lines: ["ما شاء الله ! Tu as réussi !", "Continue, tu t'en sors très bien !", "Bismillah, en avant !", "Les actes préférés d'Allah sont les plus réguliers, même petits. (Bukhari 6464)"],
+      badges: [["Première lueur", "Marque ton premier point"], ["Tasbih", "33 points en une session"], ["Centaine", "100 points en une session"], ["Marathon", "500 points en une session"], ["En feu", "Atteins un combo de 25"], ["Inarrêtable", "Atteins un combo de 50"], ["Trouvaille dorée", "Découvre une carte dorée"], ["Chasseur de trésors", "Découvre 10 cartes dorées"], ["Régulier", "3 jours d'affilée"], ["Constant", "7 jours d'affilée"], ["Dévoué", "30 jours d'affilée"], ["Mille", "1 000 points au total"], ["Dix mille", "10 000 points au total"], ["Palmier", "Atteins le niveau 5"], ["Rawdah", "Atteins le niveau 10"], ["Premières ailes", "Ton compagnon a des ailes"], ["Auréole", "Ton compagnon devient un ange"]],
+      dhikr: ["Gloire à Allah", "Louange à Allah", "Allah est le plus grand", "Je demande pardon à Allah", "Il n'y a de divinité qu'Allah", "Gloire et louange à Allah", "Gloire à Allah, l'Immense", "Il n'y a de puissance ni de force qu'en Allah", "Je demande pardon à Allah et me repens à Lui", "Ô Allah, accorde Tes bénédictions à Muhammad ﷺ", "Au nom d'Allah, le Tout Miséricordieux, le Très Miséricordieux", "Allah nous suffit, Il est notre meilleur garant", "Seigneur, accorde-nous ici-bas un bien et dans l'au-delà un bien, et protège-nous du châtiment du Feu", "Mon Seigneur, accrois mes connaissances", "Pas de divinité à part Toi ! Gloire à Toi ! J'étais du nombre des injustes", "Ô Allah, Tu es Pardonneur et Tu aimes le pardon, alors pardonne-moi", "Ô Vivant, ô Subsistant, par Ta miséricorde je cherche secours", "Souvenez-vous de Moi, Je me souviendrai de vous", "N'est-ce point par le rappel d'Allah que les cœurs se tranquillisent ?", "Avec la difficulté vient la facilité"],
+    },
+    es: {
+      ui: {
+        pickTitle: "¿Quién desliza hoy?", pickText: "Elige a tu compañero. Empieza normal y le salen alas y un halo a medida que recorres más dhikr y ganas insignias.",
+        boy: "Chico", girl: "Chica", pickHint: "Puedes cambiarlo cuando quieras desde la pantalla de progreso.", language: "Idioma",
+        done: "Terminar", pointsSub: "puntos · {t}", lv: "Niv {n}", combo: "combo {n}", swipe: "Desliza hacia arriba para la siguiente",
+        golden: "★ DORADA", goldenT: "¡Tarjeta dorada!", goldenS: "Un hallazgo raro", comboT: "¡Combo {n}!", comboS: "Vas con todo",
+        mileT: "{n} puntos, ما شاء الله", mileS: "Qué constancia", lvT: "Nivel {n}: {t}", badgeT: "Insignia: {t}", growT: "¡Tu compañero está creciendo!",
+        kDhikr: "DHIKR · ذِكْر", kDua: "DUA · دُعَاء", kQuran: "CORÁN · قُرْآن", kSalawat: "SALAWAT · صَلَوَات",
+        srcLight: "Ligeras en la lengua, pesadas en la balanza", srcTreasure: "Un tesoro del Paraíso", srcYunus: "Súplica de Yunus",
+        complete: "Sesión terminada", start: "Recorre las tarjetas para empezar tu puntuación", ptsSession: "puntos en esta sesión",
+        grew: "¡Tu compañero ha crecido!", lvUp: "¡Subes de nivel!", lvLine: "Nivel {n} · {t}", allPts: "Puntos totales", bestCombo: "Mejor combo", time: "Tiempo",
+        goldenTile: "Doradas", streak: "Días seguidos", types: "Dhikr distintos", newBadges: "Insignias nuevas", perDhikr: "Puntos por dhikr",
+        nothing: "Aún nada. Pasa a la siguiente tarjeta y aparecerá aquí.", allTime: "Total", pointsWord: "puntos",
+        sessLine: "{s} sesiones · mejor racha {d} días", copy: "Copiar", copied: "Copiado", copyFail: "No se pudo copiar", again: "Seguir", reset: "Reiniciar",
+        copyText: "Conseguí {n} puntos recorriendo dhikr en Hasanat Scroll. سُبْحَانَ ٱللَّٰهِ",
+        disclaimer: "Tu puntuación es solo el número de dhikr que has recorrido. La verdadera recompensa (حسنات) está solo con Allah.",
+        progress: "Tu progreso", levelCap: "Nivel · {t}", toNext: "{n} puntos para el nivel {l}", journey: "Viaje del compañero",
+        reach: "Sube de nivel y gana insignias para llegar a «{n}»", fullAngel: "Tu compañero es un ángel completo. ¡ما شاء الله!",
+        pointsTile: "Puntos", levelTile: "Nivel", sessions: "Sesiones", bestSession: "Mejor sesión", badgesH: "Insignias · {a}/{b}",
+        mostScrolled: "Más recorridos", sounds: "Sonidos", swapBoy: "Cambiar al compañero chico", swapGirl: "Cambiar a la compañera chica",
+        back: "Volver a deslizar", saved: "Tu progreso se guarda en este navegador, en este dispositivo.",
+      },
+      levels: ["Semilla", "Brote", "Arbolito", "Árbol joven", "Palmera", "Arboleda", "Jardín", "Huerto", "Oasis", "Rawdah", "Firdaws"],
+      stages: [["Pequeño creyente", "¡Bismillah, empecemos!"], ["Corazón brillante", "¡Siento un cálido resplandor!"], ["Brotes de alas", "¡Algo me crece en la espalda!"], ["Alas jóvenes", "¡Ya tengo alitas!"], ["Ángel en ascenso", "¡Mis alas crecen y tengo un halo!"], ["Ángel del dhikr", "¡Mírame, un ángel completo!"]],
+      lines: ["¡ما شاء الله! ¡Lo lograste!", "¡Sigue, lo estás haciendo genial!", "¡Bismillah, adelante!", "Las obras más amadas por Allah son las constantes, aunque sean pequeñas. (Bujari 6464)"],
+      badges: [["Primera luz", "Consigue tu primer punto"], ["Tasbih", "33 puntos en una sesión"], ["Centenar", "100 puntos en una sesión"], ["Maratón", "500 puntos en una sesión"], ["En llamas", "Alcanza un combo de 25"], ["Imparable", "Alcanza un combo de 50"], ["Hallazgo dorado", "Descubre una tarjeta dorada"], ["Cazatesoros", "Descubre 10 tarjetas doradas"], ["Constante", "3 días seguidos"], ["Firme", "7 días seguidos"], ["Devoto", "30 días seguidos"], ["Mil", "1.000 puntos en total"], ["Diez mil", "10.000 puntos en total"], ["Palmera", "Alcanza el nivel 5"], ["Rawdah", "Alcanza el nivel 10"], ["Primeras alas", "A tu compañero le salen alas"], ["Halo", "Tu compañero se vuelve un ángel"]],
+      dhikr: ["Gloria a Allah", "Alabado sea Allah", "Allah es el más grande", "Pido perdón a Allah", "No hay más dios que Allah", "Gloria y alabanza a Allah", "Gloria a Allah, el Inmenso", "No hay poder ni fuerza sino en Allah", "Pido perdón a Allah y me arrepiento ante Él", "Oh Allah, bendice a Muhammad ﷺ", "En el nombre de Allah, el Compasivo, el Misericordioso", "Allah nos basta, y qué excelente protector", "Señor nuestro, danos un bien en esta vida y un bien en la otra, y protégenos del castigo del Fuego", "Señor mío, aumenta mi conocimiento", "No hay más dios que Tú, glorificado seas; fui de los injustos", "Oh Allah, Tú eres Indulgente y amas el perdón, así que perdóname", "Oh Viviente, oh Sustentador, en Tu misericordia busco auxilio", "Recordadme y Yo os recordaré", "¿Acaso no es con el recuerdo de Allah que los corazones se tranquilizan?", "Ciertamente, con la dificultad viene la facilidad"],
+    },
+    tr: {
+      ui: {
+        pickTitle: "Bugün kim kaydırıyor?", pickText: "Arkadaşını seç. Sade başlar; daha çok zikir kaydırdıkça ve rozet kazandıkça kanatları ve halesi çıkar.",
+        boy: "Erkek", girl: "Kız", pickHint: "İlerleme ekranından istediğin zaman değiştirebilirsin.", language: "Dil",
+        done: "Bitir", pointsSub: "puan · {t}", lv: "Sv {n}", combo: "{n} kombo", swipe: "Sonraki için yukarı kaydır",
+        golden: "★ ALTIN", goldenT: "Altın kart!", goldenS: "Nadir bir buluntu", comboT: "{n} kombo!", comboS: "Harika gidiyorsun",
+        mileT: "{n} puan, ما شاء الله", mileS: "Güzel bir istikrar", lvT: "Seviye {n}: {t}", badgeT: "Rozet: {t}", growT: "Arkadaşın büyüyor!",
+        kDhikr: "ZİKİR · ذِكْر", kDua: "DUA · دُعَاء", kQuran: "KUR'AN · قُرْآن", kSalawat: "SALAVAT · صَلَوَات",
+        srcLight: "Dile hafif, mizanda ağır", srcTreasure: "Cennet hazinelerinden bir hazine", srcYunus: "Yunus'un duası",
+        complete: "Oturum tamamlandı", start: "Puanını başlatmak için kartları kaydır", ptsSession: "bu oturumda puan",
+        grew: "Arkadaşın büyüdü!", lvUp: "Seviye atladın!", lvLine: "Seviye {n} · {t}", allPts: "Toplam puan", bestCombo: "En iyi kombo", time: "Süre",
+        goldenTile: "Altın", streak: "Gün serisi", types: "Farklı zikir", newBadges: "Yeni rozetler", perDhikr: "Zikir başına puan",
+        nothing: "Henüz yok. Sonraki karta geç, burada görünecek.", allTime: "Tüm zamanlar", pointsWord: "puan",
+        sessLine: "{s} oturum · en iyi seri {d} gün", copy: "Kopyala", copied: "Kopyalandı", copyFail: "Kopyalanamadı", again: "Kaydırmaya devam", reset: "Sıfırla",
+        copyText: "Hasanat Scroll'da zikirleri kaydırarak {n} puan topladım. سُبْحَانَ ٱللَّٰهِ",
+        disclaimer: "Puanın yalnızca kaydırdığın zikir sayısıdır. Asıl karşılık (حسنات) yalnızca Allah'ın katındadır.",
+        progress: "İlerlemen", levelCap: "Seviye · {t}", toNext: "{l}. seviyeye {n} puan", journey: "Arkadaşın yolculuğu",
+        reach: "“{n}” aşamasına ulaşmak için seviye atla ve rozet kazan", fullAngel: "Arkadaşın tam bir melek oldu. ما شاء الله!",
+        pointsTile: "Puan", levelTile: "Seviye", sessions: "Oturum", bestSession: "En iyi oturum", badgesH: "Rozetler · {a}/{b}",
+        mostScrolled: "En çok kaydırılan", sounds: "Sesler", swapBoy: "Erkek arkadaşa geç", swapGirl: "Kız arkadaşa geç",
+        back: "Kaydırmaya dön", saved: "İlerlemen bu cihazdaki bu tarayıcıda saklanır.",
+      },
+      levels: ["Tohum", "Filiz", "Fidan", "Genç Ağaç", "Hurma", "Koru", "Bahçe", "Meyve Bahçesi", "Vaha", "Ravza", "Firdevs"],
+      stages: [["Küçük mümin", "Bismillah, başlayalım!"], ["Parlayan kalp", "Sıcacık bir ışıltı hissediyorum!"], ["Kanat tomurcukları", "Sırtımda bir şey filizleniyor!"], ["Genç kanatlar", "Artık küçük kanatlarım var!"], ["Yükselen melek", "Kanatlarım büyüyor, bir de halem var!"], ["Zikir meleği", "Bana bak, tam bir melek!"]],
+      lines: ["ما شاء الله! Başardın!", "Devam et, harika gidiyorsun!", "Bismillah, ileri!", "Allah'a en sevimli ameller, az da olsa devamlı olanlardır. (Buhari 6464)"],
+      badges: [["İlk Işık", "İlk puanını kazan"], ["Tesbih", "Tek oturumda 33 puan"], ["Yüzlük", "Tek oturumda 100 puan"], ["Maraton", "Tek oturumda 500 puan"], ["Alev Alev", "25 komboya ulaş"], ["Durdurulamaz", "50 komboya ulaş"], ["Altın Buluntu", "Bir altın kart keşfet"], ["Hazine Avcısı", "10 altın kart keşfet"], ["İstikrarlı", "3 gün serisi"], ["Sebatkâr", "7 gün serisi"], ["Bağlı", "30 gün serisi"], ["Bin", "Toplam 1.000 puan"], ["On Bin", "Toplam 10.000 puan"], ["Hurma", "5. seviyeye ulaş"], ["Ravza", "10. seviyeye ulaş"], ["İlk Kanatlar", "Arkadaşının kanatları çıkar"], ["Hale", "Arkadaşın melek olur"]],
+      dhikr: ["Allah'ı tüm eksikliklerden tenzih ederim", "Hamd Allah'a mahsustur", "Allah en büyüktür", "Allah'tan bağışlanma dilerim", "Allah'tan başka ilah yoktur", "Allah'ı tenzih eder, O'na hamd ederim", "Yüce Allah'ı tenzih ederim", "Güç ve kuvvet ancak Allah'tandır", "Allah'tan bağışlanma diler, O'na tövbe ederim", "Allah'ım, Muhammed'e salât eyle ﷺ", "Rahman ve Rahim olan Allah'ın adıyla", "Allah bize yeter, O ne güzel vekildir", "Rabbimiz, bize dünyada da iyilik ver, ahirette de iyilik ver ve bizi ateş azabından koru", "Rabbim, ilmimi artır", "Senden başka ilah yoktur, seni tenzih ederim; ben zalimlerden oldum", "Allah'ım, sen affedicisin, affı seversin; beni de affet", "Ey Hayy, ey Kayyum, rahmetinle yardım dilerim", "Beni anın ki ben de sizi anayım", "Bilin ki kalpler ancak Allah'ı anmakla huzur bulur", "Şüphesiz zorluğun yanında bir kolaylık vardır"],
+    },
+    ur: {
+      ui: {
+        pickTitle: "آج کون اسکرول کر رہا ہے؟", pickText: "اپنا ساتھی چنیں۔ یہ سادہ شروع ہوتا ہے، پھر جیسے جیسے آپ مزید اذکار دیکھتے اور بیج جیتتے ہیں اس کے پر اور ہالہ نکل آتے ہیں۔",
+        boy: "لڑکا", girl: "لڑکی", pickHint: "آپ کسی بھی وقت پیش رفت کی اسکرین سے بدل سکتے ہیں۔", language: "زبان",
+        done: "ختم", pointsSub: "پوائنٹس · {t}", lv: "لیول {n}", combo: "{n} کومبو", swipe: "اگلے کے لیے اوپر سوائپ کریں",
+        golden: "★ سنہری", goldenT: "سنہری کارڈ!", goldenS: "ایک نایاب دریافت", comboT: "{n} کومبو!", comboS: "آپ خوب چل رہے ہیں",
+        mileT: "{n} پوائنٹس، ما شاء الله", mileS: "خوبصورت مستقل مزاجی", lvT: "لیول {n}: {t}", badgeT: "بیج: {t}", growT: "آپ کا ساتھی بڑھ رہا ہے!",
+        kDhikr: "ذِکْر · DHIKR", kDua: "دُعَا · DUA", kQuran: "قُرْآن · QURAN", kSalawat: "دُرُود · SALAWAT",
+        srcLight: "زبان پر ہلکے، میزان میں بھاری", srcTreasure: "جنت کے خزانوں میں سے ایک خزانہ", srcYunus: "یونس علیہ السلام کی دعا",
+        complete: "سیشن مکمل", start: "اپنا اسکور شروع کرنے کے لیے کارڈز اسکرول کریں", ptsSession: "اس سیشن کے پوائنٹس",
+        grew: "آپ کا ساتھی بڑا ہو گیا!", lvUp: "لیول بڑھ گیا!", lvLine: "لیول {n} · {t}", allPts: "کل پوائنٹس", bestCombo: "بہترین کومبو", time: "وقت",
+        goldenTile: "سنہری", streak: "مسلسل دن", types: "مختلف اذکار", newBadges: "نئے بیج", perDhikr: "ہر ذکر کے پوائنٹس",
+        nothing: "ابھی کچھ نہیں۔ اگلے کارڈ پر جائیں، یہاں نظر آئے گا۔", allTime: "کل", pointsWord: "پوائنٹس",
+        sessLine: "{s} سیشن · بہترین سلسلہ {d} دن", copy: "کاپی", copied: "کاپی ہو گیا", copyFail: "کاپی نہ ہو سکا", again: "اسکرول جاری رکھیں", reset: "ری سیٹ",
+        copyText: "میں نے حسنات اسکرول پر اذکار اسکرول کر کے {n} پوائنٹس حاصل کیے۔ سُبْحَانَ ٱللَّٰهِ",
+        disclaimer: "آپ کا اسکور صرف اسکرول کیے گئے اذکار کی تعداد ہے۔ اصل اجر (حسنات) صرف اللہ کے پاس ہے۔",
+        progress: "آپ کی پیش رفت", levelCap: "لیول · {t}", toNext: "لیول {l} تک {n} پوائنٹس", journey: "ساتھی کا سفر",
+        reach: "“{n}” تک پہنچنے کے لیے لیول بڑھائیں اور بیج جیتیں", fullAngel: "آپ کا ساتھی مکمل فرشتہ بن گیا۔ ما شاء الله!",
+        pointsTile: "پوائنٹس", levelTile: "لیول", sessions: "سیشن", bestSession: "بہترین سیشن", badgesH: "بیج · {a}/{b}",
+        mostScrolled: "سب سے زیادہ", sounds: "آوازیں", swapBoy: "لڑکے والے ساتھی پر جائیں", swapGirl: "لڑکی والی ساتھی پر جائیں",
+        back: "اسکرول پر واپس", saved: "آپ کی پیش رفت اسی ڈیوائس کے اسی براؤزر میں محفوظ ہے۔",
+      },
+      levels: ["بیج", "کونپل", "پودا", "جوان درخت", "کھجور", "باغیچہ", "باغ", "پھلوں کا باغ", "نخلستان", "روضہ", "فردوس"],
+      stages: [["ننھا مومن", "بسم اللہ، شروع کرتے ہیں!"], ["روشن دل", "مجھے ایک گرمائش محسوس ہو رہی ہے!"], ["پروں کی کونپلیں", "میری پیٹھ پر کچھ اگ رہا ہے!"], ["نئے پر", "اب میرے چھوٹے پر ہیں!"], ["ابھرتا فرشتہ", "میرے پر بڑے ہو رہے ہیں اور ہالہ بھی!"], ["ذکر کا فرشتہ", "مجھے دیکھو، پورا فرشتہ!"]],
+      lines: ["ما شاء الله! آپ نے کر دکھایا!", "جاری رکھیں، آپ بہت اچھا کر رہے ہیں!", "بسم اللہ، آگے بڑھیں!", "اللہ کو سب سے پسندیدہ وہ عمل ہے جو ہمیشہ کیا جائے، چاہے تھوڑا ہو۔ (بخاری 6464)"],
+      badges: [["پہلی روشنی", "اپنا پہلا پوائنٹ حاصل کریں"], ["تسبیح", "ایک سیشن میں 33 پوائنٹس"], ["سینچری", "ایک سیشن میں 100 پوائنٹس"], ["میراتھن", "ایک سیشن میں 500 پوائنٹس"], ["شعلہ", "25 کومبو تک پہنچیں"], ["ناقابلِ روک", "50 کومبو تک پہنچیں"], ["سنہری دریافت", "ایک سنہری کارڈ دریافت کریں"], ["خزانہ شکار", "10 سنہری کارڈ دریافت کریں"], ["مستقل", "3 دن کا سلسلہ"], ["ثابت قدم", "7 دن کا سلسلہ"], ["وفادار", "30 دن کا سلسلہ"], ["ہزار", "کل 1,000 پوائنٹس"], ["دس ہزار", "کل 10,000 پوائنٹس"], ["کھجور", "لیول 5 تک پہنچیں"], ["روضہ", "لیول 10 تک پہنچیں"], ["پہلے پر", "آپ کے ساتھی کے پر نکل آئیں"], ["ہالہ", "آپ کا ساتھی فرشتہ بن جائے"]],
+      dhikr: ["اللہ پاک ہے", "تمام تعریفیں اللہ کے لیے ہیں", "اللہ سب سے بڑا ہے", "میں اللہ سے معافی مانگتا ہوں", "اللہ کے سوا کوئی معبود نہیں", "اللہ پاک ہے اور اسی کی تعریف ہے", "عظمت والا اللہ پاک ہے", "گناہ سے بچنے کی طاقت اور نیکی کی قوت اللہ ہی کی طرف سے ہے", "میں اللہ سے معافی مانگتا ہوں اور اسی کی طرف توبہ کرتا ہوں", "اے اللہ! محمد ﷺ پر رحمت نازل فرما", "اللہ کے نام سے جو بڑا مہربان، نہایت رحم والا ہے", "ہمیں اللہ کافی ہے اور وہ بہترین کارساز ہے", "اے ہمارے رب! ہمیں دنیا میں بھلائی دے اور آخرت میں بھی بھلائی دے اور ہمیں آگ کے عذاب سے بچا", "اے میرے رب! میرے علم میں اضافہ فرما", "تیرے سوا کوئی معبود نہیں، تو پاک ہے، بے شک میں ظالموں میں سے تھا", "اے اللہ! تو معاف کرنے والا ہے اور معافی کو پسند کرتا ہے، پس مجھے معاف فرما", "اے زندہ! اے قائم رکھنے والے! تیری رحمت کے وسیلے سے میں مدد مانگتا ہوں", "تم مجھے یاد کرو، میں تمہیں یاد رکھوں گا", "سن لو! اللہ کے ذکر سے ہی دلوں کو اطمینان ملتا ہے", "بے شک مشکل کے ساتھ آسانی ہے"],
+    },
+    id: {
+      ui: {
+        pickTitle: "Siapa yang menggulir hari ini?", pickText: "Pilih temanmu. Awalnya biasa saja, lalu tumbuh sayap dan lingkaran cahaya saat kamu menggulir lebih banyak dzikir dan meraih lencana.",
+        boy: "Laki-laki", girl: "Perempuan", pickHint: "Kamu bisa menggantinya kapan saja dari layar kemajuan.", language: "Bahasa",
+        done: "Selesai", pointsSub: "poin · {t}", lv: "Lv {n}", combo: "kombo {n}", swipe: "Geser ke atas untuk berikutnya",
+        golden: "★ EMAS", goldenT: "Kartu emas!", goldenS: "Temuan langka", comboT: "Kombo {n}!", comboS: "Kamu lagi semangat",
+        mileT: "{n} poin, ما شاء الله", mileS: "Konsistensi yang indah", lvT: "Level {n}: {t}", badgeT: "Lencana: {t}", growT: "Temanmu sedang tumbuh!",
+        kDhikr: "DZIKIR · ذِكْر", kDua: "DOA · دُعَاء", kQuran: "QURAN · قُرْآن", kSalawat: "SHALAWAT · صَلَوَات",
+        srcLight: "Ringan di lisan, berat di timbangan", srcTreasure: "Salah satu simpanan surga", srcYunus: "Doa Nabi Yunus",
+        complete: "Sesi selesai", start: "Gulir kartu untuk memulai skormu", ptsSession: "poin sesi ini",
+        grew: "Temanmu bertumbuh!", lvUp: "Naik level!", lvLine: "Level {n} · {t}", allPts: "Total poin", bestCombo: "Kombo terbaik", time: "Waktu",
+        goldenTile: "Emas", streak: "Hari beruntun", types: "Dzikir berbeda", newBadges: "Lencana baru", perDhikr: "Poin per dzikir",
+        nothing: "Belum ada. Gulir ke kartu berikutnya dan akan muncul di sini.", allTime: "Sepanjang waktu", pointsWord: "poin",
+        sessLine: "{s} sesi · rekor beruntun {d} hari", copy: "Salin", copied: "Tersalin", copyFail: "Gagal menyalin", again: "Lanjut menggulir", reset: "Atur ulang",
+        copyText: "Aku meraih {n} poin menggulir dzikir di Hasanat Scroll. سُبْحَانَ ٱللَّٰهِ",
+        disclaimer: "Skormu hanyalah jumlah dzikir yang kamu gulir. Pahala yang sebenarnya (حسنات) hanya milik Allah.",
+        progress: "Kemajuanmu", levelCap: "Level · {t}", toNext: "{n} poin lagi ke level {l}", journey: "Perjalanan teman",
+        reach: "Naik level dan raih lencana untuk mencapai “{n}”", fullAngel: "Temanmu kini malaikat sepenuhnya. ما شاء الله!",
+        pointsTile: "Poin", levelTile: "Level", sessions: "Sesi", bestSession: "Sesi terbaik", badgesH: "Lencana · {a}/{b}",
+        mostScrolled: "Paling sering", sounds: "Suara", swapBoy: "Ganti ke teman laki-laki", swapGirl: "Ganti ke teman perempuan",
+        back: "Kembali menggulir", saved: "Kemajuanmu tersimpan di peramban ini pada perangkat ini.",
+      },
+      levels: ["Benih", "Tunas", "Bibit", "Pohon Muda", "Kurma", "Rimbun", "Taman", "Kebun", "Oasis", "Raudhah", "Firdaus"],
+      stages: [["Mukmin kecil", "Bismillah, ayo mulai!"], ["Hati bercahaya", "Aku merasa hangat bercahaya!"], ["Tunas sayap", "Ada yang tumbuh di punggungku!"], ["Sayap muda", "Sekarang aku punya sayap kecil!"], ["Malaikat yang naik", "Sayapku makin besar, dan ada lingkaran cahaya!"], ["Malaikat dzikir", "Lihat aku, malaikat sepenuhnya!"]],
+      lines: ["ما شاء الله! Kamu berhasil!", "Terus lanjut, kamu hebat!", "Bismillah, maju!", "Amalan yang paling dicintai Allah adalah yang terus-menerus, meski sedikit. (Bukhari 6464)"],
+      badges: [["Cahaya Pertama", "Raih poin pertamamu"], ["Tasbih", "33 poin dalam satu sesi"], ["Seratus", "100 poin dalam satu sesi"], ["Maraton", "500 poin dalam satu sesi"], ["Membara", "Capai kombo 25"], ["Tak Terhentikan", "Capai kombo 50"], ["Temuan Emas", "Temukan kartu emas"], ["Pemburu Harta", "Temukan 10 kartu emas"], ["Konsisten", "Beruntun 3 hari"], ["Teguh", "Beruntun 7 hari"], ["Setia", "Beruntun 30 hari"], ["Seribu", "Total 1.000 poin"], ["Sepuluh Ribu", "Total 10.000 poin"], ["Kurma", "Capai level 5"], ["Raudhah", "Capai level 10"], ["Sayap Pertama", "Temanmu tumbuh sayap"], ["Lingkaran Cahaya", "Temanmu menjadi malaikat"]],
+      dhikr: ["Mahasuci Allah", "Segala puji bagi Allah", "Allah Mahabesar", "Aku memohon ampun kepada Allah", "Tiada tuhan selain Allah", "Mahasuci Allah dan segala puji bagi-Nya", "Mahasuci Allah Yang Mahaagung", "Tiada daya dan kekuatan kecuali dengan pertolongan Allah", "Aku memohon ampun kepada Allah dan bertobat kepada-Nya", "Ya Allah, limpahkanlah shalawat kepada Muhammad ﷺ", "Dengan nama Allah Yang Maha Pengasih, Maha Penyayang", "Cukuplah Allah bagi kami, dan Dialah sebaik-baik pelindung", "Ya Tuhan kami, berilah kami kebaikan di dunia dan kebaikan di akhirat, dan lindungilah kami dari azab neraka", "Ya Tuhanku, tambahkanlah ilmu kepadaku", "Tiada tuhan selain Engkau, Mahasuci Engkau, sungguh aku termasuk orang-orang yang zalim", "Ya Allah, Engkau Maha Pemaaf dan menyukai maaf, maka maafkanlah aku", "Wahai Yang Mahahidup, wahai Yang Maha Berdiri Sendiri, dengan rahmat-Mu aku memohon pertolongan", "Ingatlah Aku, niscaya Aku ingat kepadamu", "Ingatlah, hanya dengan mengingat Allah hati menjadi tenteram", "Sesungguhnya bersama kesulitan ada kemudahan"],
+    },
+    bn: {
+      ui: {
+        pickTitle: "আজ কে স্ক্রল করছে?", pickText: "তোমার সঙ্গী বেছে নাও। শুরুতে সাধারণ, তারপর যত বেশি যিকির স্ক্রল করবে ও ব্যাজ জিতবে, ততই ডানা আর জ্যোতির্বলয় গজাবে।",
+        boy: "ছেলে", girl: "মেয়ে", pickHint: "অগ্রগতির স্ক্রিন থেকে যেকোনো সময় বদলাতে পারো।", language: "ভাষা",
+        done: "শেষ", pointsSub: "পয়েন্ট · {t}", lv: "লেভেল {n}", combo: "{n} কম্বো", swipe: "পরেরটির জন্য উপরে সোয়াইপ করো",
+        golden: "★ সোনালি", goldenT: "সোনালি কার্ড!", goldenS: "একটি বিরল আবিষ্কার", comboT: "{n} কম্বো!", comboS: "দারুণ চলছে",
+        mileT: "{n} পয়েন্ট, ما شاء الله", mileS: "সুন্দর ধারাবাহিকতা", lvT: "লেভেল {n}: {t}", badgeT: "ব্যাজ: {t}", growT: "তোমার সঙ্গী বড় হচ্ছে!",
+        kDhikr: "যিকির · ذِكْر", kDua: "দোয়া · دُعَاء", kQuran: "কুরআন · قُرْآن", kSalawat: "দরুদ · صَلَوَات",
+        srcLight: "জিহ্বায় হালকা, দাঁড়িপাল্লায় ভারী", srcTreasure: "জান্নাতের এক ভান্ডার", srcYunus: "ইউনুস (আ.)-এর দোয়া",
+        complete: "সেশন শেষ", start: "স্কোর শুরু করতে কার্ডগুলো স্ক্রল করো", ptsSession: "এই সেশনের পয়েন্ট",
+        grew: "তোমার সঙ্গী বড় হয়েছে!", lvUp: "লেভেল আপ!", lvLine: "লেভেল {n} · {t}", allPts: "মোট পয়েন্ট", bestCombo: "সেরা কম্বো", time: "সময়",
+        goldenTile: "সোনালি", streak: "টানা দিন", types: "ভিন্ন যিকির", newBadges: "নতুন ব্যাজ", perDhikr: "প্রতি যিকিরে পয়েন্ট",
+        nothing: "এখনো কিছু নেই। পরের কার্ডে যাও, এখানে দেখা যাবে।", allTime: "সর্বমোট", pointsWord: "পয়েন্ট",
+        sessLine: "{s} সেশন · সেরা ধারা {d} দিন", copy: "কপি", copied: "কপি হয়েছে", copyFail: "কপি করা যায়নি", again: "স্ক্রল চালিয়ে যাও", reset: "রিসেট",
+        copyText: "হাসানাত স্ক্রলে যিকির স্ক্রল করে আমি {n} পয়েন্ট পেয়েছি। سُبْحَانَ ٱللَّٰهِ",
+        disclaimer: "তোমার স্কোর শুধু স্ক্রল করা যিকিরের সংখ্যা। আসল প্রতিদান (হাসানাত) একমাত্র আল্লাহর কাছে।",
+        progress: "তোমার অগ্রগতি", levelCap: "লেভেল · {t}", toNext: "লেভেল {l}-এ যেতে {n} পয়েন্ট", journey: "সঙ্গীর যাত্রা",
+        reach: "“{n}” ধাপে পৌঁছাতে লেভেল বাড়াও ও ব্যাজ জেতো", fullAngel: "তোমার সঙ্গী এখন পূর্ণ ফেরেশতা। ما شاء الله!",
+        pointsTile: "পয়েন্ট", levelTile: "লেভেল", sessions: "সেশন", bestSession: "সেরা সেশন", badgesH: "ব্যাজ · {a}/{b}",
+        mostScrolled: "সবচেয়ে বেশি", sounds: "শব্দ", swapBoy: "ছেলে সঙ্গীতে বদলাও", swapGirl: "মেয়ে সঙ্গীতে বদলাও",
+        back: "স্ক্রলে ফিরে যাও", saved: "তোমার অগ্রগতি এই ডিভাইসের এই ব্রাউজারে সংরক্ষিত।",
+      },
+      levels: ["বীজ", "অঙ্কুর", "চারা", "তরুণ গাছ", "খেজুর গাছ", "কুঞ্জ", "বাগান", "ফলের বাগান", "মরূদ্যান", "রাওজা", "ফিরদাউস"],
+      stages: [["ছোট্ট মুমিন", "বিসমিল্লাহ, শুরু করি!"], ["জ্বলজ্বলে হৃদয়", "আমি একটা উষ্ণ আভা টের পাচ্ছি!"], ["ডানার কুঁড়ি", "আমার পিঠে কিছু গজাচ্ছে!"], ["কচি ডানা", "এখন আমার ছোট্ট ডানা আছে!"], ["উঠতি ফেরেশতা", "আমার ডানা বড় হচ্ছে, সঙ্গে জ্যোতির্বলয়!"], ["যিকিরের ফেরেশতা", "আমাকে দেখো, পূর্ণ ফেরেশতা!"]],
+      lines: ["ما شاء الله! তুমি পেরেছ!", "চালিয়ে যাও, দারুণ করছ!", "বিসমিল্লাহ, এগিয়ে চলো!", "আল্লাহর কাছে সবচেয়ে প্রিয় আমল তা, যা নিয়মিত করা হয়, যদিও কম হয়। (বুখারি ৬৪৬৪)"],
+      badges: [["প্রথম আলো", "তোমার প্রথম পয়েন্ট পাও"], ["তাসবিহ", "এক সেশনে ৩৩ পয়েন্ট"], ["শতক", "এক সেশনে ১০০ পয়েন্ট"], ["ম্যারাথন", "এক সেশনে ৫০০ পয়েন্ট"], ["আগুনে", "২৫ কম্বোতে পৌঁছাও"], ["অপ্রতিরোধ্য", "৫০ কম্বোতে পৌঁছাও"], ["সোনালি আবিষ্কার", "একটি সোনালি কার্ড আবিষ্কার করো"], ["গুপ্তধন শিকারি", "১০টি সোনালি কার্ড আবিষ্কার করো"], ["ধারাবাহিক", "টানা ৩ দিন"], ["অবিচল", "টানা ৭ দিন"], ["নিবেদিত", "টানা ৩০ দিন"], ["হাজার", "মোট ১,০০০ পয়েন্ট"], ["দশ হাজার", "মোট ১০,০০০ পয়েন্ট"], ["খেজুর গাছ", "লেভেল ৫-এ পৌঁছাও"], ["রাওজা", "লেভেল ১০-এ পৌঁছাও"], ["প্রথম ডানা", "তোমার সঙ্গীর ডানা গজায়"], ["জ্যোতির্বলয়", "তোমার সঙ্গী ফেরেশতা হয়"]],
+      dhikr: ["আল্লাহ পবিত্র", "সমস্ত প্রশংসা আল্লাহর", "আল্লাহ সবচেয়ে বড়", "আমি আল্লাহর কাছে ক্ষমা চাই", "আল্লাহ ছাড়া কোনো ইলাহ নেই", "আল্লাহ পবিত্র ও তাঁরই প্রশংসা", "মহান আল্লাহ পবিত্র", "আল্লাহর সাহায্য ছাড়া কোনো শক্তি বা সামর্থ্য নেই", "আমি আল্লাহর কাছে ক্ষমা চাই এবং তাঁর কাছে তওবা করি", "হে আল্লাহ, মুহাম্মদ ﷺ-এর ওপর রহমত বর্ষণ করুন", "পরম করুণাময়, অসীম দয়ালু আল্লাহর নামে", "আল্লাহই আমাদের জন্য যথেষ্ট, তিনি উত্তম কর্মবিধায়ক", "হে আমাদের রব, আমাদের দুনিয়াতে কল্যাণ দিন, আখিরাতেও কল্যাণ দিন এবং আমাদের আগুনের শাস্তি থেকে রক্ষা করুন", "হে আমার রব, আমার জ্ঞান বাড়িয়ে দিন", "আপনি ছাড়া কোনো ইলাহ নেই, আপনি পবিত্র; নিশ্চয়ই আমি জালিমদের অন্তর্ভুক্ত ছিলাম", "হে আল্লাহ, আপনি ক্ষমাশীল, ক্ষমা ভালোবাসেন; তাই আমাকে ক্ষমা করুন", "হে চিরঞ্জীব, হে সবকিছুর ধারক, আপনার রহমতের ওসিলায় আমি সাহায্য চাই", "তোমরা আমাকে স্মরণ করো, আমিও তোমাদের স্মরণ করব", "জেনে রাখো, আল্লাহর স্মরণেই অন্তর প্রশান্ত হয়", "নিশ্চয়ই কষ্টের সাথে স্বস্তি আছে"],
+    },
+    ru: {
+      ui: {
+        pickTitle: "Кто сегодня листает?", pickText: "Выбери своего спутника. Сначала он обычный, а потом у него вырастут крылья и нимб, когда ты пролистаешь больше зикров и получишь значки.",
+        boy: "Мальчик", girl: "Девочка", pickHint: "Можно сменить в любой момент на экране прогресса.", language: "Язык",
+        done: "Готово", pointsSub: "очков · {t}", lv: "Ур. {n}", combo: "комбо {n}", swipe: "Смахни вверх для следующего",
+        golden: "★ ЗОЛОТАЯ", goldenT: "Золотая карточка!", goldenS: "Редкая находка", comboT: "Комбо {n}!", comboS: "Ты в ударе",
+        mileT: "{n} очков, ما شاء الله", mileS: "Прекрасное постоянство", lvT: "Уровень {n}: {t}", badgeT: "Значок: {t}", growT: "Твой спутник растёт!",
+        kDhikr: "ЗИКР · ذِكْر", kDua: "ДУА · دُعَاء", kQuran: "КОРАН · قُرْآن", kSalawat: "САЛАВАТ · صَلَوَات",
+        srcLight: "Лёгкие для языка, тяжёлые на весах", srcTreasure: "Сокровище из Рая", srcYunus: "Мольба Юнуса",
+        complete: "Сессия завершена", start: "Листай карточки, чтобы начать набирать очки", ptsSession: "очков за сессию",
+        grew: "Твой спутник вырос!", lvUp: "Новый уровень!", lvLine: "Уровень {n} · {t}", allPts: "Всего очков", bestCombo: "Лучшее комбо", time: "Время",
+        goldenTile: "Золотые", streak: "Дней подряд", types: "Разных зикров", newBadges: "Новые значки", perDhikr: "Очки за каждый зикр",
+        nothing: "Пока ничего. Перейди к следующей карточке, и она появится здесь.", allTime: "За всё время", pointsWord: "очков",
+        sessLine: "Сессий: {s} · лучшая серия {d} дн.", copy: "Копировать", copied: "Скопировано", copyFail: "Не удалось скопировать", again: "Листать дальше", reset: "Сбросить",
+        copyText: "Я набрал(а) {n} очков, листая зикры в Hasanat Scroll. سُبْحَانَ ٱللَّٰهِ",
+        disclaimer: "Твой счёт — это просто число пролистанных зикров. Настоящая награда (حسنات) только у Аллаха.",
+        progress: "Твой прогресс", levelCap: "Уровень · {t}", toNext: "До уровня {l}: {n} очков", journey: "Путь спутника",
+        reach: "Повышай уровень и получай значки, чтобы дойти до «{n}»", fullAngel: "Твой спутник стал настоящим ангелом. ما شاء الله!",
+        pointsTile: "Очки", levelTile: "Уровень", sessions: "Сессии", bestSession: "Лучшая сессия", badgesH: "Значки · {a}/{b}",
+        mostScrolled: "Чаще всего", sounds: "Звуки", swapBoy: "Сменить на мальчика", swapGirl: "Сменить на девочку",
+        back: "Назад к ленте", saved: "Прогресс сохраняется в этом браузере на этом устройстве.",
+      },
+      levels: ["Семя", "Росток", "Саженец", "Молодое дерево", "Пальма", "Роща", "Сад", "Плодовый сад", "Оазис", "Рауда", "Фирдаус"],
+      stages: [["Маленький верующий", "Бисмиллях, начнём!"], ["Сияющее сердце", "Я чувствую тёплое сияние!"], ["Зачатки крыльев", "У меня на спине что-то растёт!"], ["Юные крылья", "Теперь у меня есть крылышки!"], ["Восходящий ангел", "Мои крылья растут, и появился нимб!"], ["Ангел зикра", "Смотри, я настоящий ангел!"]],
+      lines: ["ما شاء الله! У тебя получилось!", "Продолжай, у тебя отлично выходит!", "Бисмиллях, вперёд!", "Самые любимые Аллахом дела — постоянные, пусть и небольшие. (Бухари 6464)"],
+      badges: [["Первый свет", "Набери первое очко"], ["Тасбих", "33 очка за одну сессию"], ["Сотня", "100 очков за одну сессию"], ["Марафон", "500 очков за одну сессию"], ["В огне", "Достигни комбо 25"], ["Неудержимый", "Достигни комбо 50"], ["Золотая находка", "Найди золотую карточку"], ["Искатель сокровищ", "Найди 10 золотых карточек"], ["Постоянство", "3 дня подряд"], ["Стойкость", "7 дней подряд"], ["Преданность", "30 дней подряд"], ["Тысяча", "1 000 очков всего"], ["Десять тысяч", "10 000 очков всего"], ["Пальма", "Достигни 5 уровня"], ["Рауда", "Достигни 10 уровня"], ["Первые крылья", "У спутника вырастают крылья"], ["Нимб", "Твой спутник становится ангелом"]],
+      dhikr: ["Преславен Аллах", "Хвала Аллаху", "Аллах Велик", "Прошу прощения у Аллаха", "Нет божества, кроме Аллаха", "Преславен Аллах и хвала Ему", "Преславен Аллах Великий", "Нет мощи и силы ни у кого, кроме Аллаха", "Прошу прощения у Аллаха и приношу Ему покаяние", "О Аллах, благослови Мухаммада ﷺ", "Во имя Аллаха, Милостивого, Милосердного", "Нам достаточно Аллаха, и какой же Он прекрасный Покровитель", "Господи наш! Даруй нам добро в этом мире и добро в мире будущем и защити нас от мучений Огня", "Господи, приумножь мои знания", "Нет божества, кроме Тебя! Пречист Ты! Воистину, я был одним из беззаконников", "О Аллах, Ты — Прощающий и любишь прощать, так прости же меня", "О Живой, о Вседержитель, к Твоей милости я взываю о помощи", "Помните Меня, и Я буду помнить вас", "Разве не поминанием Аллаха успокаиваются сердца?", "Воистину, за трудностью следует облегчение"],
+    },
+    de: {
+      ui: {
+        pickTitle: "Wer scrollt heute?", pickText: "Wähle deinen Begleiter. Er startet ganz normal und bekommt Flügel und einen Heiligenschein, je mehr Dhikr du durchscrollst und Abzeichen verdienst.",
+        boy: "Junge", girl: "Mädchen", pickHint: "Du kannst jederzeit im Fortschrittsbildschirm wechseln.", language: "Sprache",
+        done: "Fertig", pointsSub: "Punkte · {t}", lv: "St. {n}", combo: "Combo {n}", swipe: "Nach oben wischen für die nächste",
+        golden: "★ GOLDEN", goldenT: "Goldene Karte!", goldenS: "Ein seltener Fund", comboT: "Combo {n}!", comboS: "Du bist in Fahrt",
+        mileT: "{n} Punkte, ما شاء الله", mileS: "Schöne Beständigkeit", lvT: "Stufe {n}: {t}", badgeT: "Abzeichen: {t}", growT: "Dein Begleiter wächst!",
+        kDhikr: "DHIKR · ذِكْر", kDua: "DUA · دُعَاء", kQuran: "KORAN · قُرْآن", kSalawat: "SALAWAT · صَلَوَات",
+        srcLight: "Leicht auf der Zunge, schwer auf der Waage", srcTreasure: "Ein Schatz des Paradieses", srcYunus: "Bittgebet des Yunus",
+        complete: "Sitzung beendet", start: "Scrolle durch die Karten, um Punkte zu sammeln", ptsSession: "Punkte in dieser Sitzung",
+        grew: "Dein Begleiter ist gewachsen!", lvUp: "Stufe aufgestiegen!", lvLine: "Stufe {n} · {t}", allPts: "Punkte insgesamt", bestCombo: "Beste Combo", time: "Zeit",
+        goldenTile: "Golden", streak: "Tage in Folge", types: "Verschiedene Dhikr", newBadges: "Neue Abzeichen", perDhikr: "Punkte pro Dhikr",
+        nothing: "Noch nichts. Scrolle zur nächsten Karte, dann erscheint sie hier.", allTime: "Insgesamt", pointsWord: "Punkte",
+        sessLine: "{s} Sitzungen · beste Serie {d} Tage", copy: "Kopieren", copied: "Kopiert", copyFail: "Kopieren fehlgeschlagen", again: "Weiterscrollen", reset: "Zurücksetzen",
+        copyText: "Ich habe {n} Punkte beim Durchscrollen von Dhikr in Hasanat Scroll gesammelt. سُبْحَانَ ٱللَّٰهِ",
+        disclaimer: "Dein Punktestand ist nur die Anzahl der durchgescrollten Dhikr. Die wahre Belohnung (حسنات) liegt allein bei Allah.",
+        progress: "Dein Fortschritt", levelCap: "Stufe · {t}", toNext: "{n} Punkte bis Stufe {l}", journey: "Reise des Begleiters",
+        reach: "Steige auf und verdiene Abzeichen, um „{n}“ zu erreichen", fullAngel: "Dein Begleiter ist ein vollständiger Engel. ما شاء الله!",
+        pointsTile: "Punkte", levelTile: "Stufe", sessions: "Sitzungen", bestSession: "Beste Sitzung", badgesH: "Abzeichen · {a}/{b}",
+        mostScrolled: "Am häufigsten", sounds: "Töne", swapBoy: "Zum Jungen-Begleiter wechseln", swapGirl: "Zur Mädchen-Begleiterin wechseln",
+        back: "Zurück zum Scrollen", saved: "Dein Fortschritt wird in diesem Browser auf diesem Gerät gespeichert.",
+      },
+      levels: ["Samen", "Spross", "Setzling", "Junger Baum", "Palme", "Hain", "Garten", "Obstgarten", "Oase", "Rawda", "Firdaus"],
+      stages: [["Kleiner Gläubiger", "Bismillah, lass uns anfangen!"], ["Leuchtendes Herz", "Ich spüre ein warmes Leuchten!"], ["Flügelknospen", "Auf meinem Rücken wächst etwas!"], ["Junge Flügel", "Jetzt habe ich kleine Flügel!"], ["Aufsteigender Engel", "Meine Flügel werden groß, und ein Heiligenschein!"], ["Engel des Dhikr", "Schau mich an, ein ganzer Engel!"]],
+      lines: ["ما شاء الله! Du hast es geschafft!", "Weiter so, du machst das toll!", "Bismillah, auf geht's!", "Die liebsten Taten bei Allah sind die beständigen, auch wenn sie klein sind. (Bukhari 6464)"],
+      badges: [["Erstes Licht", "Sammle deinen ersten Punkt"], ["Tasbih", "33 Punkte in einer Sitzung"], ["Hundert", "100 Punkte in einer Sitzung"], ["Marathon", "500 Punkte in einer Sitzung"], ["In Flammen", "Erreiche eine 25er-Combo"], ["Unaufhaltsam", "Erreiche eine 50er-Combo"], ["Goldfund", "Entdecke eine goldene Karte"], ["Schatzsucher", "Entdecke 10 goldene Karten"], ["Beständig", "3 Tage in Folge"], ["Standhaft", "7 Tage in Folge"], ["Hingebungsvoll", "30 Tage in Folge"], ["Tausend", "1.000 Punkte insgesamt"], ["Zehntausend", "10.000 Punkte insgesamt"], ["Palme", "Erreiche Stufe 5"], ["Rawda", "Erreiche Stufe 10"], ["Erste Flügel", "Dein Begleiter bekommt Flügel"], ["Heiligenschein", "Dein Begleiter wird ein Engel"]],
+      dhikr: ["Gepriesen sei Allah", "Alles Lob gebührt Allah", "Allah ist der Größte", "Ich bitte Allah um Vergebung", "Es gibt keinen Gott außer Allah", "Gepriesen sei Allah und Ihm gebührt das Lob", "Gepriesen sei Allah, der Gewaltige", "Es gibt keine Macht und keine Kraft außer bei Allah", "Ich bitte Allah um Vergebung und kehre reumütig zu Ihm um", "O Allah, sprich Segen über Muhammad ﷺ", "Im Namen Allahs, des Allerbarmers, des Barmherzigen", "Allah genügt uns, und welch ein vortrefflicher Sachwalter", "Unser Herr, gib uns Gutes im Diesseits und Gutes im Jenseits und bewahre uns vor der Strafe des Feuers", "Mein Herr, mehre mein Wissen", "Es gibt keinen Gott außer Dir, gepriesen seist Du! Ich gehörte zu den Ungerechten", "O Allah, Du bist der Vergebende und liebst das Vergeben, so vergib mir", "O Lebendiger, o Beständiger, durch Deine Barmherzigkeit flehe ich um Hilfe", "Gedenkt Meiner, so gedenke Ich eurer", "Wahrlich, im Gedenken Allahs finden die Herzen Ruhe", "Wahrlich, mit der Erschwernis kommt die Erleichterung"],
+    },
+  };
+  // ---------- Strings for the "Lighten the load" counter ----------
+  const DEBT_T = {
+    en: { ui: { debtTitle: "Lighten the load", debtIntro: "Enter a number for the burden you want to lift. Every card you scroll to lowers it a little, until it reaches zero.", debtAmount: "Starting number", debtStep: "Lifted per card", debtStart: "Start", debtLeft: "{n} left", debtLifted: "Lifted this session: {n}", debtDoneT: "Burden lifted!", debtDoneS: "It reached zero. Set a new number any time.", debtDoneChip: "Lifted ✓ · set a new one", debtNew: "Set a new number", debtRemove: "Remove", debtNote: "This is just a motivational counter. Forgiveness comes from Allah alone, through sincere repentance: regret, stopping the sin, and resolving not to return." }, badge: ["Light as a Feather", "Bring a burden down to zero"] },
+    ar: { ui: { debtTitle: "تخفيف الحِمل", debtIntro: "اكتب رقمًا للحِمل الذي تريد إنزاله. كل بطاقة تنتقل إليها تُنقص منه قليلًا حتى يصل إلى الصفر.", debtAmount: "الرقم الابتدائي", debtStep: "المُنقَص لكل بطاقة", debtStart: "ابدأ", debtLeft: "المتبقي {n}", debtLifted: "ما خُفّف في هذه الجلسة: {n}", debtDoneT: "خفّ الحِمل!", debtDoneS: "وصل إلى الصفر. يمكنك وضع رقم جديد في أي وقت.", debtDoneChip: "تم ✓ · ضع رقمًا جديدًا", debtNew: "ضع رقمًا جديدًا", debtRemove: "إزالة", debtNote: "هذا مجرد عدّاد تحفيزي. المغفرة من الله وحده بالتوبة الصادقة: الندم، والإقلاع عن الذنب، والعزم على عدم العودة." }, badge: ["خفيف كالريشة", "أنزل حِملًا إلى الصفر"] },
+    fr: { ui: { debtTitle: "Alléger le fardeau", debtIntro: "Entre un nombre pour le fardeau que tu veux alléger. Chaque carte que tu parcours le réduit un peu, jusqu'à zéro.", debtAmount: "Nombre de départ", debtStep: "Retiré par carte", debtStart: "Commencer", debtLeft: "{n} restant", debtLifted: "Allégé pendant cette session : {n}", debtDoneT: "Fardeau allégé !", debtDoneS: "Il est arrivé à zéro. Tu peux en fixer un nouveau à tout moment.", debtDoneChip: "Allégé ✓ · en fixer un nouveau", debtNew: "Fixer un nouveau nombre", debtRemove: "Retirer", debtNote: "Ce n'est qu'un compteur de motivation. Le pardon vient d'Allah seul, par un repentir sincère : le regret, l'arrêt du péché et la résolution de ne pas y revenir." }, badge: ["Léger comme une plume", "Ramène un fardeau à zéro"] },
+    es: { ui: { debtTitle: "Aligerar la carga", debtIntro: "Escribe un número para la carga que quieres aliviar. Cada tarjeta que recorres lo reduce un poco, hasta llegar a cero.", debtAmount: "Número inicial", debtStep: "Se resta por tarjeta", debtStart: "Empezar", debtLeft: "Quedan {n}", debtLifted: "Aliviado en esta sesión: {n}", debtDoneT: "¡Carga aliviada!", debtDoneS: "Llegó a cero. Puedes fijar un número nuevo cuando quieras.", debtDoneChip: "Aliviada ✓ · fijar una nueva", debtNew: "Fijar un número nuevo", debtRemove: "Quitar", debtNote: "Es solo un contador de motivación. El perdón viene únicamente de Allah, mediante un arrepentimiento sincero: remordimiento, dejar el pecado y proponerse no volver a él." }, badge: ["Ligero como una pluma", "Lleva una carga a cero"] },
+    tr: { ui: { debtTitle: "Yükü hafiflet", debtIntro: "Hafifletmek istediğin yük için bir sayı gir. Kaydırdığın her kart onu biraz azaltır, sıfıra inene kadar.", debtAmount: "Başlangıç sayısı", debtStep: "Kart başına azalan", debtStart: "Başla", debtLeft: "{n} kaldı", debtLifted: "Bu oturumda hafifleyen: {n}", debtDoneT: "Yük hafifledi!", debtDoneS: "Sıfıra indi. İstediğin zaman yeni bir sayı belirleyebilirsin.", debtDoneChip: "Hafifledi ✓ · yenisini belirle", debtNew: "Yeni sayı belirle", debtRemove: "Kaldır", debtNote: "Bu yalnızca motive edici bir sayaçtır. Mağfiret yalnızca Allah'tandır; samimi tövbe ile olur: pişmanlık, günahı bırakmak ve bir daha dönmemeye azmetmek." }, badge: ["Tüy Gibi Hafif", "Bir yükü sıfıra indir"] },
+    ur: { ui: { debtTitle: "بوجھ ہلکا کریں", debtIntro: "جس بوجھ کو ہلکا کرنا چاہتے ہیں اس کے لیے ایک عدد لکھیں۔ آپ جس کارڈ پر جاتے ہیں وہ اسے تھوڑا کم کرتا ہے، یہاں تک کہ صفر ہو جائے۔", debtAmount: "ابتدائی عدد", debtStep: "ہر کارڈ پر کمی", debtStart: "شروع کریں", debtLeft: "{n} باقی", debtLifted: "اس سیشن میں کم ہوا: {n}", debtDoneT: "بوجھ ہلکا ہو گیا!", debtDoneS: "صفر ہو گیا۔ جب چاہیں نیا عدد مقرر کریں۔", debtDoneChip: "مکمل ✓ · نیا مقرر کریں", debtNew: "نیا عدد مقرر کریں", debtRemove: "ہٹائیں", debtNote: "یہ صرف حوصلہ بڑھانے والا کاؤنٹر ہے۔ بخشش صرف اللہ کی طرف سے ہے، سچی توبہ کے ذریعے: ندامت، گناہ چھوڑنا اور دوبارہ نہ کرنے کا عزم۔" }, badge: ["پَر کی طرح ہلکا", "کسی بوجھ کو صفر تک لائیں"] },
+    id: { ui: { debtTitle: "Ringankan beban", debtIntro: "Masukkan angka untuk beban yang ingin kamu ringankan. Setiap kartu yang kamu gulir menguranginya sedikit, sampai mencapai nol.", debtAmount: "Angka awal", debtStep: "Berkurang per kartu", debtStart: "Mulai", debtLeft: "Sisa {n}", debtLifted: "Diringankan sesi ini: {n}", debtDoneT: "Beban teringankan!", debtDoneS: "Sudah mencapai nol. Kamu bisa menetapkan angka baru kapan saja.", debtDoneChip: "Selesai ✓ · tetapkan yang baru", debtNew: "Tetapkan angka baru", debtRemove: "Hapus", debtNote: "Ini hanyalah penghitung penyemangat. Ampunan datang dari Allah semata melalui tobat yang tulus: menyesal, berhenti dari dosa, dan bertekad tidak mengulanginya." }, badge: ["Seringan Bulu", "Turunkan satu beban hingga nol"] },
+    bn: { ui: { debtTitle: "বোঝা হালকা করো", debtIntro: "যে বোঝা হালকা করতে চাও তার জন্য একটি সংখ্যা লেখো। প্রতিটি কার্ড স্ক্রল করলে তা একটু কমবে, শূন্যে পৌঁছানো পর্যন্ত।", debtAmount: "শুরুর সংখ্যা", debtStep: "প্রতি কার্ডে কমবে", debtStart: "শুরু", debtLeft: "{n} বাকি", debtLifted: "এই সেশনে কমেছে: {n}", debtDoneT: "বোঝা হালকা হলো!", debtDoneS: "শূন্যে পৌঁছেছে। যেকোনো সময় নতুন সংখ্যা দিতে পারো।", debtDoneChip: "শেষ ✓ · নতুন দাও", debtNew: "নতুন সংখ্যা দাও", debtRemove: "সরাও", debtNote: "এটি শুধু একটি অনুপ্রেরণার কাউন্টার। ক্ষমা একমাত্র আল্লাহর কাছ থেকে আসে, আন্তরিক তওবার মাধ্যমে: অনুতাপ, গুনাহ ছেড়ে দেওয়া এবং আর না ফেরার দৃঢ় সংকল্প।" }, badge: ["পালকের মতো হালকা", "একটি বোঝা শূন্যে নামাও"] },
+    ru: { ui: { debtTitle: "Облегчить ношу", debtIntro: "Введи число для ноши, которую хочешь облегчить. Каждая карточка, к которой ты пролистываешь, немного уменьшает его, пока оно не дойдёт до нуля.", debtAmount: "Начальное число", debtStep: "Убывает за карточку", debtStart: "Начать", debtLeft: "Осталось {n}", debtLifted: "Облегчено за сессию: {n}", debtDoneT: "Ноша облегчена!", debtDoneS: "Дошло до нуля. Можно задать новое число в любой момент.", debtDoneChip: "Готово ✓ · задать новое", debtNew: "Задать новое число", debtRemove: "Убрать", debtNote: "Это лишь мотивирующий счётчик. Прощение исходит только от Аллаха через искреннее покаяние: сожаление, отказ от греха и решимость не возвращаться к нему." }, badge: ["Лёгкий как перо", "Доведи ношу до нуля"] },
+    de: { ui: { debtTitle: "Last erleichtern", debtIntro: "Gib eine Zahl für die Last ein, die du erleichtern möchtest. Jede Karte, zu der du scrollst, senkt sie ein wenig, bis sie null erreicht.", debtAmount: "Startzahl", debtStep: "Abzug pro Karte", debtStart: "Starten", debtLeft: "Noch {n}", debtLifted: "In dieser Sitzung erleichtert: {n}", debtDoneT: "Last erleichtert!", debtDoneS: "Sie hat null erreicht. Du kannst jederzeit eine neue Zahl festlegen.", debtDoneChip: "Erledigt ✓ · neue festlegen", debtNew: "Neue Zahl festlegen", debtRemove: "Entfernen", debtNote: "Das ist nur ein Motivationszähler. Vergebung kommt allein von Allah durch aufrichtige Reue: Bedauern, die Sünde lassen und der Vorsatz, nicht zurückzukehren." }, badge: ["Leicht wie eine Feder", "Bringe eine Last auf null"] },
+  };
+  for (const k of Object.keys(DEBT_T)) { Object.assign(T[k].ui, DEBT_T[k].ui); T[k].badges.push(DEBT_T[k].badge); }
+  // Wording for the counter: the number of sins the user wants to remove.
+  const SINS_T = {
+    en: { debtTitle: "Remove sins", debtIntro: "Enter the number of sins you want to remove. Every card you scroll to lowers it a little, until it reaches zero.", debtAmount: "Number of sins", debtStep: "Removed per card", debtLifted: "Removed this session: {n}", debtDoneT: "Counter reached zero!", debtDoneChip: "Zero ✓ · set a new one" },
+    ar: { debtTitle: "إزالة السيئات", debtIntro: "اكتب عدد السيئات التي تريد إزالتها. كل بطاقة تنتقل إليها تُنقص منه قليلًا حتى يصل إلى الصفر.", debtAmount: "عدد السيئات", debtStep: "المُنقَص لكل بطاقة", debtLifted: "ما أُزيل في هذه الجلسة: {n}", debtDoneT: "وصل العدّاد إلى الصفر!", debtDoneChip: "صفر ✓ · ضع رقمًا جديدًا" },
+    fr: { debtTitle: "Retirer les péchés", debtIntro: "Entre le nombre de péchés que tu veux retirer. Chaque carte que tu parcours le réduit un peu, jusqu'à zéro.", debtAmount: "Nombre de péchés", debtStep: "Retiré par carte", debtLifted: "Retiré pendant cette session : {n}", debtDoneT: "Le compteur est à zéro !", debtDoneChip: "Zéro ✓ · en fixer un nouveau" },
+    es: { debtTitle: "Quitar pecados", debtIntro: "Escribe el número de pecados que quieres quitar. Cada tarjeta que recorres lo reduce un poco, hasta llegar a cero.", debtAmount: "Número de pecados", debtStep: "Se resta por tarjeta", debtLifted: "Quitado en esta sesión: {n}", debtDoneT: "¡El contador llegó a cero!", debtDoneChip: "Cero ✓ · fijar uno nuevo" },
+    tr: { debtTitle: "Günahları sil", debtIntro: "Silmek istediğin günah sayısını gir. Kaydırdığın her kart onu biraz azaltır, sıfıra inene kadar.", debtAmount: "Günah sayısı", debtStep: "Kart başına azalan", debtLifted: "Bu oturumda silinen: {n}", debtDoneT: "Sayaç sıfıra indi!", debtDoneChip: "Sıfır ✓ · yenisini belirle" },
+    ur: { debtTitle: "گناہ مٹائیں", debtIntro: "گناہوں کی وہ تعداد لکھیں جو آپ مٹانا چاہتے ہیں۔ آپ جس کارڈ پر جاتے ہیں وہ اسے تھوڑا کم کرتا ہے، یہاں تک کہ صفر ہو جائے۔", debtAmount: "گناہوں کی تعداد", debtStep: "ہر کارڈ پر کمی", debtLifted: "اس سیشن میں کم ہوا: {n}", debtDoneT: "کاؤنٹر صفر ہو گیا!", debtDoneChip: "صفر ✓ · نیا مقرر کریں" },
+    id: { debtTitle: "Hapus dosa", debtIntro: "Masukkan jumlah dosa yang ingin kamu hapus. Setiap kartu yang kamu gulir menguranginya sedikit, sampai mencapai nol.", debtAmount: "Jumlah dosa", debtStep: "Berkurang per kartu", debtLifted: "Dikurangi sesi ini: {n}", debtDoneT: "Penghitung mencapai nol!", debtDoneChip: "Nol ✓ · tetapkan yang baru" },
+    bn: { debtTitle: "গুনাহ মোছো", debtIntro: "যত গুনাহ মুছতে চাও তার সংখ্যা লেখো। প্রতিটি কার্ড স্ক্রল করলে তা একটু কমবে, শূন্যে পৌঁছানো পর্যন্ত।", debtAmount: "গুনাহের সংখ্যা", debtStep: "প্রতি কার্ডে কমবে", debtLifted: "এই সেশনে কমেছে: {n}", debtDoneT: "কাউন্টার শূন্যে পৌঁছেছে!", debtDoneChip: "শূন্য ✓ · নতুন দাও" },
+    ru: { debtTitle: "Убрать грехи", debtIntro: "Введи число грехов, которые хочешь убрать. Каждая карточка, к которой ты пролистываешь, немного уменьшает его, пока оно не дойдёт до нуля.", debtAmount: "Число грехов", debtStep: "Убывает за карточку", debtLifted: "Убрано за сессию: {n}", debtDoneT: "Счётчик дошёл до нуля!", debtDoneChip: "Ноль ✓ · задать новое" },
+    de: { debtTitle: "Sünden entfernen", debtIntro: "Gib die Anzahl der Sünden ein, die du entfernen möchtest. Jede Karte, zu der du scrollst, senkt sie ein wenig, bis sie null erreicht.", debtAmount: "Anzahl der Sünden", debtStep: "Abzug pro Karte", debtLifted: "In dieser Sitzung entfernt: {n}", debtDoneT: "Zähler hat null erreicht!", debtDoneChip: "Null ✓ · neue festlegen" },
+  };
+  for (const k of Object.keys(SINS_T)) Object.assign(T[k].ui, SINS_T[k]);
+  const EXTRA_T = {
+    en: {"haptics": "Haptics", "backup": "Back up progress", "restore": "Restore backup", "restored": "Progress restored", "badFile": "That file is not a backup"},
+    ar: {"haptics": "الاهتزاز", "backup": "نسخ احتياطي للتقدّم", "restore": "استعادة النسخة", "restored": "تمت استعادة التقدّم", "badFile": "هذا الملف ليس نسخة احتياطية"},
+    fr: {"haptics": "Vibrations", "backup": "Sauvegarder la progression", "restore": "Restaurer la sauvegarde", "restored": "Progression restaurée", "badFile": "Ce fichier n'est pas une sauvegarde"},
+    es: {"haptics": "Vibración", "backup": "Guardar copia del progreso", "restore": "Restaurar copia", "restored": "Progreso restaurado", "badFile": "Ese archivo no es una copia"},
+    tr: {"haptics": "Titreşim", "backup": "İlerlemeyi yedekle", "restore": "Yedeği geri yükle", "restored": "İlerleme geri yüklendi", "badFile": "Bu dosya bir yedek değil"},
+    ur: {"haptics": "ارتعاش", "backup": "پیش رفت کا بیک اپ", "restore": "بیک اپ بحال کریں", "restored": "پیش رفت بحال ہو گئی", "badFile": "یہ فائل بیک اپ نہیں ہے"},
+    id: {"haptics": "Getaran", "backup": "Cadangkan progres", "restore": "Pulihkan cadangan", "restored": "Progres dipulihkan", "badFile": "File itu bukan cadangan"},
+    bn: {"haptics": "কম্পন", "backup": "অগ্রগতির ব্যাকআপ", "restore": "ব্যাকআপ ফেরাও", "restored": "অগ্রগতি ফিরেছে", "badFile": "এই ফাইলটি ব্যাকআপ নয়"},
+    ru: {"haptics": "Вибрация", "backup": "Сохранить прогресс", "restore": "Восстановить копию", "restored": "Прогресс восстановлен", "badFile": "Это не файл копии"},
+    de: {"haptics": "Vibration", "backup": "Fortschritt sichern", "restore": "Sicherung laden", "restored": "Fortschritt wiederhergestellt", "badFile": "Diese Datei ist keine Sicherung"},
+  };
+  for (const k of Object.keys(EXTRA_T)) Object.assign(T[k].ui, EXTRA_T[k]);
+  // Language in use. Falls back to the browser language, then English.
+  const pickLang = () => { const b = (navigator.language || "en").slice(0, 2).toLowerCase(); return LANGS[b] ? b : "en"; };
+  let lang = "en";
+  const TR = () => T[lang] || T.en;
+  const tpl = (s, v) => v ? s.replace(/\{(\w+)\}/g, (_, k) => v[k] ?? "") : s;
+  const t = (k, v) => tpl((T[lang].ui[k] ?? T.en.ui[k] ?? k), v);
+  const levelTitle = l => (TR().levels || T.en.levels)[Math.min(l - 1, 10)];
+  const stageName = i => (TR().stages || T.en.stages)[i][0];
+  const stageLine = i => (TR().stages || T.en.stages)[i][1];
+  const levelLine = () => { const L = TR().lines || T.en.lines; return L[Math.random() * L.length | 0]; };
+  const badgeText = b => (TR().badges || T.en.badges)[b.i];
+  // The English meaning lives in LIB; other languages override it by index.
+  const meaning = d => (TR().dhikr && TR().dhikr[d.i]) || d.en;
+  const kindLabel = d => t({ dhikr: "kDhikr", dua: "kDua", quran: "kQuran", salawat: "kSalawat" }[d.kind]);
+  const sourceText = d => d.srcKey ? t(d.srcKey) + " · " + d.src : (d.src || "");
+
+
+  // ---------- Rules ----------
+  // The score is simply how many dhikr cards you scrolled through. It is a counter, not a claim about reward.
+  const RULES = { comboMs: 3000, goldenChance: 1 / 12, comboMarks: [10, 25, 50, 100] };
+  const isMilestone = n => n === 10 || n === 33 || n === 99 || (n > 0 && n % 100 === 0);
+  const threshold = n => n <= 1 ? 0 : Math.floor(20 * Math.pow(n - 1, 1.6));
+  const levelFor = p => { let n = 1; while (threshold(n + 1) <= p) n++; return n; };
+  const levelProgress = p => { const n = levelFor(p), lo = threshold(n), hi = threshold(n + 1); return (p - lo) / Math.max(1, hi - lo); };
+
+  // Your buddy grows with level and badges: growth = level + badges / 2.
+  const STAGES = [
+    { name: "Little believer", at: 0, line: "Bismillah, let's begin!" },
+    { name: "Glowing heart", at: 3, line: "I feel a warm glow!" },
+    { name: "Wing buds", at: 5, line: "Something is sprouting on my back!" },
+    { name: "Young wings", at: 7, line: "I have little wings now!" },
+    { name: "Rising angel", at: 9, line: "My wings are getting big, and a halo!" },
+    { name: "Angel of dhikr", at: 11, line: "Look at me, a full angel!" },
+  ];
+  const growthFor = (taps, badges) => levelFor(taps) + badges / 2;
+  const stageFor = (taps, badges) => { const g = growthFor(taps, badges); let s = 0; STAGES.forEach((st, i) => { if (g >= st.at) s = i; }); return s; };
+  const stageProgress = (taps, badges) => {
+    const g = growthFor(taps, badges), s = stageFor(taps, badges);
+    if (s >= STAGES.length - 1) return 1;
+    return (g - STAGES[s].at) / (STAGES[s + 1].at - STAGES[s].at);
+  };
+
+  const BADGES = [
+    ["first", "✨", "First Light", "Score your first point", c => c.life >= 1],
+    ["tasbih33", "📿", "Tasbih", "33 points in one session", c => c.sess >= 33],
+    ["century", "🔥", "Century", "100 points in one session", c => c.sess >= 100],
+    ["marathon", "💪", "Marathon", "500 points in one session", c => c.sess >= 500],
+    ["combo25", "⚡", "On Fire", "Reach a 25 combo", c => c.combo >= 25],
+    ["combo50", "🚀", "Unstoppable", "Reach a 50 combo", c => c.combo >= 50],
+    ["golden1", "⭐", "Golden Find", "Discover a golden card", c => c.golden >= 1],
+    ["golden10", "🌟", "Treasure Hunter", "Discover 10 golden cards", c => c.golden >= 10],
+    ["streak3", "📅", "Consistent", "3 day streak", c => c.streak >= 3],
+    ["streak7", "🗓️", "Steadfast", "7 day streak", c => c.streak >= 7],
+    ["streak30", "🌙", "Devoted", "30 day streak", c => c.streak >= 30],
+    ["thousand", "🍃", "Thousand", "1,000 points all time", c => c.life >= 1000],
+    ["tenthousand", "🌳", "Ten Thousand", "10,000 points all time", c => c.life >= 10000],
+    ["level5", "🌴", "Palm", "Reach level 5", c => c.level >= 5],
+    ["level10", "🏆", "Rawdah", "Reach level 10", c => c.level >= 10],
+    ["wings", "🪽", "First Wings", "Your buddy grows wings", c => c.stage >= 3],
+    ["halo", "😇", "Halo", "Your buddy becomes an angel", c => c.stage >= 5],
+    ["light", "🪶", "Light as a Feather", "Bring a burden down to zero", c => c.cleared >= 1],
+  ].map(([id, icon, title, detail, test], i) => ({ id, icon, title, detail, test, i }));
+
+  // ---------- Storage (this browser only) ----------
+  const KEY = "hasanat.lifetime.v2";
+  const fresh = () => ({ seen: 0, said: 0, sessions: 0, best: 0, per: {}, streak: 0, bestStreak: 0, lastDay: null, badges: [], golden: 0, sound: true, gender: null, lang: null, debt: null, debtsCleared: 0, haptics: true });
+  let life = fresh();
+  try { const raw = localStorage.getItem(KEY); if (raw) life = Object.assign(fresh(), JSON.parse(raw)); } catch (e) {}
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(life)); } catch (e) {} };
+  lang = LANGS[life.lang] ? life.lang : pickLang();
+
+  // ---------- Session ----------
+  const sum = o => Object.values(o).reduce((a, b) => a + b, 0);
+  const sTaps = () => sum(S.said);
+  const sSeen = () => sum(S.seen);
+  const lifeTaps = () => life.said + sTaps();
+  const stageNow = () => stageFor(lifeTaps(), life.badges.length);
+  const newSession = () => ({ start: Date.now(), seen: {}, said: {}, combo: 0, bestCombo: 0, golden: 0, last: 0, lifted: 0, badges: [], stageStart: stageFor(life.said, life.badges.length) });
+  let S = newSession();
+
+  function tick() {
+    const now = Date.now();
+    if (now - S.last > RULES.comboMs) S.combo = 0;
+    S.combo++; S.bestCombo = Math.max(S.bestCombo, S.combo); S.last = now;
+  }
+
+  // ---------- Buddy: a cartoon boy or girl who grows wings and a halo ----------
+  const PAL = {
+    m: [{ robe: "#efe9d8", trim: "#2f7f6d", cap: "#ffffff" }, { robe: "#f8f5ee", trim: "#3a9a86", cap: "#ffffff" }, { robe: "#ffffff", trim: "#f5b83d", cap: "#fff4cf" }],
+    f: [{ hijab: "#d9658f", dress: "#6a4cae", trim: "#ffd9e6" }, { hijab: "#e88db0", dress: "#8b6bd0", trim: "#fff0f6" }, { hijab: "#fff8ec", dress: "#ffffff", trim: "#f5b83d" }],
+  };
+  const SKIN = "#f1c7a0";
+  let svgUid = 0;
+
+  function featherPaths(st) {
+    const feather = (a, l, fill, stroke) => {
+      const w = l * .17;
+      return `<path transform="rotate(${a})" d="M0,0 C${-w},${-l * .3} ${-w},${-l * .78} 0,${-l} C${w},${-l * .78} ${w},${-l * .3} 0,0Z" fill="${fill}" stroke="${stroke}" stroke-width="1.5" stroke-linejoin="round"/>`;
+    };
+    const back = [[20, 98], [38, 104], [56, 102], [74, 94], [92, 82]];
+    if (st >= 4) back.push([110, 66], [126, 50]);
+    const front = [[32, 72], [52, 76], [72, 72], [92, 60]];
+    const gold = st >= 5;
+    return back.map(([a, l]) => feather(a, l, "#dde6f2", "#b4c3da")).join("") +
+      front.map(([a, l]) => feather(a, l, "#ffffff", gold ? "#f0cf7a" : "#c9d6e8")).join("") +
+      `<ellipse cx="16" cy="-6" rx="24" ry="13" transform="rotate(-18)" fill="#fff" stroke="${gold ? "#f0cf7a" : "#c9d6e8"}" stroke-width="1.5"/>`;
+  }
+
+  function charSVG(gender, st, o = {}) {
+    const id = "ch" + (++svgUid);
+    const boy = gender !== "f";
+    const tier = st >= 5 ? 2 : st >= 3 ? 1 : 0;
+    const P = (boy ? PAL.m : PAL.f)[tier];
+    const ws = [0, 0, .3, .52, .8, 1.05][st];
+    const sx = boy ? 128 : 134, sy = boy ? 136 : 148;   // right shoulder, used by the waving arm
+    const wing = side => `<g transform="translate(${side > 0 ? 128 : 72},138)${side > 0 ? "" : " scale(-1,1)"}"><g class="flap"><g transform="scale(${ws})">${featherPaths(st)}</g></g></g>`;
+    const wings = ws ? wing(-1) + wing(1) : "";
+
+    const defs = `<defs>
+      <radialGradient id="${id}a" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#ffe9a8" stop-opacity=".75"/><stop offset="1" stop-color="#ffe9a8" stop-opacity="0"/></radialGradient>
+      <linearGradient id="${id}g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff0b0"/><stop offset=".55" stop-color="#f5b83d"/><stop offset="1" stop-color="#c98a1b"/></linearGradient>
+      <filter id="${id}b" x="-50%" y="-200%" width="200%" height="500%"><feGaussianBlur stdDeviation="3.5"/></filter>
+    </defs>`;
+    const aura = st >= 1 ? `<circle cx="100" cy="122" r="${58 + st * 11}" fill="url(#${id}a)" opacity="${.3 + st * .14}"/>` : "";
+    const halo = st >= 4 ? `<g class="halo">
+      <ellipse cx="100" cy="27" rx="27" ry="7.5" fill="none" stroke="#ffd35a" stroke-width="${st >= 5 ? 9 : 5}" opacity=".7" filter="url(#${id}b)"/>
+      <ellipse cx="100" cy="27" rx="27" ry="7.5" fill="none" stroke="url(#${id}g)" stroke-width="${st >= 5 ? 5.5 : 3.5}" opacity="${st >= 5 ? 1 : .7}"/></g>` : "";
+    const star = (x, y, s, d) => `<path class="sp" style="animation-delay:${d}s" transform="translate(${x},${y}) scale(${s})" d="M0,-7 L2,-2 7,0 2,2 0,7 -2,2 -7,0 -2,-2Z" fill="#fff3c2"/>`;
+    const sparkles = st >= 4 ? star(26, 70, 1.1, 0) + star(176, 84, .9, .6) + star(160, 30, .8, 1.1) + star(40, 150, .7, 1.5) + (st >= 5 ? star(182, 150, 1, .3) + star(14, 110, .8, 1.8) : "") : "";
+
+    const eyes = [86, 114].map(x => `<g class="blink"><ellipse cx="${x}" cy="88" rx="4.6" ry="6" fill="#2b2118"/><circle cx="${x + 1.6}" cy="85.6" r="1.9" fill="#fff"/></g>`).join("");
+    const face = `${eyes}
+      <circle cx="77" cy="99" r="6" fill="#f59d9d" opacity=".5"/><circle cx="123" cy="99" r="6" fill="#f59d9d" opacity=".5"/>
+      <path d="M91,100 Q100,${st >= 3 ? 111 : 108} 109,100" fill="none" stroke="#8a4b3a" stroke-width="2.6" stroke-linecap="round"/>`;
+
+    let body;
+    if (boy) {
+      const arm = (d, hx) => `<path d="${d}" fill="none" stroke="#00000026" stroke-width="19" stroke-linecap="round"/><path d="${d}" fill="none" stroke="${P.robe}" stroke-width="16" stroke-linecap="round"/><circle cx="${hx}" cy="182" r="8.5" fill="${SKIN}"/>`;
+      body = `
+        <ellipse cx="82" cy="223" rx="14" ry="6" fill="#3a2a22"/><ellipse cx="118" cy="223" rx="14" ry="6" fill="#3a2a22"/>
+        <path d="M70,128 Q100,114 130,128 L148,216 Q100,228 52,216Z" fill="${P.robe}" stroke="#0000001f" stroke-width="1.5"/>
+        <path d="M92,122 L100,150 L108,122" fill="none" stroke="${P.trim}" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M100,150 L100,205" stroke="#00000020" stroke-width="2"/>
+        <circle cx="100" cy="164" r="2.4" fill="${P.trim}"/><circle cx="100" cy="179" r="2.4" fill="${P.trim}"/><circle cx="100" cy="194" r="2.4" fill="${P.trim}"/>
+        <path d="M54,208 Q100,221 146,208" fill="none" stroke="${P.trim}" stroke-width="3.5" stroke-linecap="round"/>
+        ${arm("M74,134 Q58,154 62,178", 62)}
+        <g class="armR" style="transform-origin:${sx}px ${sy}px">${arm("M126,134 Q142,154 138,178", 138)}</g>
+        <circle cx="64" cy="88" r="6.5" fill="${SKIN}"/><circle cx="136" cy="88" r="6.5" fill="${SKIN}"/>
+        <circle cx="100" cy="84" r="36" fill="${SKIN}"/>
+        <path d="M64,86 Q60,58 100,50 Q140,58 136,86 Q134,70 100,66 Q66,70 64,86Z" fill="#2b2118"/>
+        <path d="M63,74 Q65,42 100,40 Q135,42 137,74 Q100,63 63,74Z" fill="${P.cap}" stroke="#cfc8b4" stroke-width="1.6"/>
+        <path d="M63.5,72 Q100,61 136.5,72" fill="none" stroke="${P.trim}" stroke-width="3.2"/>
+        ${[78, 89, 100, 111, 122].map((x, i) => `<circle cx="${x}" cy="${[56, 52, 50, 52, 56][i]}" r="2" fill="${P.trim}" opacity=".8"/>`).join("")}
+        ${face}`;
+    } else {
+      const arm = (d, hx) => `<path d="${d}" fill="none" stroke="#00000026" stroke-width="19" stroke-linecap="round"/><path d="${d}" fill="none" stroke="${P.dress}" stroke-width="16" stroke-linecap="round"/><circle cx="${hx}" cy="184" r="8.5" fill="${SKIN}"/>`;
+      body = `
+        <ellipse cx="84" cy="224" rx="13" ry="5.5" fill="#4b3a63"/><ellipse cx="116" cy="224" rx="13" ry="5.5" fill="#4b3a63"/>
+        <path d="M66,142 Q100,128 134,142 L154,217 Q100,229 46,217Z" fill="${P.dress}" stroke="#0000001f" stroke-width="1.5"/>
+        <path d="M60,176 Q100,188 140,176" fill="none" stroke="${P.trim}" stroke-width="3.5" stroke-linecap="round"/>
+        <path d="M49,208 Q100,222 151,208" fill="none" stroke="${P.trim}" stroke-width="3.5" stroke-linecap="round"/>
+        ${arm("M70,150 Q56,166 60,180", 60)}
+        <g class="armR" style="transform-origin:${sx}px ${sy}px">${arm("M130,150 Q144,166 140,180", 140)}</g>
+        <path d="M100,38 C62,38 54,72 56,100 C57,122 46,136 54,154 Q100,170 146,154 C154,136 143,122 144,100 C146,72 138,38 100,38Z" fill="${P.hijab}" stroke="#0000001f" stroke-width="1.5"/>
+        <path d="M60,150 Q100,164 140,150" fill="none" stroke="#00000018" stroke-width="2"/>
+        <ellipse cx="100" cy="89" rx="32" ry="35" fill="#00000026"/>
+        <ellipse cx="100" cy="88" rx="29.5" ry="32.5" fill="${SKIN}"/>
+        <path d="M71,72 Q100,52 129,72" fill="none" stroke="#00000014" stroke-width="3"/>
+        ${face}`;
+    }
+
+    const vb = o.crop ? "-20 8 240 130" : "-40 0 280 240";
+    return `<svg class="char" viewBox="${vb}" role="img" aria-label="${esc(stageName(st))}" xmlns="http://www.w3.org/2000/svg">${defs}
+      <g class="jump"><g class="bob">${aura}${wings}${boy ? "" : ""}${body}${halo}${sparkles}</g></g></svg>`;
+  }
+
+  // The buddy that rides along in the feed and the small one in the HUD.
+  let buddyKey = "";
+  function renderBuddy() {
+    if (!life.gender) { $("buddy").innerHTML = ""; $("lvlAv").innerHTML = ""; buddyKey = ""; return; }
+    const st = stageNow(), key = life.gender + st;
+    if (key === buddyKey) return;
+    buddyKey = key;
+    $("buddy").innerHTML = charSVG(life.gender, st);
+    $("lvlAv").innerHTML = charSVG(life.gender, st, { crop: true });
+  }
+  function hopBuddy() { const b = $("buddy"); b.classList.remove("tap"); void b.offsetWidth; b.classList.add("tap"); }
+  function cheerBuddy() { const b = $("buddy"); b.classList.add("cheer"); setTimeout(() => b.classList.remove("cheer"), 1400); }
+
+  // ---------- Feed ----------
+  const feed = document.getElementById("feed");
+  let bag = [], lastId = null, nextIdx = 0;
+  function pick() {
+    if (!bag.length) bag = LIB.flatMap(d => Array(d.w).fill(d)).sort(() => Math.random() - .5);
+    let d = bag.pop();
+    if (d.id === lastId) { const i = bag.findIndex(x => x.id !== lastId); if (i >= 0) { bag.push(d); d = bag.splice(i, 1)[0]; } }
+    lastId = d.id;
+    return d;
+  }
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+  function makeCard() {
+    const d = pick();
+    const golden = nextIdx > 3 && Math.random() < RULES.goldenChance;
+    const el = document.createElement("section");
+    el.className = "card" + (golden ? " golden" : "");
+    el.dataset.id = d.id; el.dataset.idx = nextIdx++;
+    if (golden) el.dataset.golden = "1";
+    const [c1, c2] = golden ? ["#3D2A00", "#8A6110"] : PALETTES[d.pal % PALETTES.length];
+    el.style.background = `linear-gradient(160deg, ${c1}, ${c2})`;
+    fillCard(el);
+    io.observe(el);
+    return el;
+  }
+  // Cards far behind are emptied (not removed) so the scroll position never has to be rewritten.
+  function fillCard(el) {
+    const d = BY_ID[el.dataset.id];
+    const size = d.ar.length < 20 ? "s" : d.ar.length < 40 ? "m" : "l";
+    el.innerHTML = `
+      <div class="kind"></div>
+      <div class="ar ${size}" lang="ar">${esc(d.ar)}</div>
+      <div class="meta"><div class="tr">${esc(d.tr)}</div><div class="en"></div><div class="src"></div></div>
+      <div class="counter">
+        <div class="swipe" aria-hidden="true"><svg viewBox="0 0 48 48"><path d="M9 28 L24 13 L39 28"/><path d="M9 41 L24 26 L39 41" opacity=".5"/></svg></div>
+        <div class="hint"></div>
+      </div>`;
+    refreshCard(el);
+    el.dataset.full = "1";
+  }
+  function addCards(n) { const f = document.createDocumentFragment(); for (let i = 0; i < n; i++) f.appendChild(makeCard()); feed.appendChild(f); }
+
+  let current = null, lastIdx = -1;
+  const io = new IntersectionObserver(entries => {
+    for (const e of entries) if (e.isIntersecting && e.intersectionRatio > .6) setCurrent(e.target);
+  }, { root: feed, threshold: [.6] });
+
+  function setCurrent(el) {
+    if (current === el) return;
+    current = el;
+    const idx = +el.dataset.idx;
+    if (lastIdx < 0) { lastIdx = idx; el.classList.add("counted"); }   // the card you open on is free
+    else if (idx > lastIdx) {
+      // Every card passed on the way down scores, even if a fast flick skipped the observer.
+      const from = Math.max(lastIdx + 1, idx - 40);
+      lastIdx = idx;
+      for (let i = from; i <= idx; i++) {
+        const c = i === idx ? el : feed.querySelector(`[data-idx="${i}"]`);
+        if (c) scoreCard(c);
+      }
+    }
+    if (+el.dataset.idx > nextIdx - 8) addCards(20);
+    // Keep the DOM light on long sessions: empty cards far behind, refill the ones near us.
+    for (let i = idx - 2; i <= idx; i++) {
+      const c = feed.querySelector(`[data-idx="${i}"]`);
+      if (c && !c.dataset.full) fillCard(c);
+    }
+    while (hollowTo < idx - 30) {
+      const c = feed.querySelector(`[data-idx="${hollowTo++}"]`);
+      if (c && c.dataset.full) { c.innerHTML = ""; delete c.dataset.full; }
+    }
+  }
+  let hollowTo = 0;
+
+  const snap = () => ({ lv: levelFor(lifeTaps()), st: stageNow() });
+
+  // Every new card you scroll to is worth one point. The card you open the app on is free.
+  function scoreCard(el) {
+    if (el.classList.contains("counted")) return;
+    el.classList.add("counted");
+    if (!life.gender) return;
+    const id = el.dataset.id, golden = !!el.dataset.golden;
+    const before = snap();
+    S.said[id] = (S.said[id] || 0) + 1;
+    if (golden) S.golden++;
+    tick();
+    const cleared = lowerDebt();
+    floater("+1", golden);
+    hopBuddy();
+
+    let big = false;
+    if (golden) { fx.golden(); confetti(true); cheerBuddy(); toast("⭐", t("goldenT"), t("goldenS")); big = true; }
+    if (RULES.comboMarks.includes(S.combo)) { fx.up(); cheerBuddy(); toast("🔥", t("comboT", { n: S.combo }), t("comboS")); big = true; }
+    const pts = sTaps();
+    if (isMilestone(pts)) { fx.party(); confetti(false); cheerBuddy(); toast("🎉", t("mileT", { n: pts }), t("mileS")); big = true; }
+    if (cleared) { celebrate({ key: "debt" + life.debtsCleared, icon: "🪶", title: t("debtDoneT"), sub: t("debtDoneS"), confetti: "gold", sound: fx.evolve, evolve: true }); big = true; }
+    if (afterChange(before)) big = true;
+    if (!big) fx.tap(S.combo);
+  }
+
+  // Checks level, badges and buddy growth after anything changed. Returns how many celebrations it queued.
+  function afterChange(before) {
+    let n = 0;
+    const lv = levelFor(lifeTaps());
+    if (lv > before.lv) {
+      celebrate({ key: "lv" + lv, icon: "⬆️", title: t("lvT", { n: lv, t: levelTitle(lv) }), sub: levelLine(), confetti: "gold", sound: fx.party }); n++;
+    }
+    checkBadges(false).forEach(b => { celebrate({ key: "badge" + b.id, icon: b.icon, title: t("badgeT", { t: badgeText(b)[0] }), sub: badgeText(b)[1], confetti: "color", sound: fx.party }); n++; });
+    const st = stageNow();
+    if (st > before.st) {
+      celebrate({ key: "stage" + st, icon: st >= 3 ? "🪽" : "✨", title: t("growT"), sub: stageName(st) + ": " + stageLine(st), confetti: "gold", sound: fx.evolve, evolve: true }); n++;
+    }
+    renderBuddy();
+    renderHud(true);
+    return n;
+  }
+
+  function ctx(final) {
+    return {
+      sess: sTaps(), combo: S.bestCombo, golden: life.golden + (final ? 0 : S.golden),
+      life: life.said + (final ? 0 : sTaps()), streak: life.streak, level: levelFor(life.said + (final ? 0 : sTaps())),
+      stage: stageFor(life.said + (final ? 0 : sTaps()), life.badges.length), cleared: life.debtsCleared,
+    };
+  }
+  function checkBadges(final) {
+    const c = ctx(final);
+    const got = BADGES.filter(b => !life.badges.includes(b.id) && b.test(c));
+    if (got.length) { life.badges.push(...got.map(b => b.id)); S.badges.push(...got); save(); }
+    return got;
+  }
+
+  // ---------- HUD ----------
+  const $ = id => document.getElementById(id);
+  function renderHud(bump) {
+    const p = lifeTaps(), lv = levelFor(p);
+    $("ptsNum").textContent = sTaps().toLocaleString();
+    $("ptsSub").textContent = t("pointsSub", { t: levelTitle(lv) });
+    $("lvNum").textContent = t("lv", { n: lv });
+    $("lvFill").style.width = (levelProgress(p) * 100) + "%";
+    if (bump) { const el = $("pts"); el.classList.remove("bump"); void el.offsetWidth; el.classList.add("bump"); }
+  }
+  (function comboLoop() {
+    const left = Math.max(0, 1 - (Date.now() - S.last) / RULES.comboMs);
+    if (left === 0 && S.combo) S.combo = 0;
+    const box = $("combo");
+    if (S.combo >= 2) {
+      box.removeAttribute("data-off");
+      $("comboNum").textContent = t("combo", { n: S.combo });
+      $("drain").style.transform = `scaleX(${left})`;
+    } else box.setAttribute("data-off", "");
+    requestAnimationFrame(comboLoop);
+  })();
+
+  const toasts = []; let toastBusy = false;
+  function toast(icon, title, sub) {
+    if (toasts.some(t => t.title === title)) return;
+    toasts.push({ icon, title, sub });
+    if (!toastBusy) nextToast();
+  }
+  function nextToast() {
+    const slotEl = $("toastSlot");
+    const t = toasts.shift();
+    if (!t) { toastBusy = false; slotEl.innerHTML = ""; return; }
+    toastBusy = true;
+    slotEl.innerHTML = `<div class="toast" role="status"><span class="ic">${t.icon}</span><span><b>${esc(t.title)}</b><small>${esc(t.sub)}</small></span></div>`;
+    setTimeout(nextToast, 1800);
+  }
+  function floater(text, gold) {
+    const f = document.createElement("div");
+    f.className = "floater" + (gold ? " g" : "");
+    f.textContent = text;
+    f.style.marginLeft = (Math.random() * 140 - 70) + "px";
+    $("app").appendChild(f);
+    setTimeout(() => f.remove(), 950);
+  }
+
+  // Level, badge and growth moments: the buddy pops up with a speech bubble.
+  const cheers = []; let cheerBusy = false, cheerTimer = 0;
+  function celebrate(c) {
+    if (cheers.some(x => x.key === c.key)) return;
+    cheers.push(c);
+    if (!cheerBusy) nextCheer();
+  }
+  function nextCheer() {
+    clearTimeout(cheerTimer);
+    const c = cheers.shift(), slotEl = $("cheerSlot");
+    if (!c) { cheerBusy = false; slotEl.innerHTML = ""; return; }
+    cheerBusy = true;
+    // The speech bubble sits above the buddy in the bottom left, and the buddy celebrates.
+    slotEl.innerHTML = `<div class="cheerCard" id="cheerCard" role="status"><span class="bubble"><span class="bi">${c.icon}</span><span class="bt"><b>${esc(c.title)}</b><small>${esc(c.sub)}</small></span></span></div>`;
+    const bd = $("buddy");
+    bd.classList.remove("cheer", "evolve"); void bd.offsetWidth;
+    bd.classList.add("cheer"); if (c.evolve) bd.classList.add("evolve");
+    setTimeout(() => bd.classList.remove("cheer", "evolve"), 1600);
+    if (c.confetti) confetti(c.confetti === "gold");
+    c.sound();
+    cheerTimer = setTimeout(nextCheer, c.evolve ? 4800 : 3600);
+  }
+  function clearCheers() { cheers.length = 0; nextCheer(); }
+
+  // ---------- Confetti ----------
+  const cv = $("confetti"), cx = cv.getContext("2d");
+  let parts = [], raf = 0;
+  function confetti(gold) {
+    const dpr = window.devicePixelRatio || 1;
+    cv.width = cv.clientWidth * dpr; cv.height = cv.clientHeight * dpr;
+    cx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const cols = gold ? ["#ffe08a", "#f5b83d", "#c98a1b", "#fff"] : ["#ffe08a", "#ff9f2e", "#7fe0c3", "#5fc6d8", "#ff8fb1", "#fff"];
+    const ox = cv.clientWidth / 2, oy = cv.clientHeight * .35;
+    parts = parts.concat(Array.from({ length: 110 }, () => {
+      const a = -Math.random() * Math.PI, sp = 350 + Math.random() * 550;
+      return { x: ox, y: oy, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, s: Math.random() * 24 - 12, w: 6 + Math.random() * 6, h: 8 + Math.random() * 8, c: cols[Math.random() * cols.length | 0], round: Math.random() < .5, t0: performance.now() };
+    }));
+    if (!raf) raf = requestAnimationFrame(drawConfetti);
+  }
+  function drawConfetti(now) {
+    cx.clearRect(0, 0, cv.clientWidth, cv.clientHeight);
+    parts = parts.filter(p => (now - p.t0) < 2400);
+    for (const p of parts) {
+      const t = (now - p.t0) / 1000;
+      cx.save();
+      cx.globalAlpha = Math.max(0, 1 - t / 2.4);
+      cx.translate(p.x + p.vx * t, p.y + p.vy * t + 450 * t * t);
+      cx.rotate(p.s * t);
+      cx.fillStyle = p.c;
+      if (p.round) { cx.beginPath(); cx.ellipse(0, 0, p.w / 2, p.h / 2, 0, 0, Math.PI * 2); cx.fill(); }
+      else cx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+      cx.restore();
+    }
+    raf = parts.length ? requestAnimationFrame(drawConfetti) : 0;
+    if (!raf) cx.clearRect(0, 0, cv.clientWidth, cv.clientHeight);
+  }
+
+  // ---------- Sound + vibration ----------
+  let ac = null;
+  function unlockAudio() {
+    if (ac || !life.sound) return;
+    try { ac = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {}
+  }
+  function tone(freq, dur, type = "sine", vol = .12, delay = 0) {
+    if (!ac || !life.sound) return;
+    const t = ac.currentTime + delay, o = ac.createOscillator(), g = ac.createGain();
+    o.type = type; o.frequency.setValueAtTime(freq, t);
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol, t + .01); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+    o.connect(g).connect(ac.destination); o.start(t); o.stop(t + dur + .02);
+  }
+  // iPhone Safari has no vibrate(). Since iOS 18, toggling a hidden switch control gives a real haptic tap.
+  const hapSwitch = (() => {
+    const l = document.createElement("label"), i = document.createElement("input");
+    i.type = "checkbox"; i.setAttribute("switch", ""); l.appendChild(i);
+    l.setAttribute("aria-hidden", "true");
+    l.style.cssText = "position:fixed;left:-9999px;top:0;width:1px;height:1px;overflow:hidden;opacity:0;pointer-events:none";
+    document.body.appendChild(l);
+    return l;
+  })();
+  const buzz = p => {
+    if (!life.haptics) return;
+    try {
+      if (navigator.vibrate) { navigator.vibrate(p); return; }
+      const n = Array.isArray(p) ? Math.ceil(p.length / 2) : 1;
+      for (let k = 0; k < n; k++) setTimeout(() => hapSwitch.click(), k * 110);
+    } catch (e) {}
+  };
+  const fx = {
+    seen: () => { tone(880, .08, "sine", .05); buzz(6); },
+    tap: c => { tone(520 + Math.min(c, 24) * 22, .09, "triangle", .1); buzz(10 + Math.min(c, 10)); },
+    up: () => { tone(660, .1, "triangle"); tone(990, .16, "triangle", .12, .08); buzz([20, 30, 20]); },
+    golden: () => { [784, 988, 1175, 1568].forEach((f, i) => tone(f, .25, "sine", .1, i * .07)); buzz([30, 40, 60]); },
+    party: () => { [523, 659, 784, 1047].forEach((f, i) => tone(f, .3, "triangle", .1, i * .08)); buzz([20, 30, 20, 30, 40]); },
+    evolve: () => { [392, 523, 659, 784, 1047, 1319].forEach((f, i) => tone(f, .35, "sine", .1, i * .09)); buzz([30, 40, 30, 40, 80]); },
+  };
+
+  // ---------- Ending a session ----------
+  let undo = null;
+  function finish() {
+    const s = S, taps = sum(s.said), seenN = sum(s.seen);
+    const levelBefore = levelFor(life.said);
+    // Kept so "Keep scrolling" can pick the session back up with its score.
+    if (taps > 0 || seenN > 0) undo = { life: JSON.parse(JSON.stringify(life)), S: s };
+    if (taps > 0 || seenN > 0) {
+      life.seen += seenN; life.said += taps; life.sessions++;
+      life.best = Math.max(life.best, taps); life.golden += s.golden;
+      for (const [k, v] of Object.entries(s.said)) life.per[k] = (life.per[k] || 0) + v;
+      if (taps > 0) {
+        const day = new Date(); day.setHours(0, 0, 0, 0);
+        if (life.lastDay) {
+          const gap = Math.round((day - new Date(life.lastDay)) / 864e5);
+          if (gap === 1) life.streak++; else if (gap > 1) life.streak = 1;
+        } else life.streak = 1;
+        life.bestStreak = Math.max(life.bestStreak, life.streak);
+        life.lastDay = day.getTime();
+      }
+      checkBadges(true);
+      save();
+    }
+    const summary = { ...s, taps, seenN, end: Date.now(), levelBefore, levelAfter: levelFor(life.said), stageEnd: stageFor(life.said, life.badges.length) };
+    S = newSession();
+    clearCheers();
+    renderHud(false); renderBuddy();
+    return summary;
+  }
+
+  const slot = $("sheetSlot");
+  function fmtTime(ms) { const s = Math.round(ms / 1000); return s >= 60 ? `${Math.floor(s / 60)}m ${s % 60}s` : `${s}s`; }
+  function tile(icon, v, k) { return `<div class="tile"><span class="i">${icon}</span><span class="v">${v}</span><span class="k">${k}</span></div>`; }
+  function badgeHtml(b, on) { return `<div class="badge${on ? "" : " locked"}"><div class="disc">${on ? b.icon : "🔒"}</div><b>${esc(badgeText(b)[0])}</b><small>${esc(badgeText(b)[1])}</small></div>`; }
+
+  // ---------- "Lighten the load": a number you set that each scrolled card lowers ----------
+  const digits = str => String(str).replace(/[٠-٩۰-۹০-৯]/g, ch => {
+    const c = ch.charCodeAt(0);
+    return String(c >= 0x09E6 ? c - 0x09E6 : c >= 0x06F0 ? c - 0x06F0 : c - 0x0660);
+  }).replace(/\D/g, "");
+
+  // Lowers the number by one step. Returns true on the card that brings it to zero.
+  function lowerDebt() {
+    const d = life.debt;
+    if (!d || d.done || d.left <= 0) return false;
+    const cut = Math.min(d.step, d.left);
+    d.left -= cut; S.lifted += cut;
+    const cleared = d.left === 0;
+    if (cleared) { d.done = true; life.debtsCleared++; }
+    save();
+    renderDebt(true);
+    return cleared;
+  }
+
+  function renderDebt(tickIt) {
+    const d = life.debt, btn = $("debtBtn");
+    $("debtAdd").hidden = !!d || !life.gender;
+    $("debtAddT").textContent = t("debtTitle");
+    if (!d) { btn.hidden = true; return; }
+    btn.hidden = false;
+    btn.classList.toggle("done", !!d.done);
+    $("debtNum").textContent = d.done ? t("debtDoneChip") : t("debtLeft", { n: d.left.toLocaleString() });
+    $("debtFill").style.width = ((1 - d.left / d.start) * 100).toFixed(2) + "%";
+    if (tickIt) { btn.classList.remove("tick"); void btn.offsetWidth; btn.classList.add("tick"); }
+  }
+
+  const DEBT_PRESETS = [1000, 10000, 100000, 1000000, 10000000];
+  const DEBT_STEPS = [1, 5, 10, 50, 100];
+
+  function showDebt() {
+    openView = "debt";
+    const d = life.debt;
+    let step = debtDraft ? debtDraft.step : d && !d.done ? d.step : 1;
+    slot.innerHTML = `
+      <div class="sheet" role="dialog" aria-label="${esc(t("debtTitle"))}">
+        <div class="inner">
+          <div class="hero">
+            <div class="label">${esc(t("debtTitle"))}</div>
+            <div style="font-size:54px">🪶</div>
+            <p class="note" style="font-size:15px;color:var(--ink-soft)">${esc(t("debtIntro"))}</p>
+          </div>
+          ${d && !d.done ? `<div class="panel"><div class="label">${esc(t("debtLeft", { n: d.left.toLocaleString() }))}</div><div class="progress"><b style="width:${((1 - d.left / d.start) * 100).toFixed(1)}%"></b></div></div>` : ""}
+          <div class="panel">
+            <label class="label" for="debtIn">${esc(t("debtAmount"))}</label>
+            <input id="debtIn" class="numIn" type="text" inputmode="numeric" autocomplete="off" value="${debtDraft ? debtDraft.value : d && !d.done ? d.start : ""}" placeholder="1,000,000">
+            <div class="chips" id="presets">${DEBT_PRESETS.map(n => `<button class="chip" data-n="${n}">${n.toLocaleString()}</button>`).join("")}</div>
+            <div class="label" style="margin-top:6px">${esc(t("debtStep"))}</div>
+            <div class="chips" id="steps">${DEBT_STEPS.map(n => `<button class="chip${n === step ? " on" : ""}" data-s="${n}">${n}</button>`).join("")}</div>
+          </div>
+          <p class="note">${esc(t("debtNote"))}</p>
+          ${d ? `<button class="secondary" id="debtRm" style="height:44px">${esc(t("debtRemove"))}</button>` : ""}
+          <div class="panel">${langSelect()}</div>
+        </div>
+      </div>
+      <div class="actions"><button class="secondary" id="debtBack">${esc(t("back"))}</button><button class="primary" id="debtGo">${esc(t("debtStart"))}</button></div>`;
+    bindLang();
+    const input = $("debtIn");
+    input.oninput = () => { const n = digits(input.value); input.value = n ? Math.min(1e12, +n).toLocaleString("en-US") : ""; };
+    if (input.value) input.value = (+input.value).toLocaleString("en-US");
+    slot.querySelectorAll("#presets .chip").forEach(b => b.onclick = () => { input.value = (+b.dataset.n).toLocaleString("en-US"); });
+    slot.querySelectorAll("#steps .chip").forEach(b => b.onclick = () => {
+      step = +b.dataset.s;
+      slot.querySelectorAll("#steps .chip").forEach(x => x.classList.toggle("on", x === b));
+    });
+    $("debtBack").onclick = closeSheet;
+    $("debtGo").onclick = () => {
+      const n = Math.min(1e12, +digits(input.value) || 0);
+      if (n < 1) { input.focus(); return; }
+      debtDraft = null;
+      life.debt = { start: n, left: n, step, done: false };
+      save(); closeSheet(); renderDebt(false);
+      unlockAudio(); fx.party(); cheerBuddy();
+      toast("🪶", t("debtTitle"), t("debtLeft", { n: n.toLocaleString() }));
+    };
+    if ($("debtRm")) $("debtRm").onclick = () => { life.debt = null; save(); renderDebt(false); closeSheet(); };
+  }
+
+  function langSelect() {
+    return `<label class="langRow" for="langSel"><span>🌐 ${esc(t("language"))}</span><select id="langSel" aria-label="${esc(t("language"))}">${Object.entries(LANGS).map(([k, v]) => `<option value="${k}"${k === lang ? " selected" : ""}>${esc(v.name)}</option>`).join("")}</select></label>`;
+  }
+  function bindLang() { const el = $("langSel"); if (el) el.onchange = e => setLang(e.target.value); }
+
+  let openView = null, lastSm = null, debtDraft = null;
+
+  function showSummary(sm) {
+    openView = "summary"; lastSm = sm;
+    const rows = Object.entries(sm.said).map(([id, n]) => ({ d: BY_ID[id], n })).filter(r => r.d && r.n > 0).sort((a, b) => b.n - a.n);
+    const max = Math.max(1, ...rows.map(r => r.n));
+    const lt = life.said, lv = levelFor(lt);
+    const evolved = sm.stageEnd > sm.stageStart;
+    const buddy = life.gender ? `<div class="heroChar${evolved ? " cheer" : ""}">${charSVG(life.gender, sm.stageEnd)}</div>` : "";
+    slot.innerHTML = `
+      <div class="sheet" role="dialog" aria-label="${esc(t("complete"))}">
+        <div class="inner">
+          <div class="hero">
+            <div class="arh" lang="ar">${sm.taps ? "مَا شَاءَ ٱللَّٰهُ" : "بِسْمِ ٱللَّٰهِ"}</div>
+            ${buddy}
+            <div class="cap">${esc(sm.taps ? t("complete") : t("start"))}</div>
+            <div class="big"><span id="countUp">0</span></div>
+            <div class="cap">${esc(t("ptsSession"))}</div>
+          </div>
+          ${evolved ? `<div class="panel gold"><span style="font-size:36px">${sm.stageEnd >= 3 ? "🪽" : "✨"}</span><div><b style="font-size:19px">${esc(t("grew"))}</b><div style="color:var(--ink-soft)">${esc(stageName(sm.stageStart))} → ${esc(stageName(sm.stageEnd))}</div></div></div>` : ""}
+          ${sm.levelAfter > sm.levelBefore ? `<div class="panel gold"><span style="font-size:36px">⬆️</span><div><b style="font-size:19px">${esc(t("lvUp"))}</b><div style="color:var(--ink-soft)">${esc(t("lvLine", { n: sm.levelAfter, t: levelTitle(sm.levelAfter) }))}</div></div></div>` : ""}
+          <div class="tiles">
+            ${tile("✦", life.said.toLocaleString(), t("allPts"))}${tile("🔥", sm.bestCombo, t("bestCombo"))}${tile("⏱", fmtTime(sm.end - sm.start), t("time"))}
+            ${tile("⭐", sm.golden, t("goldenTile"))}${tile("📅", life.streak, t("streak"))}${tile("📿", rows.length, t("types"))}
+          </div>
+          ${life.debt ? `<div class="panel"><div class="label">🪶 ${esc(t("debtTitle"))}</div><div style="display:flex;justify-content:space-between;font-weight:800;gap:8px"><span>${esc(t("debtLifted", { n: (sm.lifted || 0).toLocaleString() }))}</span><span>${esc(life.debt.done ? t("debtDoneChip") : t("debtLeft", { n: life.debt.left.toLocaleString() }))}</span></div><div class="progress"><b style="width:${((1 - life.debt.left / life.debt.start) * 100).toFixed(1)}%"></b></div></div>` : ""}
+          ${sm.badges.length ? `<div class="panel"><div class="label">${esc(t("newBadges"))}</div><div class="badges">${sm.badges.map(b => badgeHtml(b, true)).join("")}</div></div>` : ""}
+          <div class="panel"><div class="label">${esc(t("perDhikr"))}</div>${rows.length ? rows.map(r => `
+            <div class="row"><div class="top"><span class="t">${esc(r.d.tr)}</span><span class="a" lang="ar">${esc(r.d.ar)}</span><span class="n">×${r.n}</span></div>
+            <div class="meter"><b data-w="${(r.n / max * 100).toFixed(1)}%"></b></div></div>`).join("") : `<div class="cap" style="color:var(--ink-faint);font-size:13px">${esc(t("nothing"))}</div>`}</div>
+          <div class="panel">
+            <div class="label">${esc(t("allTime"))}</div>
+            <div style="display:flex;justify-content:space-between;font-weight:800"><span>${esc(t("lvLine", { n: lv, t: levelTitle(lv) }))}</span><span>${lt.toLocaleString()} ${esc(t("pointsWord"))}</span></div>
+            <div class="progress"><b style="width:${(levelProgress(lt) * 100).toFixed(1)}%"></b></div>
+            <div style="font-size:12px;color:var(--ink-faint)">${esc(t("sessLine", { s: life.sessions, d: life.bestStreak }))}</div>
+          </div>
+          <div class="panel">${langSelect()}</div>
+          <div class="panel"><button class="secondary" id="copyBtn" style="height:44px">${esc(t("copy"))}</button></div>
+          <p class="note">${esc(t("disclaimer"))}</p>
+        </div>
+      </div>
+      <div class="actions"><button class="secondary" id="resetBtn">${esc(t("reset"))}</button><button class="primary" id="againBtn">${esc(t("again"))}</button></div>`;
+    requestAnimationFrame(() => slot.querySelectorAll(".meter b").forEach(b => b.style.width = b.dataset.w));
+    bindLang();
+    $("againBtn").onclick = () => {
+      // Continue where you left off: bring back the session and its score.
+      if (undo && lastSm && undo.S.start === lastSm.start) { life = undo.life; S = undo.S; S.last = 0; save(); renderHud(false); renderBuddy(); }
+      undo = null; closeSheet();
+    };
+    $("resetBtn").onclick = () => { undo = null; closeSheet(); };
+    $("copyBtn").onclick = async e => {
+      try { await navigator.clipboard.writeText(t("copyText", { n: sm.taps })); e.target.textContent = t("copied"); } catch (err) { e.target.textContent = t("copyFail"); }
+    };
+    if (sm.taps > 0) {
+      const el = $("countUp"), steps = Math.min(30, sm.taps); let i = 0;
+      const iv = setInterval(() => {
+        i++; el.textContent = Math.round(sm.taps * i / steps).toLocaleString();
+        if (i % 3 === 0) fx.seen();
+        if (i >= steps) { clearInterval(iv); evolved ? fx.evolve() : fx.party(); confetti(evolved); }
+      }, 40);
+    } else $("countUp").textContent = "0";
+  }
+
+  function showProgress() {
+    openView = "progress";
+    const p = lifeTaps(), lv = levelFor(p), st = stageNow();
+    const top = Object.entries(life.per).sort((a, b) => b[1] - a[1]).slice(0, 8).filter(([id]) => BY_ID[id]);
+    const journey = STAGES.map((s, i) => {
+      const got = i <= st;
+      return `<div class="stage${got ? "" : " locked"}${i === st ? " now" : ""}"><div class="sv">${charSVG(life.gender || "m", i)}</div><b>${got ? esc(stageName(i)) : "???"}</b></div>`;
+    }).join("");
+    slot.innerHTML = `
+      <div class="sheet" role="dialog" aria-label="${esc(t("progress"))}">
+        <div class="inner">
+          <div class="hero">
+            <div class="label">${esc(t("progress"))}</div>
+            <div class="heroChar">${charSVG(life.gender || "m", st)}</div>
+            <div class="cap">${esc(stageName(st))}</div>
+            <div class="big">${lv}</div>
+            <div class="cap">${esc(t("levelCap", { t: levelTitle(lv) }))}</div>
+            <div class="progress" style="margin-top:8px"><b style="width:${(levelProgress(p) * 100).toFixed(1)}%"></b></div>
+            <div class="cap" style="font-size:12px;color:var(--ink-faint)">${esc(t("toNext", { n: (threshold(lv + 1) - p).toLocaleString(), l: lv + 1 }))}</div>
+          </div>
+          <div class="panel"><div class="label">${esc(t("journey"))}</div><div class="journey">${journey}</div>
+            ${st < STAGES.length - 1 ? `<div class="progress"><b style="width:${(stageProgress(p, life.badges.length) * 100).toFixed(1)}%"></b></div><div class="cap" style="font-size:12px;color:var(--ink-faint);text-align:center">${esc(t("reach", { n: stageName(st + 1) }))}</div>` : `<div class="cap" style="font-size:12px;color:var(--ink-faint);text-align:center">${esc(t("fullAngel"))}</div>`}</div>
+          <div class="tiles">
+            ${tile("✦", p.toLocaleString(), t("pointsTile"))}${tile("⬆️", t("lv", { n: lv }), t("levelTile"))}${tile("📅", life.streak, t("streak"))}
+            ${tile("🗂", life.sessions, t("sessions"))}${tile("🏆", Math.max(life.best, sTaps()).toLocaleString(), t("bestSession"))}${tile("⭐", life.golden + S.golden, t("goldenTile"))}
+          </div>
+          <div class="panel"><div class="label">${esc(t("badgesH", { a: life.badges.length, b: BADGES.length }))}</div><div class="badges">${BADGES.map(b => badgeHtml(b, life.badges.includes(b.id))).join("")}</div></div>
+          ${top.length ? `<div class="panel"><div class="label">${esc(t("mostScrolled"))}</div>${top.map(([id, n]) => `<div class="row"><div class="top"><span class="t">${esc(BY_ID[id].tr)}</span><span class="n">${n.toLocaleString()}</span></div></div>`).join("")}</div>` : ""}
+          <div class="panel">
+            <button class="secondary" id="debtOpen" style="height:48px">🪶 ${esc(life.debt ? t("debtNew") : t("debtTitle"))}</button>
+            ${langSelect()}
+            <label class="toggle" for="soundT">${esc(t("sounds"))}<input type="checkbox" id="soundT" ${life.sound ? "checked" : ""}></label>
+            <label class="toggle" for="hapT">${esc(t("haptics"))}<input type="checkbox" id="hapT" ${life.haptics ? "checked" : ""}></label>
+            <button class="secondary" id="backupBtn" style="height:44px">💾 ${esc(t("backup"))}</button>
+            <button class="secondary" id="restoreBtn" style="height:44px">📂 ${esc(t("restore"))}</button>
+            <input type="file" id="restoreFile" accept=".json,application/json" hidden>
+            <button class="secondary" id="swapBtn" style="height:44px">${esc(life.gender === "f" ? t("swapBoy") : t("swapGirl"))}</button>
+          </div>
+          <p class="note">${esc(t("disclaimer"))}<br>${esc(t("saved"))}</p>
+        </div>
+      </div>
+      <div class="actions"><button class="primary" id="closeBtn">${esc(t("back"))}</button></div>`;
+    bindLang();
+    $("closeBtn").onclick = closeSheet;
+    $("debtOpen").onclick = showDebt;
+    $("soundT").onchange = e => { life.sound = e.target.checked; save(); if (!life.sound) ac = null; };
+    $("hapT").onchange = e => { life.haptics = e.target.checked; save(); buzz(10); };
+    $("backupBtn").onclick = backupProgress;
+    $("restoreBtn").onclick = () => $("restoreFile").click();
+    $("restoreFile").onchange = e => { const f = e.target.files[0]; if (f) restoreProgress(f); };
+    $("swapBtn").onclick = () => { life.gender = life.gender === "f" ? "m" : "f"; save(); buddyKey = ""; renderBuddy(); showProgress(); };
+  }
+  // ---------- Backup: progress lives in this browser only, so let people save it as a file ----------
+  async function backupProgress() {
+    const name = `dhikr-scroll-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    // Include the points from the session in progress.
+    const snapLife = JSON.parse(JSON.stringify(life));
+    snapLife.said += sTaps();
+    for (const [k, v] of Object.entries(S.said)) snapLife.per[k] = (snapLife.per[k] || 0) + v;
+    const text = JSON.stringify({ app: "hasanat-scroll", v: 2, life: snapLife }, null, 1);
+    const blob = new Blob([text], { type: "application/json" });
+    // Inside Claude the page saves through the viewer; elsewhere it uses the share sheet or a download.
+    const dl = window.claude && window.claude.use ? await window.claude.use("downloads").catch(() => null) : null;
+    if (dl) { try { await dl.save({ filename: name, data: text }); } catch (e) {} return; }
+    try {
+      const file = new File([blob], name, { type: "application/json" });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], title: name }); return; }
+    } catch (e) { if (e && e.name === "AbortError") return; }
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob); a.download = name;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  }
+  async function restoreProgress(f) {
+    try {
+      const data = JSON.parse(await f.text());
+      if (!data || data.app !== "hasanat-scroll" || typeof data.life !== "object") throw 0;
+      life = Object.assign(fresh(), data.life);
+      S = newSession(); undo = null;   // the backup already holds the session in progress
+      if (LANGS[life.lang]) lang = life.lang;
+      save(); applyLang(); buddyKey = ""; renderBuddy(); renderDebt(false);
+      showProgress(); toast("💾", t("restored"), ""); buzz([20, 30, 20]);
+    } catch (e) { toast("⚠️", t("badFile"), ""); }
+  }
+  function closeSheet() { slot.innerHTML = ""; openView = null; debtDraft = null; feed.focus(); }
+
+  // ---------- First launch: choose your language and buddy ----------
+  function showPicker() {
+    openView = "picker";
+    $("pickerSlot").innerHTML = `
+      <div class="picker" role="dialog" aria-label="${esc(t("pickTitle"))}">
+        ${langSelect()}
+        <div class="arh" lang="ar">بِسْمِ ٱللَّٰهِ</div>
+        <h1>${esc(t("pickTitle"))}</h1>
+        <p>${esc(t("pickText"))}</p>
+        <div class="choices">
+          <button class="choice" data-g="m"><span class="pv cheer">${charSVG("m", 0)}</span><b>${esc(t("boy"))}</b></button>
+          <button class="choice" data-g="f"><span class="pv cheer">${charSVG("f", 0)}</span><b>${esc(t("girl"))}</b></button>
+        </div>
+        <small>${esc(t("pickHint"))}</small>
+      </div>`;
+    bindLang();
+    $("pickerSlot").querySelectorAll(".choice").forEach(b => b.onclick = () => {
+      life.gender = b.dataset.g; life.lang = lang; save(); unlockAudio();
+      $("pickerSlot").innerHTML = ""; openView = null;
+      renderBuddy(); renderDebt(false); cheerBuddy(); fx.party(); confetti(false);
+    });
+  }
+
+  // ---------- Switching language ----------
+  function refreshCard(el) {
+    const d = BY_ID[el.dataset.id];
+    el.querySelector(".kind").textContent = el.dataset.golden ? t("golden") : kindLabel(d);
+    el.querySelector(".en").textContent = meaning(d);
+    const src = el.querySelector(".src"); src.textContent = sourceText(d); src.hidden = !src.textContent;
+    el.querySelector(".hint").textContent = t("swipe");
+  }
+  function applyLang() {
+    const app = $("app");
+    app.lang = lang; app.dir = LANGS[lang].dir;
+    document.documentElement.lang = lang;
+    $("doneBtn").textContent = t("done");
+    $("lvlBtn").setAttribute("aria-label", t("progress"));
+    feed.querySelectorAll(".card[data-full]").forEach(refreshCard);
+    renderHud(false); renderDebt(false);
+  }
+  function setLang(l) {
+    if (!LANGS[l]) return;
+    if (openView === "debt" && $("debtIn")) { const on = slot.querySelector("#steps .chip.on"); debtDraft = { value: $("debtIn").value, step: on ? +on.dataset.s : 1 }; }
+    lang = l; life.lang = l; save();
+    applyLang();
+    if (openView === "picker") showPicker();
+    else if (openView === "progress") showProgress();
+    else if (openView === "summary" && lastSm) showSummary(lastSm);
+    else if (openView === "debt") showDebt();
+  }
+
+  $("doneBtn").onclick = () => { unlockAudio(); showSummary(finish()); };
+  $("lvlBtn").onclick = () => { unlockAudio(); showProgress(); };
+  $("debtBtn").onclick = () => { unlockAudio(); showDebt(); };
+  $("debtAdd").onclick = () => { unlockAudio(); showDebt(); };
+
+  // Leaving the app or tab ends the session; the summary waits for the return.
+  let pending = null;
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) { if (sTaps() + sSeen() > 0) pending = finish(); }
+    else if (pending) { showSummary(pending); pending = null; }
+  });
+  window.addEventListener("pagehide", () => { if (sTaps() + sSeen() > 0) finish(); });
+
+  ["pointerdown", "touchend", "click"].forEach(t => document.addEventListener(t, () => { unlockAudio(); if (ac && ac.state === "suspended") ac.resume(); }, { passive: true }));
+
+  addCards(30);
+  applyLang();
+  renderDebt(false);
+  renderBuddy();
+  if (!life.gender) showPicker();
+})();
+</script>
+
+<script>if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});</script>
+</body>
+</html>
