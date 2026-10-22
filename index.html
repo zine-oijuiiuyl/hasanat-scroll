@@ -1209,15 +1209,16 @@ button:focus-visible { outline: 2px solid var(--gold-1); outline-offset: 3px; }
   }
   // iPhone Safari has no vibrate(). Since iOS 18, toggling a switch control gives a real haptic tap,
   // but only while the finger is on the glass (touchend or click), never from a scroll callback.
-  const hapSwitch = (() => {
-    const l = document.createElement("label"), i = document.createElement("input");
-    i.type = "checkbox"; i.setAttribute("switch", ""); i.tabIndex = -1; l.appendChild(i);
-    l.setAttribute("aria-hidden", "true"); l.className = "hapSw";
-    l.style.cssText = "position:fixed;left:0;bottom:0;width:1px;height:1px;overflow:hidden;opacity:0.01;z-index:-1";
-    document.body.appendChild(l);
-    return l;
-  })();
-  const hapTick = () => { if (life.haptics && !navigator.vibrate) try { hapSwitch.click(); } catch (e) {} };
+  // A fresh hidden switch per tick, the same way the ios-haptics approach does it.
+  const hapTick = () => {
+    if (!life.haptics || navigator.vibrate) return;
+    try {
+      const l = document.createElement("label"), i = document.createElement("input");
+      i.type = "checkbox"; i.setAttribute("switch", ""); l.appendChild(i);
+      l.setAttribute("aria-hidden", "true"); l.style.display = "none";
+      document.head.appendChild(l); l.click(); l.remove();
+    } catch (e) {}
+  };
   const buzz = p => {
     if (!life.haptics) return;
     try {
@@ -1227,14 +1228,8 @@ button:focus-visible { outline: 2px solid var(--gold-1); outline-offset: 3px; }
       for (let k = 1; k < n; k++) setTimeout(hapTick, k * 110);
     } catch (e) {}
   };
-  // One tick each time a swipe ends, and on every button press.
-  let touchY = null;
-  document.addEventListener("touchstart", e => { touchY = e.touches[0].clientY; }, { passive: true });
-  document.addEventListener("touchend", e => {
-    if (touchY === null || openView) return;
-    const dy = touchY - e.changedTouches[0].clientY; touchY = null;
-    if (Math.abs(dy) > 25) hapTick();
-  }, { passive: true });
+  // iOS refuses the tick once a touch has turned into a scroll, so the feed ticks when the finger lands.
+  feed.addEventListener("touchstart", () => { if (!openView) hapTick(); }, { passive: true });
   document.addEventListener("click", e => { if (e.target.closest && e.target.closest("button")) hapTick(); });
   const fx = {
     seen: () => { tone(880, .08, "sine", .05); buzz(6); },
@@ -1468,7 +1463,7 @@ button:focus-visible { outline: 2px solid var(--gold-1); outline-offset: 3px; }
             <input type="file" id="restoreFile" accept=".json,application/json" hidden>
             <button class="secondary" id="swapBtn" style="height:44px">${esc(life.gender === "f" ? t("swapBoy") : t("swapGirl"))}</button>
           </div>
-          <p class="note">${esc(t("disclaimer"))}<br>${esc(t("saved"))}<br>v16</p>
+          <p class="note">${esc(t("disclaimer"))}<br>${esc(t("saved"))}<br>v17</p>
         </div>
       </div>
       <div class="actions"><button class="primary" id="closeBtn">${esc(t("back"))}</button></div>`;
