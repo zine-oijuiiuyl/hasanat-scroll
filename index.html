@@ -295,9 +295,21 @@ button:focus-visible { outline: 2px solid var(--gold-1); outline-offset: 3px; }
 @keyframes flapfast { 50% { transform: rotate(-17deg); } }
 .char .tear { transform-box: fill-box; transform-origin: top center; animation: tear 1.8s ease-in infinite; opacity: 0; }
 @keyframes tear { 0% { transform: translateY(-2px) scale(.5); opacity: 0; } 20% { opacity: 1; } 100% { transform: translateY(16px) scale(1); opacity: 0; } }
-.char.m-sad .bob, .char.m-upset .bob { animation-duration: 3.8s; }
+/* Moods: wistful sways and sighs, sad slouches and breathes, crying sobs and wipes its eyes. */
+.char.m-miss .bob { transform-box: fill-box; transform-origin: 50% 100%; animation: sway 3.6s ease-in-out infinite; }
+@keyframes sway { 0%, 100% { transform: rotate(-2.2deg); } 50% { transform: rotate(2.2deg) translateY(-1px); } }
+.char.m-sad .bob { transform-box: fill-box; transform-origin: 50% 100%; animation: slouch 4.2s ease-in-out infinite; }
+@keyframes slouch { 0%, 100% { transform: rotate(-1.5deg) scaleY(1); } 45% { transform: rotate(-1.5deg) scaleY(.965) translateY(2px); } 70% { transform: rotate(1deg) scaleY(.98) translateY(1px); } }
+.char.m-upset .bob { transform-box: fill-box; transform-origin: 50% 100%; animation: sob 2.6s ease-in-out infinite; }
+@keyframes sob { 0%, 52%, 100% { transform: translateY(0) rotate(0); } 6% { transform: translateY(-3px) rotate(-1.5deg); } 12% { transform: translateY(1.5px) rotate(1.5deg); } 18% { transform: translateY(-2.5px) rotate(-1.2deg); } 24% { transform: translateY(1px) rotate(1deg); } 32% { transform: translateY(0) rotate(0); } }
+.char.m-sad .mouth, .char.m-upset .mouth { transform-box: fill-box; transform-origin: center; animation: quiver .5s ease-in-out infinite; }
+.char.m-upset .mouth { animation-duration: .3s; }
+@keyframes quiver { 50% { transform: scale(1.07, .9) translateY(.6px); } }
+.char.m-upset .tear { animation-duration: 1s; }
+.char.m-upset .armR { animation: wipe 5.5s ease-in-out infinite; }
+@keyframes wipe { 0%, 42%, 100% { transform: rotate(0); } 54% { transform: rotate(-195deg); } 60% { transform: rotate(-182deg); } 66% { transform: rotate(-195deg); } 72% { transform: rotate(-182deg); } 84% { transform: rotate(0); } }
+.char.m-upset .flap, .char.m-sad .flap { animation-name: flapsad; animation-duration: 2.4s; }
 .char.m-upset .halo, .char.m-sad .halo { opacity: .45; }
-.char.m-upset .flap, .char.m-sad .flap { animation-name: flapsad; }
 @keyframes flapsad { 50% { transform: rotate(-2deg); } }
 .char .halo { animation: halo 2.6s ease-in-out infinite; }
 @keyframes halo { 50% { transform: translateY(-2.5px); } }
@@ -960,11 +972,11 @@ button:focus-visible { outline: 2px solid var(--gold-1); outline-offset: 3px; }
     let eyes, mouth, extras = "";
     if (mood === "upset") {
       eyes = closed(86) + closed(114);
-      mouth = `<path d="M89,109 Q94.5,101 100,107 Q105.5,101 111,109" fill="none" stroke="#8a4b3a" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>`;
-      extras = brow("M77,79 L93,73") + brow("M107,73 L123,79") + tear(80, 95, 0) + tear(120, 95, .7);
+      mouth = `<path class="mouth" d="M89,109 Q94.5,101 100,107 Q105.5,101 111,109" fill="none" stroke="#8a4b3a" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>`;
+      extras = brow("M77,79 L93,73") + brow("M107,73 L123,79") + tear(80, 95, 0) + tear(120, 95, .45) + tear(83, 97, .25) + tear(117, 97, .7);
     } else if (mood === "sad") {
       eyes = eye(86) + eye(114);
-      mouth = `<path d="M91,108 Q100,101 109,108" fill="none" stroke="#8a4b3a" stroke-width="2.6" stroke-linecap="round"/>`;
+      mouth = `<path class="mouth" d="M91,108 Q100,101 109,108" fill="none" stroke="#8a4b3a" stroke-width="2.6" stroke-linecap="round"/>`;
       extras = brow("M78,80 L93,75") + brow("M107,75 L122,80") + tear(121, 94, 0);
     } else if (mood === "miss") {
       eyes = eye(86) + eye(114);
@@ -999,19 +1011,22 @@ button:focus-visible { outline: 2px solid var(--gold-1); outline-offset: 3px; }
         ${face}`;
     } else {
       const arm = (d, hx) => `<path d="${d}" fill="none" stroke="#00000026" stroke-width="19" stroke-linecap="round"/><path d="${d}" fill="none" stroke="${P.dress}" stroke-width="16" stroke-linecap="round"/><circle cx="${hx}" cy="184" r="8.5" fill="${SKIN}"/>`;
+      // A crying girl wipes her eyes, so her arm is drawn in front of the hijab.
+      const armRg = `<g class="armR" style="transform-origin:${sx}px ${sy}px">${arm("M130,150 Q144,166 140,180", 140)}</g>`;
+      const armRG = o.mood === "upset" ? "" : armRg;
       body = `
         <ellipse cx="84" cy="224" rx="13" ry="5.5" fill="#4b3a63"/><ellipse cx="116" cy="224" rx="13" ry="5.5" fill="#4b3a63"/>
         <path d="M66,142 Q100,128 134,142 L154,217 Q100,229 46,217Z" fill="${P.dress}" stroke="#0000001f" stroke-width="1.5"/>
         <path d="M60,176 Q100,188 140,176" fill="none" stroke="${P.trim}" stroke-width="3.5" stroke-linecap="round"/>
         <path d="M49,208 Q100,222 151,208" fill="none" stroke="${P.trim}" stroke-width="3.5" stroke-linecap="round"/>
         ${arm("M70,150 Q56,166 60,180", 60)}
-        <g class="armR" style="transform-origin:${sx}px ${sy}px">${arm("M130,150 Q144,166 140,180", 140)}</g>
+        ${armRG}
         <path d="M100,38 C62,38 54,72 56,100 C57,122 46,136 54,154 Q100,170 146,154 C154,136 143,122 144,100 C146,72 138,38 100,38Z" fill="${P.hijab}" stroke="#0000001f" stroke-width="1.5"/>
         <path d="M60,150 Q100,164 140,150" fill="none" stroke="#00000018" stroke-width="2"/>
         <ellipse cx="100" cy="89" rx="32" ry="35" fill="#00000026"/>
         <ellipse cx="100" cy="88" rx="29.5" ry="32.5" fill="${SKIN}"/>
         <path d="M71,72 Q100,52 129,72" fill="none" stroke="#00000014" stroke-width="3"/>
-        ${face}`;
+        ${face}${o.mood === "upset" ? armRg : ""}`;
     }
 
     const vb = o.crop ? "-20 8 240 130" : "-40 0 280 240";
@@ -1233,9 +1248,11 @@ button:focus-visible { outline: 2px solid var(--gold-1); outline-offset: 3px; }
     // The speech bubble sits above the buddy in the bottom left, and the buddy celebrates.
     slotEl.innerHTML = `<div class="cheerCard" id="cheerCard" role="status"><span class="bubble"><span class="bi">${c.icon}</span><span class="bt"><b>${esc(c.title)}</b><small>${esc(c.sub)}</small></span></span></div>`;
     const bd = $("buddy");
-    bd.classList.remove("cheer", "evolve"); void bd.offsetWidth;
-    bd.classList.add("cheer"); if (c.evolve) bd.classList.add("evolve");
-    setTimeout(() => bd.classList.remove("cheer", "evolve"), 1600);
+    if (!c.still) {   // a sad buddy keeps its own animation instead of waving
+      bd.classList.remove("cheer", "evolve"); void bd.offsetWidth;
+      bd.classList.add("cheer"); if (c.evolve) bd.classList.add("evolve");
+      setTimeout(() => bd.classList.remove("cheer", "evolve"), 1600);
+    }
     if (c.confetti) confetti(c.confetti === "gold", "buddy");
     c.sound();
     cheerTimer = setTimeout(nextCheer, c.evolve ? 4800 : 3600);
@@ -1582,7 +1599,7 @@ button:focus-visible { outline: 2px solid var(--gold-1); outline-offset: 3px; }
             <button class="secondary wipe" id="wipeBtn" style="height:44px">${esc(t("wipe"))}</button>
             <button class="secondary" id="swapBtn" style="height:44px">${esc(life.gender === "f" ? t("swapBoy") : t("swapGirl"))}</button>
           </div>
-          <p class="note">${esc(t("disclaimer"))}<br>${esc(t("saved"))}<br>v26</p>
+          <p class="note">${esc(t("disclaimer"))}<br>${esc(t("saved"))}<br>v27</p>
         </div>
       </div>
       <div class="actions"><button class="primary" id="closeBtn">${esc(t("back"))}</button></div>`;
@@ -1727,7 +1744,7 @@ button:focus-visible { outline: 2px solid var(--gold-1); outline-offset: 3px; }
   if (!life.gender) showPicker();
   else if (buddyMood !== "happy") {
     const M = buddyMood[0].toUpperCase() + buddyMood.slice(1);
-    setTimeout(() => celebrate({ key: "mood-open", icon: MOOD_ICON[buddyMood], title: t("mood" + M + "T"), sub: t("mood" + M + "S"), sound: () => {} }), 900);
+    setTimeout(() => celebrate({ key: "mood-open", icon: MOOD_ICON[buddyMood], title: t("mood" + M + "T"), sub: t("mood" + M + "S"), sound: () => {}, still: true }), 900);
   }
 })();
 </script>
