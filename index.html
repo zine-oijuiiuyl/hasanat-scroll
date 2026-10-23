@@ -388,7 +388,7 @@ button:focus-visible { outline: 2px solid var(--gold-1); outline-offset: 3px; }
 
 /* Interactive tutorial: a spotlight on the part being explained, a tip card, and a hand showing the swipe. */
 #tour { position: absolute; inset: 0; z-index: 40; pointer-events: none; }
-.tourBlock { position: absolute; inset: 0; pointer-events: auto; }
+.tourBlock { position: absolute; pointer-events: auto; }
 .tourSpot { position: absolute; border-radius: 18px; box-shadow: 0 0 0 100vmax rgba(3, 20, 20, .76); outline: 2px solid var(--gold-2); animation: tourPulse 1.6s ease-in-out infinite; }
 @keyframes tourPulse { 50% { outline-color: var(--gold-1); outline-offset: 4px; } }
 .tourHand { position: absolute; left: 50%; top: 62%; font-size: 52px; line-height: 1; filter: drop-shadow(0 4px 8px rgba(0, 0, 0, .5)); animation: tourSwipe 1.7s ease-in-out infinite; }
@@ -1629,7 +1629,7 @@ button:focus-visible { outline: 2px solid var(--gold-1); outline-offset: 3px; }
             <button class="secondary wipe" id="wipeBtn" style="height:44px">${esc(t("wipe"))}</button>
             <button class="secondary" id="swapBtn" style="height:44px">${esc(life.gender === "f" ? t("swapBoy") : t("swapGirl"))}</button>
           </div>
-          <p class="note">${esc(t("disclaimer"))}<br>${esc(t("saved"))}<br>v28</p>
+          <p class="note">${esc(t("disclaimer"))}<br>${esc(t("saved"))}<br>v29</p>
         </div>
       </div>
       <div class="actions"><button class="primary" id="closeBtn">${esc(t("back"))}</button></div>`;
@@ -1737,11 +1737,14 @@ button:focus-visible { outline: 2px solid var(--gold-1); outline-offset: 3px; }
     if (r && !r.width) r = null;
     const spot = r && { x: r.left - 8, y: r.top - 8, w: r.width + 16, h: r.height + 16 };
     const hole = s.hole === "feed" ? { x: 0, y: 130, w: W, h: H - 260 } : s.hole === "target" ? spot : null;
+    // The screen is blocked with plain boxes around the hole. (A clip-path hole looked right but
+    // iPhone Safari kept catching the touches inside it, so the swipe got stuck.)
     let block = "";
-    if (s.next || hole) {
-      const clip = hole ? `;clip-path:polygon(evenodd,0 0,${W}px 0,${W}px ${H}px,0 ${H}px,0 0,${hole.x}px ${hole.y}px,${hole.x}px ${hole.y + hole.h}px,${hole.x + hole.w}px ${hole.y + hole.h}px,${hole.x + hole.w}px ${hole.y}px,${hole.x}px ${hole.y}px)` : "";
-      block = `<div class="tourBlock" style="${clip.slice(1)}"></div>`;
-    }
+    const box = (x, y, w, h) => w > 0 && h > 0 ? `<div class="tourBlock" style="left:${x}px;top:${y}px;width:${w}px;height:${h}px"></div>` : "";
+    if (hole) {
+      const x2 = hole.x + hole.w, y2 = hole.y + hole.h;
+      block = box(0, 0, W, hole.y) + box(0, y2, W, H - y2) + box(0, hole.y, hole.x, hole.h) + box(x2, hole.y, W - x2, hole.h);
+    } else if (s.next) block = box(0, 0, W, H);
     const pos = spot ? (spot.y + spot.h / 2 < H / 2 ? `top:${spot.y + spot.h + 14}px` : `bottom:${H - spot.y + 14}px`) : (s.last ? `top:${H * .34}px` : `top:${H * .16}px`);
     tourEl.innerHTML = `${block}
       ${spot ? `<div class="tourSpot" style="left:${spot.x}px;top:${spot.y}px;width:${spot.w}px;height:${spot.h}px"></div>` : ""}
