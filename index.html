@@ -386,6 +386,20 @@ button:focus-visible { outline: 2px solid var(--gold-1); outline-offset: 3px; }
 .choice b { font-size: 18px; }
 .choice .pv { display: block; width: 100%; }
 
+/* Interactive tutorial: a spotlight on the part being explained, a tip card, and a hand showing the swipe. */
+#tour { position: absolute; inset: 0; z-index: 40; pointer-events: none; }
+.tourBlock { position: absolute; inset: 0; pointer-events: auto; }
+.tourSpot { position: absolute; border-radius: 18px; box-shadow: 0 0 0 100vmax rgba(3, 20, 20, .76); outline: 2px solid var(--gold-2); animation: tourPulse 1.6s ease-in-out infinite; }
+@keyframes tourPulse { 50% { outline-color: var(--gold-1); outline-offset: 4px; } }
+.tourHand { position: absolute; left: 50%; top: 62%; font-size: 52px; line-height: 1; filter: drop-shadow(0 4px 8px rgba(0, 0, 0, .5)); animation: tourSwipe 1.7s ease-in-out infinite; }
+@keyframes tourSwipe { 0% { transform: translate(-50%, 50px); opacity: 0; } 20% { opacity: 1; } 80% { transform: translate(-50%, -110px); opacity: 1; } 100% { transform: translate(-50%, -130px); opacity: 0; } }
+.tourTip { position: absolute; left: 16px; right: 16px; margin-inline: auto; max-width: 24rem; padding: 16px 18px 14px; border-radius: 22px; background: #0f2f2b; border: 1.5px solid var(--gold-2); box-shadow: 0 12px 34px rgba(0, 0, 0, .5); pointer-events: auto; text-align: start; }
+.tourTip p { margin: 0 0 12px; font-size: 16px; line-height: 1.4; font-weight: 600; text-wrap: pretty; }
+.tourFoot { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.tourCount { font-size: 12px; color: var(--ink-faint); font-weight: 700; }
+.tourBtns { display: flex; gap: 8px; }
+.tourSkip { height: 38px; padding: 0 14px; border-radius: 999px; background: rgba(244,239,226,.12); font-weight: 700; font-size: 14px; }
+.tourNext { height: 38px; padding: 0 18px; border-radius: 999px; background: var(--gold); color: #2a1a00; font-weight: 800; font-size: 14px; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }
@@ -420,6 +434,7 @@ button:focus-visible { outline: 2px solid var(--gold-1); outline-offset: 3px; }
   <canvas id="confetti"></canvas>
   <div id="sheetSlot"></div>
   <div id="pickerSlot"></div>
+  <div id="tour" hidden></div>
 </div>
 
 <script>
@@ -832,6 +847,19 @@ button:focus-visible { outline: 2px solid var(--gold-1); outline-offset: 3px; }
     de: {"moodMissT": "Ich habe dich vermisst!", "moodMissS": "Scrolle ein paar Karten, dann geht es mir besser.", "moodSadT": "Wo warst du?", "moodSadS": "Das ist lange her. Lass uns zusammen scrollen.", "moodUpsetT": "Ohne dich war ich so einsam...", "moodUpsetS": "Bleib nicht wieder so lange weg. Scrolle, um mich aufzuheitern.", "moodBackT": "Du bist zurück!", "moodBackS": "Jetzt geht es mir viel besser."},
   };
   for (const k of Object.keys(MOOD_T)) Object.assign(T[k].ui, MOOD_T[k]);
+  const TUT_T = {
+    en: {"tutSwipe": "Swipe up to see the next card. Try it now!", "tutPoints": "Nice! Every new card you scroll to gives you +1 point.", "tutBuddy": "This is your buddy. It grows wings and a halo as you level up, and it misses you when you stay away.", "tutLevel": "Tap your level to see your progress, badges and settings.", "tutBack": "Here you can see your level, badges and settings. Tap “{b}” to continue.", "tutSins": "Optional: tap here to set a number of sins to remove. Every card you scroll lowers it.", "tutDone": "When you're finished, tap “{b}” to see your session summary.", "tutEnd": "That's it! Scroll on and enjoy your dhikr.", "tutNext": "Next", "tutSkip": "Skip", "tutStart": "Start scrolling", "tutAgain": "Show the tutorial"},
+    ar: {"tutSwipe": "اسحب للأعلى لترى البطاقة التالية. جرّب الآن!", "tutPoints": "أحسنت! كل بطاقة جديدة تصل إليها تمنحك +1 نقطة.", "tutBuddy": "هذا رفيقك. ينمو له جناحان وهالة كلما ارتفع مستواك، ويشتاق إليك إذا غبت.", "tutLevel": "اضغط على مستواك لترى تقدّمك وأوسمتك والإعدادات.", "tutBack": "هنا ترى مستواك وأوسمتك والإعدادات. اضغط «{b}» للمتابعة.", "tutSins": "اختياري: اضغط هنا لتحدّد عدد السيئات التي تريد إزالتها. كل بطاقة تتصفحها تُنقص منه.", "tutDone": "عندما تنتهي، اضغط «{b}» لترى ملخص جلستك.", "tutEnd": "هذا كل شيء! تابع التصفح واستمتع بأذكارك.", "tutNext": "التالي", "tutSkip": "تخطّي", "tutStart": "ابدأ التصفح", "tutAgain": "عرض الشرح"},
+    fr: {"tutSwipe": "Fais glisser vers le haut pour voir la carte suivante. Essaie !", "tutPoints": "Bravo ! Chaque nouvelle carte atteinte te rapporte +1 point.", "tutBuddy": "Voici ton compagnon. Il gagne des ailes et une auréole quand tu montes de niveau, et tu lui manques quand tu t'absentes.", "tutLevel": "Touche ton niveau pour voir ta progression, tes badges et les réglages.", "tutBack": "Ici tu vois ton niveau, tes badges et les réglages. Touche « {b} » pour continuer.", "tutSins": "Facultatif : touche ici pour fixer un nombre de péchés à retirer. Chaque carte défilée le réduit.", "tutDone": "Quand tu as fini, touche « {b} » pour voir le résumé de ta session.", "tutEnd": "Voilà ! Continue de défiler et profite de ton dhikr.", "tutNext": "Suivant", "tutSkip": "Passer", "tutStart": "Commencer", "tutAgain": "Revoir le tutoriel"},
+    es: {"tutSwipe": "Desliza hacia arriba para ver la siguiente tarjeta. ¡Pruébalo!", "tutPoints": "¡Bien! Cada tarjeta nueva a la que llegas te da +1 punto.", "tutBuddy": "Este es tu compañero. Le salen alas y un halo al subir de nivel, y te extraña cuando te ausentas.", "tutLevel": "Toca tu nivel para ver tu progreso, tus insignias y los ajustes.", "tutBack": "Aquí ves tu nivel, tus insignias y los ajustes. Toca «{b}» para continuar.", "tutSins": "Opcional: toca aquí para fijar un número de pecados a quitar. Cada tarjeta que deslizas lo reduce.", "tutDone": "Cuando termines, toca «{b}» para ver el resumen de tu sesión.", "tutEnd": "¡Eso es todo! Sigue deslizando y disfruta de tu dhikr.", "tutNext": "Siguiente", "tutSkip": "Omitir", "tutStart": "Empezar", "tutAgain": "Ver el tutorial"},
+    tr: {"tutSwipe": "Sonraki kartı görmek için yukarı kaydır. Şimdi dene!", "tutPoints": "Güzel! Kaydırdığın her yeni kart sana +1 puan verir.", "tutBuddy": "Bu senin arkadaşın. Seviye atladıkça kanatları ve halesi çıkar, uzak kalırsan seni özler.", "tutLevel": "İlerlemeni, rozetlerini ve ayarları görmek için seviyene dokun.", "tutBack": "Burada seviyeni, rozetlerini ve ayarları görürsün. Devam etmek için «{b}» düğmesine dokun.", "tutSins": "İsteğe bağlı: silmek istediğin günah sayısını belirlemek için buraya dokun. Kaydırdığın her kart onu azaltır.", "tutDone": "İşin bitince oturum özetini görmek için «{b}» düğmesine dokun.", "tutEnd": "Hepsi bu! Kaydırmaya devam et ve zikrin tadını çıkar.", "tutNext": "İleri", "tutSkip": "Atla", "tutStart": "Kaydırmaya başla", "tutAgain": "Eğitimi göster"},
+    ur: {"tutSwipe": "اگلا کارڈ دیکھنے کے لیے اوپر سوائپ کریں۔ ابھی آزمائیں!", "tutPoints": "شاباش! ہر نیا کارڈ جس تک آپ پہنچیں آپ کو +1 پوائنٹ دیتا ہے۔", "tutBuddy": "یہ آپ کا ساتھی ہے۔ لیول بڑھنے پر اس کے پر اور ہالہ نکلتے ہیں، اور آپ دور رہیں تو یہ آپ کو یاد کرتا ہے۔", "tutLevel": "اپنی پیش رفت، بیجز اور سیٹنگز دیکھنے کے لیے اپنے لیول پر ٹیپ کریں۔", "tutBack": "یہاں آپ اپنا لیول، بیجز اور سیٹنگز دیکھتے ہیں۔ جاری رکھنے کے لیے «{b}» پر ٹیپ کریں۔", "tutSins": "اختیاری: مٹانے کے لیے گناہوں کی تعداد مقرر کرنے کے لیے یہاں ٹیپ کریں۔ ہر اسکرول کیا ہوا کارڈ اسے کم کرتا ہے۔", "tutDone": "جب آپ فارغ ہوں تو سیشن کا خلاصہ دیکھنے کے لیے «{b}» پر ٹیپ کریں۔", "tutEnd": "بس! اسکرول کرتے رہیں اور اپنے ذکر سے لطف اٹھائیں۔", "tutNext": "اگلا", "tutSkip": "چھوڑیں", "tutStart": "اسکرول شروع کریں", "tutAgain": "ٹیوٹوریل دکھائیں"},
+    id: {"tutSwipe": "Geser ke atas untuk melihat kartu berikutnya. Coba sekarang!", "tutPoints": "Bagus! Setiap kartu baru yang kamu capai memberi +1 poin.", "tutBuddy": "Ini temanmu. Ia mendapat sayap dan lingkaran cahaya saat levelmu naik, dan ia rindu kalau kamu lama pergi.", "tutLevel": "Ketuk levelmu untuk melihat kemajuan, lencana, dan pengaturan.", "tutBack": "Di sini kamu melihat level, lencana, dan pengaturan. Ketuk «{b}» untuk lanjut.", "tutSins": "Opsional: ketuk di sini untuk menentukan jumlah dosa yang ingin dihapus. Setiap kartu yang kamu gulir menguranginya.", "tutDone": "Kalau sudah selesai, ketuk «{b}» untuk melihat ringkasan sesi.", "tutEnd": "Itu saja! Teruslah menggulir dan nikmati dzikirmu.", "tutNext": "Lanjut", "tutSkip": "Lewati", "tutStart": "Mulai menggulir", "tutAgain": "Tampilkan tutorial"},
+    bn: {"tutSwipe": "পরের কার্ড দেখতে ওপরে সোয়াইপ করো। এখনই চেষ্টা করো!", "tutPoints": "দারুণ! তুমি যতগুলো নতুন কার্ডে পৌঁছাবে, প্রতিটির জন্য +১ পয়েন্ট পাবে।", "tutBuddy": "এ তোমার সঙ্গী। লেভেল বাড়লে ওর ডানা আর জ্যোতির্বলয় গজায়, আর তুমি দূরে থাকলে ও তোমাকে মিস করে।", "tutLevel": "তোমার অগ্রগতি, ব্যাজ আর সেটিংস দেখতে তোমার লেভেলে ট্যাপ করো।", "tutBack": "এখানে তুমি লেভেল, ব্যাজ আর সেটিংস দেখতে পাও। চালিয়ে যেতে «{b}» ট্যাপ করো।", "tutSins": "ঐচ্ছিক: মুছতে চাওয়া গুনাহর সংখ্যা ঠিক করতে এখানে ট্যাপ করো। প্রতিটি কার্ড স্ক্রল করলে তা কমবে।", "tutDone": "শেষ হলে সেশনের সারাংশ দেখতে «{b}» ট্যাপ করো।", "tutEnd": "ব্যস! স্ক্রল করতে থাকো আর তোমার জিকির উপভোগ করো।", "tutNext": "পরের", "tutSkip": "এড়িয়ে যাও", "tutStart": "স্ক্রল শুরু করো", "tutAgain": "টিউটোরিয়াল দেখাও"},
+    ru: {"tutSwipe": "Проведи вверх, чтобы увидеть следующую карточку. Попробуй!", "tutPoints": "Отлично! За каждую новую карточку ты получаешь +1 очко.", "tutBuddy": "Это твой друг. С ростом уровня у него появляются крылья и нимб, а если тебя долго нет, он скучает.", "tutLevel": "Нажми на свой уровень, чтобы увидеть прогресс, значки и настройки.", "tutBack": "Здесь ты видишь уровень, значки и настройки. Нажми «{b}», чтобы продолжить.", "tutSins": "По желанию: нажми здесь, чтобы задать число грехов, которые хочешь убрать. Каждая прокрученная карточка уменьшает его.", "tutDone": "Когда закончишь, нажми «{b}», чтобы увидеть итоги сессии.", "tutEnd": "Вот и всё! Листай дальше и наслаждайся зикром.", "tutNext": "Далее", "tutSkip": "Пропустить", "tutStart": "Начать", "tutAgain": "Показать обучение"},
+    de: {"tutSwipe": "Wische nach oben, um die nächste Karte zu sehen. Probier es jetzt!", "tutPoints": "Super! Jede neue Karte, die du erreichst, bringt dir +1 Punkt.", "tutBuddy": "Das ist dein Begleiter. Mit steigendem Level bekommt er Flügel und einen Heiligenschein, und er vermisst dich, wenn du lange weg bist.", "tutLevel": "Tippe auf dein Level, um Fortschritt, Abzeichen und Einstellungen zu sehen.", "tutBack": "Hier siehst du Level, Abzeichen und Einstellungen. Tippe auf «{b}», um weiterzumachen.", "tutSins": "Optional: Tippe hier, um eine Anzahl Sünden festzulegen, die du entfernen willst. Jede gescrollte Karte senkt sie.", "tutDone": "Wenn du fertig bist, tippe auf «{b}», um die Zusammenfassung zu sehen.", "tutEnd": "Das war's! Scrolle weiter und genieße deinen Dhikr.", "tutNext": "Weiter", "tutSkip": "Überspringen", "tutStart": "Loslegen", "tutAgain": "Tutorial zeigen"},
+  };
+  for (const k of Object.keys(TUT_T)) Object.assign(T[k].ui, TUT_T[k]);
   // Language in use. Falls back to the browser language, then English.
   const pickLang = () => { const b = (navigator.language || "en").slice(0, 2).toLowerCase(); return LANGS[b] ? b : "en"; };
   let lang = "en";
@@ -897,7 +925,7 @@ button:focus-visible { outline: 2px solid var(--gold-1); outline-offset: 3px; }
 
   // ---------- Storage (this browser only) ----------
   const KEY = "hasanat.lifetime.v2";
-  const fresh = () => ({ seen: 0, said: 0, sessions: 0, best: 0, per: {}, streak: 0, bestStreak: 0, lastDay: null, badges: [], golden: 0, sound: true, gender: null, lang: null, debt: null, debtsCleared: 0, haptics: true, scrollSound: "dial", lastSeen: 0 });
+  const fresh = () => ({ seen: 0, said: 0, sessions: 0, best: 0, per: {}, streak: 0, bestStreak: 0, lastDay: null, badges: [], golden: 0, sound: true, gender: null, lang: null, debt: null, debtsCleared: 0, haptics: true, scrollSound: "dial", lastSeen: 0, tourDone: undefined });
   let life = fresh();
   try { const raw = localStorage.getItem(KEY); if (raw) life = Object.assign(fresh(), JSON.parse(raw)); } catch (e) {}
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(life)); } catch (e) {} };
@@ -1115,6 +1143,7 @@ button:focus-visible { outline: 2px solid var(--gold-1); outline-offset: 3px; }
         const c = i === idx ? el : feed.querySelector(`[data-idx="${i}"]`);
         if (c) scoreCard(c, i < idx);
       }
+      tourAdvance("scroll");
     }
     if (+el.dataset.idx > nextIdx - 8) addCards(20);
     // Keep the DOM light on long sessions: empty cards far behind, refill the ones near us.
@@ -1560,7 +1589,7 @@ button:focus-visible { outline: 2px solid var(--gold-1); outline-offset: 3px; }
   }
 
   function showProgress() {
-    openView = "progress";
+    openView = "progress"; tourAdvance("open");
     const p = lifeTaps(), lv = levelFor(p), st = stageNow();
     const top = Object.entries(life.per).sort((a, b) => b[1] - a[1]).slice(0, 8).filter(([id]) => BY_ID[id]);
     const journey = STAGES.map((s, i) => {
@@ -1596,10 +1625,11 @@ button:focus-visible { outline: 2px solid var(--gold-1); outline-offset: 3px; }
             <button class="secondary" id="backupBtn" style="height:44px">💾 ${esc(t("backup"))}</button>
             <button class="secondary" id="restoreBtn" style="height:44px">📂 ${esc(t("restore"))}</button>
             <input type="file" id="restoreFile" accept=".json,application/json" hidden>
+            <button class="secondary" id="tourBtn" style="height:44px">🧭 ${esc(t("tutAgain"))}</button>
             <button class="secondary wipe" id="wipeBtn" style="height:44px">${esc(t("wipe"))}</button>
             <button class="secondary" id="swapBtn" style="height:44px">${esc(life.gender === "f" ? t("swapBoy") : t("swapGirl"))}</button>
           </div>
-          <p class="note">${esc(t("disclaimer"))}<br>${esc(t("saved"))}<br>v27</p>
+          <p class="note">${esc(t("disclaimer"))}<br>${esc(t("saved"))}<br>v28</p>
         </div>
       </div>
       <div class="actions"><button class="primary" id="closeBtn">${esc(t("back"))}</button></div>`;
@@ -1612,6 +1642,7 @@ button:focus-visible { outline: 2px solid var(--gold-1); outline-offset: 3px; }
       wakeAudio(); [1, 6, 12].forEach((c, i) => setTimeout(() => scrollSound(c), i * 260));   // a short preview
     };
     $("hapT").onchange = e => { life.haptics = e.target.checked; save(); buzz(10); };
+    $("tourBtn").onclick = () => { closeSheet(); setTimeout(startTour, 350); };
     $("wipeBtn").onclick = e => {
       const b = e.currentTarget;
       if (!b.classList.contains("sure")) {
@@ -1629,7 +1660,7 @@ button:focus-visible { outline: 2px solid var(--gold-1); outline-offset: 3px; }
   // ---------- Backup: progress lives in this browser only, so let people save it as a file ----------
   // Back to zero. The buddy, language and sound choices stay, since those are settings, not progress.
   function wipeEverything() {
-    const keep = { gender: life.gender, lang: life.lang, sound: life.sound, haptics: life.haptics, scrollSound: life.scrollSound };
+    const keep = { gender: life.gender, lang: life.lang, sound: life.sound, haptics: life.haptics, scrollSound: life.scrollSound, tourDone: life.tourDone };
     life = Object.assign(fresh(), keep);
     buddyMood = "happy";
     S = newSession(); undo = null; clearCheers();
@@ -1661,6 +1692,7 @@ button:focus-visible { outline: 2px solid var(--gold-1); outline-offset: 3px; }
       const data = JSON.parse(await f.text());
       if (!data || data.app !== "hasanat-scroll" || typeof data.life !== "object") throw 0;
       life = Object.assign(fresh(), data.life);
+      if (life.gender && life.tourDone === undefined) life.tourDone = true;
       buddyMood = "happy";
       S = newSession(); undo = null;   // the backup already holds the session in progress
       if (LANGS[life.lang]) lang = life.lang;
@@ -1669,7 +1701,60 @@ button:focus-visible { outline: 2px solid var(--gold-1); outline-offset: 3px; }
     } catch (e) { toast("⚠️", t("badFile"), ""); }
   }
   let countIv = 0;
-  function closeSheet() { clearInterval(countIv); slot.innerHTML = ""; openView = null; debtDraft = null; feed.focus(); }
+  function closeSheet() { clearInterval(countIv); slot.innerHTML = ""; tourAdvance("close"); openView = null; debtDraft = null; feed.focus(); }
+
+  // ---------- Interactive tutorial: do each thing yourself, it moves on when you have ----------
+  const TOUR = [
+    { k: "tutSwipe", wait: "scroll", hand: true, hole: "feed" },
+    { k: "tutPoints", target: "#pts", next: true },
+    { k: "tutBuddy", target: "#buddy", next: true },
+    { k: "tutLevel", target: "#lvlBtn", wait: "open", hole: "target" },
+    { k: "tutBack", target: "#closeBtn", wait: "close", hole: "target", vars: () => ({ b: t("back") }), delay: 450 },
+    { k: "tutSins", target: "#debtBtn:not([hidden]), #debtAdd:not([hidden])", next: true },
+    { k: "tutDone", target: "#doneBtn", next: true, vars: () => ({ b: t("done") }) },
+    { k: "tutEnd", next: true, last: true },
+  ];
+  let tourStep = -1, tourTimer = 0;
+  const tourEl = $("tour");
+  function startTour() { tourStep = 0; tourEl.hidden = false; renderTour(); }
+  function endTour() {
+    clearTimeout(tourTimer); tourStep = -1; tourEl.hidden = true; tourEl.innerHTML = "";
+    life.tourDone = true; save();
+  }
+  function goTour(i) {
+    clearTimeout(tourTimer);
+    if (i >= TOUR.length) return endTour();
+    tourStep = i;
+    tourEl.innerHTML = "";
+    tourTimer = setTimeout(renderTour, TOUR[i].delay || 250);
+  }
+  function tourAdvance(ev) { if (tourStep >= 0 && TOUR[tourStep].wait === ev) goTour(tourStep + 1); }
+  function renderTour() {
+    if (tourStep < 0) return;
+    const s = TOUR[tourStep], W = innerWidth, H = innerHeight;
+    const el = s.target && document.querySelector(s.target);
+    let r = el ? el.getBoundingClientRect() : null;
+    if (r && !r.width) r = null;
+    const spot = r && { x: r.left - 8, y: r.top - 8, w: r.width + 16, h: r.height + 16 };
+    const hole = s.hole === "feed" ? { x: 0, y: 130, w: W, h: H - 260 } : s.hole === "target" ? spot : null;
+    let block = "";
+    if (s.next || hole) {
+      const clip = hole ? `;clip-path:polygon(evenodd,0 0,${W}px 0,${W}px ${H}px,0 ${H}px,0 0,${hole.x}px ${hole.y}px,${hole.x}px ${hole.y + hole.h}px,${hole.x + hole.w}px ${hole.y + hole.h}px,${hole.x + hole.w}px ${hole.y}px,${hole.x}px ${hole.y}px)` : "";
+      block = `<div class="tourBlock" style="${clip.slice(1)}"></div>`;
+    }
+    const pos = spot ? (spot.y + spot.h / 2 < H / 2 ? `top:${spot.y + spot.h + 14}px` : `bottom:${H - spot.y + 14}px`) : (s.last ? `top:${H * .34}px` : `top:${H * .16}px`);
+    tourEl.innerHTML = `${block}
+      ${spot ? `<div class="tourSpot" style="left:${spot.x}px;top:${spot.y}px;width:${spot.w}px;height:${spot.h}px"></div>` : ""}
+      ${s.hand ? `<div class="tourHand" aria-hidden="true">👆</div>` : ""}
+      <div class="tourTip" style="${pos}" role="dialog"><p>${esc(t(s.k, s.vars && s.vars()))}</p>
+        <div class="tourFoot"><span class="tourCount" dir="ltr">${tourStep + 1} / ${TOUR.length}</span><span class="tourBtns">
+          ${s.last ? "" : `<button class="tourSkip">${esc(t("tutSkip"))}</button>`}
+          ${s.next ? `<button class="tourNext">${esc(s.last ? t("tutStart") : t("tutNext"))}</button>` : ""}</span></div></div>`;
+    const sk = tourEl.querySelector(".tourSkip"), nx = tourEl.querySelector(".tourNext");
+    if (sk) sk.onclick = endTour;
+    if (nx) nx.onclick = () => goTour(tourStep + 1);
+  }
+  window.addEventListener("resize", () => renderTour());
 
   // ---------- First launch: choose your language and buddy ----------
   function showPicker() {
@@ -1691,6 +1776,7 @@ button:focus-visible { outline: 2px solid var(--gold-1); outline-offset: 3px; }
       life.gender = b.dataset.g; life.lang = lang; save(); unlockAudio();
       $("pickerSlot").innerHTML = ""; openView = null;
       renderBuddy(); renderDebt(false); cheerBuddy(); fx.party(); confetti(false);
+      life.tourDone = false; save(); setTimeout(startTour, 1700);
     });
   }
 
@@ -1709,7 +1795,7 @@ button:focus-visible { outline: 2px solid var(--gold-1); outline-offset: 3px; }
     $("doneBtn").textContent = t("done");
     $("lvlBtn").setAttribute("aria-label", t("progress"));
     feed.querySelectorAll(".card[data-full]").forEach(refreshCard);
-    renderHud(false); renderDebt(false);
+    renderHud(false); renderDebt(false); if (tourStep >= 0) renderTour();
   }
   function setLang(l) {
     if (!LANGS[l]) return;
@@ -1741,6 +1827,7 @@ button:focus-visible { outline: 2px solid var(--gold-1); outline-offset: 3px; }
   applyLang();
   renderDebt(false);
   renderBuddy();
+  if (life.gender && life.tourDone === undefined) { life.tourDone = true; save(); }   // people who were here before the tutorial existed
   if (!life.gender) showPicker();
   else if (buddyMood !== "happy") {
     const M = buddyMood[0].toUpperCase() + buddyMood.slice(1);
