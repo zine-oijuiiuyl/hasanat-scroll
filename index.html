@@ -433,7 +433,7 @@ button:focus-visible { outline: 2px solid var(--gold-1); outline-offset: 3px; }
 
   <div id="hud">
     <div class="tabs" id="tabs" role="tablist">
-      <button data-tab="dhikr" id="tabDhikr" role="tab"></button><button data-tab="dua" id="tabDua" role="tab"></button><button data-tab="muh" id="tabMuh" role="tab"></button><button data-tab="quran" id="tabQuran" role="tab"></button>
+      <button data-tab="dhikr" id="tabDhikr" role="tab"></button><button data-tab="dua" id="tabDua" role="tab"></button><button data-tab="quran" id="tabQuran" role="tab"></button><button data-tab="muh" id="tabMuh" role="tab"></button>
     </div>
     <div class="bar">
       <button class="lvl" id="lvlBtn" aria-label="Show your progress and buddy">
@@ -911,16 +911,16 @@ button:focus-visible { outline: 2px solid var(--gold-1); outline-offset: 3px; }
   };
   for (const k of Object.keys(TUT_T)) Object.assign(T[k].ui, TUT_T[k]);
   const TAB_T = {
-    en: {tabQuran: "Qur'an", tabDhikr: "Dhikr", tabDua: "Duas", tabMuh: "Muhammad ﷺ", kSeerah: "MUHAMMAD ﷺ · محمد", tutTabs: "Switch between Dhikr, Duas, Muhammad ﷺ and Qur'an here. Muhammad ﷺ has hadith and cards about his life; Qur'an has verses."},
-    ar: {tabQuran: "قرآن", tabDhikr: "ذكر", tabDua: "أدعية", tabMuh: "محمد ﷺ", kSeerah: "محمد ﷺ · MUHAMMAD", tutTabs: "من هنا تنتقل بين الذكر والأدعية ومحمد ﷺ والقرآن. في محمد ﷺ أحاديث وبطاقات عن سيرته، وفي القرآن آيات."},
-    fr: {tabQuran: "Coran", tabDhikr: "Dhikr", tabDua: "Duas", tabMuh: "Muhammad ﷺ", kSeerah: "MUHAMMAD ﷺ · محمد", tutTabs: "Passe ici entre Dhikr, Duas, Muhammad ﷺ et Coran. Muhammad ﷺ contient des hadiths et sa vie ; Coran contient des versets."},
-    es: {tabQuran: "Corán", tabDhikr: "Dhikr", tabDua: "Duas", tabMuh: "Muhammad ﷺ", kSeerah: "MUHAMMAD ﷺ · محمد", tutTabs: "Cambia aquí entre Dhikr, Duas, Muhammad ﷺ y Corán. Muhammad ﷺ tiene hadices y su vida; Corán tiene versículos."},
-    tr: {tabQuran: "Kur'an", tabDhikr: "Zikir", tabDua: "Dualar", tabMuh: "Muhammed ﷺ", kSeerah: "MUHAMMED ﷺ · محمد", tutTabs: "Zikir, Dualar, Muhammed ﷺ ve Kur'an arasında buradan geçiş yap. Muhammed ﷺ'de hadisler ve hayatı, Kur'an'da âyetler var."},
-    ur: {tabQuran: "قرآن", tabDhikr: "ذکر", tabDua: "دعائیں", tabMuh: "محمد ﷺ", kSeerah: "محمد ﷺ · MUHAMMAD", tutTabs: "یہاں ذکر، دعاؤں، محمد ﷺ اور قرآن کے درمیان بدلیں۔ محمد ﷺ میں احادیث اور ان کی زندگی ہے، قرآن میں آیات ہیں۔"},
-    id: {tabQuran: "Al-Qur'an", tabDhikr: "Zikir", tabDua: "Doa", tabMuh: "Muhammad ﷺ", kSeerah: "MUHAMMAD ﷺ · محمد", tutTabs: "Pindah di sini antara Zikir, Doa, Muhammad ﷺ, dan Al-Qur'an. Muhammad ﷺ berisi hadis dan kisah hidup beliau; Al-Qur'an berisi ayat."},
-    bn: {tabQuran: "কুরআন", tabDhikr: "যিকির", tabDua: "দোয়া", tabMuh: "মুহাম্মদ ﷺ", kSeerah: "মুহাম্মদ ﷺ · محمد", tutTabs: "এখানে যিকির, দোয়া, মুহাম্মদ ﷺ ও কুরআনের মধ্যে বদলাও। মুহাম্মদ ﷺ-এ হাদিস ও তাঁর জীবন, কুরআনে আয়াত আছে।"},
-    ru: {tabQuran: "Коран", tabDhikr: "Зикр", tabDua: "Дуа", tabMuh: "Мухаммад ﷺ", kSeerah: "МУХАММАД ﷺ · محمد", tutTabs: "Здесь переключайся между Зикром, Дуа, Мухаммадом ﷺ и Кораном. В разделе Мухаммад ﷺ хадисы и его жизнь, в Коране — аяты."},
-    de: {tabQuran: "Koran", tabDhikr: "Dhikr", tabDua: "Duas", tabMuh: "Muhammad ﷺ", kSeerah: "MUHAMMAD ﷺ · محمد", tutTabs: "Wechsle hier zwischen Dhikr, Duas, Muhammad ﷺ und Koran. Muhammad ﷺ enthält Hadithe und sein Leben; Koran enthält Verse."},
+    en: {tabQuran: "Qur'an", tabDhikr: "Dhikr", tabDua: "Duas", tabMuh: "Muhammad ﷺ", kSeerah: "MUHAMMAD ﷺ · محمد", tutTabs: "Switch between Dhikr, Duas, Qur'an and Muhammad ﷺ here. Qur'an has verses; Muhammad ﷺ has hadith and cards about his life."},
+    ar: {tabQuran: "قرآن", tabDhikr: "ذكر", tabDua: "أدعية", tabMuh: "محمد ﷺ", kSeerah: "محمد ﷺ · MUHAMMAD", tutTabs: "من هنا تنتقل بين الذكر والأدعية والقرآن ومحمد ﷺ. في القرآن آيات، وفي محمد ﷺ أحاديث وبطاقات عن سيرته."},
+    fr: {tabQuran: "Coran", tabDhikr: "Dhikr", tabDua: "Duas", tabMuh: "Muhammad ﷺ", kSeerah: "MUHAMMAD ﷺ · محمد", tutTabs: "Passe ici entre Dhikr, Duas, Coran et Muhammad ﷺ. Coran contient des versets ; Muhammad ﷺ contient des hadiths et sa vie."},
+    es: {tabQuran: "Corán", tabDhikr: "Dhikr", tabDua: "Duas", tabMuh: "Muhammad ﷺ", kSeerah: "MUHAMMAD ﷺ · محمد", tutTabs: "Cambia aquí entre Dhikr, Duas, Corán y Muhammad ﷺ. Corán tiene versículos; Muhammad ﷺ tiene hadices y su vida."},
+    tr: {tabQuran: "Kur'an", tabDhikr: "Zikir", tabDua: "Dualar", tabMuh: "Muhammed ﷺ", kSeerah: "MUHAMMED ﷺ · محمد", tutTabs: "Zikir, Dualar, Kur'an ve Muhammed ﷺ arasında buradan geçiş yap. Kur'an'da âyetler, Muhammed ﷺ'de hadisler ve hayatı var."},
+    ur: {tabQuran: "قرآن", tabDhikr: "ذکر", tabDua: "دعائیں", tabMuh: "محمد ﷺ", kSeerah: "محمد ﷺ · MUHAMMAD", tutTabs: "یہاں ذکر، دعاؤں، قرآن اور محمد ﷺ کے درمیان بدلیں۔ قرآن میں آیات ہیں، محمد ﷺ میں احادیث اور ان کی زندگی ہے۔"},
+    id: {tabQuran: "Al-Qur'an", tabDhikr: "Zikir", tabDua: "Doa", tabMuh: "Muhammad ﷺ", kSeerah: "MUHAMMAD ﷺ · محمد", tutTabs: "Pindah di sini antara Zikir, Doa, Al-Qur'an, dan Muhammad ﷺ. Al-Qur'an berisi ayat; Muhammad ﷺ berisi hadis dan kisah hidup beliau."},
+    bn: {tabQuran: "কুরআন", tabDhikr: "যিকির", tabDua: "দোয়া", tabMuh: "মুহাম্মদ ﷺ", kSeerah: "মুহাম্মদ ﷺ · محمد", tutTabs: "এখানে যিকির, দোয়া, কুরআন ও মুহাম্মদ ﷺ-এর মধ্যে বদলাও। কুরআনে আয়াত, মুহাম্মদ ﷺ-এ হাদিস ও তাঁর জীবন আছে।"},
+    ru: {tabQuran: "Коран", tabDhikr: "Зикр", tabDua: "Дуа", tabMuh: "Мухаммад ﷺ", kSeerah: "МУХАММАД ﷺ · محمد", tutTabs: "Здесь переключайся между Зикром, Дуа, Кораном и Мухаммадом ﷺ. В Коране — аяты, в разделе Мухаммад ﷺ — хадисы и его жизнь."},
+    de: {tabQuran: "Koran", tabDhikr: "Dhikr", tabDua: "Duas", tabMuh: "Muhammad ﷺ", kSeerah: "MUHAMMAD ﷺ · محمد", tutTabs: "Wechsle hier zwischen Dhikr, Duas, Koran und Muhammad ﷺ. Koran enthält Verse; Muhammad ﷺ enthält Hadithe und sein Leben."},
   };
   for (const k of Object.keys(TAB_T)) Object.assign(T[k].ui, TAB_T[k]);
   // Translated meanings for the duas and the Prophet ﷺ cards. Not yet reviewed by native speakers or scholars.
@@ -1803,7 +1803,7 @@ const RULES = { comboMs: 12000, comboPerChar: 50, comboMaxMs: 24000, minDwellMs:
             <button class="secondary wipe" id="wipeBtn" style="height:44px">${esc(t("wipe"))}</button>
             <button class="secondary" id="swapBtn" style="height:44px">${esc(life.gender === "f" ? t("swapBoy") : t("swapGirl"))}</button>
           </div>
-          <p class="note">${esc(t("disclaimer"))}<br>${esc(t("saved"))}<br>v36</p>
+          <p class="note">${esc(t("disclaimer"))}<br>${esc(t("saved"))}<br>v37</p>
         </div>
       </div>
       <div class="actions"><button class="primary" id="closeBtn">${esc(t("back"))}</button></div>`;
