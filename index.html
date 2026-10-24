@@ -386,6 +386,17 @@ button:focus-visible { outline: 2px solid var(--gold-1); outline-offset: 3px; }
 .choice b { font-size: 18px; }
 .choice .pv { display: block; width: 100%; }
 
+/* Rating */
+.rate { text-align: center; }
+.stars { display: flex; justify-content: center; gap: 6px; margin: 4px 0; direction: ltr; }
+.star { font-size: 40px; line-height: 1; padding: 2px 4px; color: rgba(244,239,226,.22); transition: color .15s, transform .15s; }
+.star.on { color: var(--gold-2); text-shadow: 0 0 14px rgba(245,184,61,.55); }
+.star:active { transform: scale(.85); }
+.star.pop { animation: starPop .45s ease-out both; }
+@keyframes starPop { 0% { transform: scale(.4); } 60% { transform: scale(1.35); } 100% { transform: scale(1); } }
+.rateAsk, .rateMsg { font-size: 14px; color: var(--ink-soft); min-height: 1em; }
+.rateMsg { font-weight: 700; color: var(--gold-1); }
+.rateLater { margin-top: 6px; font-size: 13px; color: var(--ink-faint); text-decoration: underline; padding: 6px 10px; }
 /* Interactive tutorial: a spotlight on the part being explained, a tip card, and a hand showing the swipe. */
 #tour { position: absolute; inset: 0; z-index: 40; pointer-events: none; }
 .tourBlock { position: absolute; pointer-events: auto; }
@@ -860,6 +871,19 @@ button:focus-visible { outline: 2px solid var(--gold-1); outline-offset: 3px; }
     de: {"tutSwipe": "Wische nach oben, um die nächste Karte zu sehen. Probier es jetzt!", "tutPoints": "Super! Jede neue Karte, die du erreichst, bringt dir +1 Punkt.", "tutBuddy": "Das ist dein Begleiter. Mit steigendem Level bekommt er Flügel und einen Heiligenschein, und er vermisst dich, wenn du lange weg bist.", "tutLevel": "Tippe auf dein Level, um Fortschritt, Abzeichen und Einstellungen zu sehen.", "tutBack": "Hier siehst du Level, Abzeichen und Einstellungen. Tippe auf «{b}», um weiterzumachen.", "tutSins": "Optional: Tippe hier, um eine Anzahl Sünden festzulegen, die du entfernen willst. Jede gescrollte Karte senkt sie.", "tutDone": "Wenn du fertig bist, tippe auf «{b}», um die Zusammenfassung zu sehen.", "tutEnd": "Das war's! Scrolle weiter und genieße deinen Dhikr.", "tutNext": "Weiter", "tutSkip": "Überspringen", "tutStart": "Loslegen", "tutAgain": "Tutorial zeigen"},
   };
   for (const k of Object.keys(TUT_T)) Object.assign(T[k].ui, TUT_T[k]);
+  const RATE_T = {
+    en: {"rateTitle": "Rate the app", "rateAsk": "Enjoying the app? Tap a star to rate it.", "rateThanks": "Thank you for your rating!", "rateLater": "Not now"},
+    ar: {"rateTitle": "قيّم التطبيق", "rateAsk": "هل يعجبك التطبيق؟ اضغط على نجمة لتقييمه.", "rateThanks": "شكرًا على تقييمك!", "rateLater": "ليس الآن"},
+    fr: {"rateTitle": "Noter l'appli", "rateAsk": "Tu aimes l'appli ? Touche une étoile pour la noter.", "rateThanks": "Merci pour ta note !", "rateLater": "Plus tard"},
+    es: {"rateTitle": "Valorar la app", "rateAsk": "¿Te gusta la app? Toca una estrella para valorarla.", "rateThanks": "¡Gracias por tu valoración!", "rateLater": "Ahora no"},
+    tr: {"rateTitle": "Uygulamayı puanla", "rateAsk": "Uygulamayı beğendin mi? Puanlamak için bir yıldıza dokun.", "rateThanks": "Puanın için teşekkürler!", "rateLater": "Şimdi değil"},
+    ur: {"rateTitle": "ایپ کو ریٹ کریں", "rateAsk": "ایپ پسند آئی؟ ریٹ کرنے کے لیے ستارے پر ٹیپ کریں۔", "rateThanks": "ریٹنگ کا شکریہ!", "rateLater": "ابھی نہیں"},
+    id: {"rateTitle": "Beri nilai aplikasi", "rateAsk": "Suka aplikasinya? Ketuk bintang untuk menilai.", "rateThanks": "Terima kasih atas penilaianmu!", "rateLater": "Nanti saja"},
+    bn: {"rateTitle": "অ্যাপটি রেট করুন", "rateAsk": "অ্যাপটি ভালো লাগছে? রেট করতে একটি তারা ট্যাপ করো।", "rateThanks": "রেটিংয়ের জন্য ধন্যবাদ!", "rateLater": "এখন নয়"},
+    ru: {"rateTitle": "Оценить приложение", "rateAsk": "Нравится приложение? Нажми на звезду, чтобы оценить.", "rateThanks": "Спасибо за оценку!", "rateLater": "Не сейчас"},
+    de: {"rateTitle": "App bewerten", "rateAsk": "Gefällt dir die App? Tippe auf einen Stern, um sie zu bewerten.", "rateThanks": "Danke für deine Bewertung!", "rateLater": "Jetzt nicht"},
+  };
+  for (const k of Object.keys(RATE_T)) Object.assign(T[k].ui, RATE_T[k]);
   // Language in use. Falls back to the browser language, then English.
   const pickLang = () => { const b = (navigator.language || "en").slice(0, 2).toLowerCase(); return LANGS[b] ? b : "en"; };
   let lang = "en";
@@ -925,7 +949,7 @@ button:focus-visible { outline: 2px solid var(--gold-1); outline-offset: 3px; }
 
   // ---------- Storage (this browser only) ----------
   const KEY = "hasanat.lifetime.v2";
-  const fresh = () => ({ seen: 0, said: 0, sessions: 0, best: 0, per: {}, streak: 0, bestStreak: 0, lastDay: null, badges: [], golden: 0, sound: true, gender: null, lang: null, debt: null, debtsCleared: 0, haptics: true, scrollSound: "dial", lastSeen: 0, tourDone: undefined });
+  const fresh = () => ({ seen: 0, said: 0, sessions: 0, best: 0, per: {}, streak: 0, bestStreak: 0, lastDay: null, badges: [], golden: 0, sound: true, gender: null, lang: null, debt: null, debtsCleared: 0, haptics: true, scrollSound: "dial", lastSeen: 0, tourDone: undefined, rating: 0, rateLater: 0 });
   let life = fresh();
   try { const raw = localStorage.getItem(KEY); if (raw) life = Object.assign(fresh(), JSON.parse(raw)); } catch (e) {}
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(life)); } catch (e) {} };
@@ -1564,16 +1588,17 @@ button:focus-visible { outline: 2px solid var(--gold-1); outline-offset: 3px; }
             <div class="progress"><b style="width:${(levelProgress(lt) * 100).toFixed(1)}%"></b></div>
             <div style="font-size:12px;color:var(--ink-faint)">${esc(t("sessLine", { s: life.sessions, d: life.bestStreak }))}</div>
           </div>
+          ${askToRate() ? rateHtml(true, true) : ""}
           <div class="panel">${langSelect()}</div>
           <p class="note">${esc(t("disclaimer"))}</p>
         </div>
       </div>
       <div class="actions"><button class="secondary" id="resetBtn">${esc(t("reset"))}</button><button class="primary" id="againBtn">${esc(t("again"))}</button></div>`;
     requestAnimationFrame(() => slot.querySelectorAll(".meter b").forEach(b => b.style.width = b.dataset.w));
-    bindLang();
+    bindLang(); bindRate();
     $("againBtn").onclick = () => {
       // Continue where you left off: bring back the session and its score.
-      if (undo && lastSm && undo.S.start === lastSm.start) { life = undo.life; S = undo.S; S.last = 0; save(); renderHud(false); renderBuddy(); }
+      if (undo && lastSm && undo.S.start === lastSm.start) { const keep = { rating: life.rating, rateLater: life.rateLater, lang: life.lang, sound: life.sound, haptics: life.haptics, scrollSound: life.scrollSound }; life = Object.assign(undo.life, keep); S = undo.S; S.last = 0; save(); renderHud(false); renderBuddy(); }
       undo = null; closeSheet();
     };
     $("resetBtn").onclick = () => { undo = null; closeSheet(); };
@@ -1616,6 +1641,7 @@ button:focus-visible { outline: 2px solid var(--gold-1); outline-offset: 3px; }
           </div>
           <div class="panel"><div class="label">${esc(t("badgesH", { a: life.badges.length, b: BADGES.length }))}</div><div class="badges">${BADGES.map(b => badgeHtml(b, life.badges.includes(b.id))).join("")}</div></div>
           ${top.length ? `<div class="panel"><div class="label">${esc(t("mostScrolled"))}</div>${top.map(([id, n]) => `<div class="row"><div class="top"><span class="t">${esc(BY_ID[id].tr)}</span><span class="n">${n.toLocaleString()}</span></div></div>`).join("")}</div>` : ""}
+          ${rateHtml(false, false)}
           <div class="panel">
             <button class="secondary" id="debtOpen" style="height:48px">🪶 ${esc(life.debt ? t("debtNew") : t("debtTitle"))}</button>
             ${langSelect()}
@@ -1629,11 +1655,11 @@ button:focus-visible { outline: 2px solid var(--gold-1); outline-offset: 3px; }
             <button class="secondary wipe" id="wipeBtn" style="height:44px">${esc(t("wipe"))}</button>
             <button class="secondary" id="swapBtn" style="height:44px">${esc(life.gender === "f" ? t("swapBoy") : t("swapGirl"))}</button>
           </div>
-          <p class="note">${esc(t("disclaimer"))}<br>${esc(t("saved"))}<br>v29</p>
+          <p class="note">${esc(t("disclaimer"))}<br>${esc(t("saved"))}<br>v30</p>
         </div>
       </div>
       <div class="actions"><button class="primary" id="closeBtn">${esc(t("back"))}</button></div>`;
-    bindLang();
+    bindLang(); bindRate();
     $("closeBtn").onclick = closeSheet;
     $("debtOpen").onclick = showDebt;
     $("soundT").onchange = e => { life.sound = e.target.checked; save(); if (!life.sound) ac = null; };
@@ -1660,7 +1686,7 @@ button:focus-visible { outline: 2px solid var(--gold-1); outline-offset: 3px; }
   // ---------- Backup: progress lives in this browser only, so let people save it as a file ----------
   // Back to zero. The buddy, language and sound choices stay, since those are settings, not progress.
   function wipeEverything() {
-    const keep = { gender: life.gender, lang: life.lang, sound: life.sound, haptics: life.haptics, scrollSound: life.scrollSound, tourDone: life.tourDone };
+    const keep = { gender: life.gender, lang: life.lang, sound: life.sound, haptics: life.haptics, scrollSound: life.scrollSound, tourDone: life.tourDone, rating: life.rating };
     life = Object.assign(fresh(), keep);
     buddyMood = "happy";
     S = newSession(); undo = null; clearCheers();
@@ -1702,6 +1728,38 @@ button:focus-visible { outline: 2px solid var(--gold-1); outline-offset: 3px; }
   }
   let countIv = 0;
   function closeSheet() { clearInterval(countIv); slot.innerHTML = ""; tourAdvance("close"); openView = null; debtDraft = null; feed.focus(); }
+
+  // ---------- Rating: five stars, kept on this device ----------
+  function rateHtml(ask, later) {
+    const cur = life.rating || 0;
+    return `<div class="panel rate"><div class="label">${esc(t("rateTitle"))}</div>
+      ${ask && !cur ? `<div class="rateAsk">${esc(t("rateAsk"))}</div>` : ""}
+      <div class="stars" role="radiogroup" aria-label="${esc(t("rateTitle"))}">${[1, 2, 3, 4, 5].map(n => `<button class="star${n <= cur ? " on" : ""}" data-n="${n}" role="radio" aria-checked="${n === cur}" aria-label="${n}">★</button>`).join("")}</div>
+      <div class="rateMsg" aria-live="polite">${cur ? esc(t("rateThanks")) : ""}</div>
+      ${later && !cur ? `<button class="rateLater">${esc(t("rateLater"))}</button>` : ""}</div>`;
+  }
+  function bindRate() {
+    const box = slot.querySelector(".rate");
+    if (!box) return;
+    box.querySelectorAll(".star").forEach(b => b.onclick = () => {
+      const n = +b.dataset.n;
+      life.rating = n; save();
+      box.querySelectorAll(".star").forEach((x, i) => {
+        x.classList.toggle("on", i < n); x.setAttribute("aria-checked", String(i + 1 === n));
+        x.style.animationDelay = i < n ? i * 70 + "ms" : "0ms";
+        x.classList.remove("pop"); void x.offsetWidth; if (i < n) x.classList.add("pop");
+      });
+      box.querySelector(".rateMsg").textContent = t("rateThanks");
+      const ask = box.querySelector(".rateAsk"), lt = box.querySelector(".rateLater");
+      if (ask) ask.remove(); if (lt) lt.remove();
+      fx.up(); buzz([10, 20, 10]);
+      if (n >= 4) { fx.party(); confetti(n === 5); }
+    });
+    const lt = box.querySelector(".rateLater");
+    if (lt) lt.onclick = () => { life.rateLater = Date.now(); save(); box.remove(); };
+  }
+  // On the summary, after a few sessions, until it has been rated (or "Not now", for a week).
+  const askToRate = () => !life.rating && life.sessions >= 3 && Date.now() - (life.rateLater || 0) > 7 * 864e5;
 
   // ---------- Interactive tutorial: do each thing yourself, it moves on when you have ----------
   const TOUR = [
