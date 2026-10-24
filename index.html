@@ -431,8 +431,8 @@ button:focus-visible { outline: 2px solid var(--gold-1); outline-offset: 3px; }
       </div>
       <button class="done" id="doneBtn">Done</button>
     </div>
-    <button class="debtAdd" id="debtAdd"><span>🪶</span><span id="debtAddT">Lighten the load</span></button>
-    <button class="debt" id="debtBtn" hidden><span class="dIcon">🪶</span><span id="debtNum"></span><span class="dBar"><b id="debtFill"></b></span></button>
+    <button class="debtAdd" id="debtAdd"><span>⚖️</span><span id="debtAddT">Lighten the load</span></button>
+    <button class="debt" id="debtBtn" hidden><span class="dIcon">⚖️</span><span id="debtNum"></span><span class="dBar"><b id="debtFill"></b></span></button>
     <div class="combo" id="combo" data-off>
       <span class="flame">📿</span><span id="comboNum">0 combo</span>
       <span class="drain"><b id="drain"></b></span>
@@ -946,7 +946,7 @@ const RULES = { comboMs: 12000, comboPerChar: 50, comboMaxMs: 24000, minDwellMs:
     ["level10", "🏆", "Rawdah", "Reach level 10", c => c.level >= 10],
     ["wings", "🪽", "First Wings", "Your buddy grows wings", c => c.stage >= 3],
     ["halo", "😇", "Halo", "Your buddy becomes an angel", c => c.stage >= 5],
-    ["light", "🪶", "Light as a Feather", "Bring a burden down to zero", c => c.cleared >= 1],
+    ["light", "⚖️", "Light as a Feather", "Bring a burden down to zero", c => c.cleared >= 1],
   ].map(([id, icon, title, detail, test], i) => ({ id, icon, title, detail, test, i }));
 
   // ---------- Storage (this browser only) ----------
@@ -1213,7 +1213,7 @@ const RULES = { comboMs: 12000, comboPerChar: 50, comboMaxMs: 24000, minDwellMs:
     if (!quiet && grew && RULES.comboMarks.includes(S.combo)) { fx.up(); cheerBuddy(); toast("📿", t("comboT", { n: S.combo }), t("comboS")); big = true; }
     const pts = sTaps();
     if (!quiet && isMilestone(pts)) { fx.party(); confetti(false); cheerBuddy(); toast("🎉", t("mileT", { n: pts }), t("mileS")); big = true; }
-    if (cleared) { celebrate({ key: "debt" + life.debtsCleared, icon: "🪶", title: t("debtDoneT"), sub: t("debtDoneS"), confetti: "gold", sound: fx.evolve, evolve: true }); big = true; }
+    if (cleared) { celebrate({ key: "debt" + life.debtsCleared, icon: "⚖️", title: t("debtDoneT"), sub: t("debtDoneS"), confetti: "gold", sound: fx.evolve, evolve: true }); big = true; }
     if (afterChange(before)) big = true;
     if (!big) scrollSound(S.combo);
   }
@@ -1516,7 +1516,7 @@ const RULES = { comboMs: 12000, comboPerChar: 50, comboMaxMs: 24000, minDwellMs:
         <div class="inner">
           <div class="hero">
             <div class="label">${esc(t("debtTitle"))}</div>
-            <div style="font-size:54px">🪶</div>
+            <div style="font-size:54px">⚖️</div>
             <p class="note" style="font-size:15px;color:var(--ink-soft)">${esc(t("debtIntro"))}</p>
           </div>
           ${d && !d.done ? `<div class="panel"><div class="label">${esc(t("debtLeft", { n: d.left.toLocaleString() }))}</div><div class="progress"><b style="width:${((1 - d.left / d.start) * 100).toFixed(1)}%"></b></div></div>` : ""}
@@ -1550,7 +1550,7 @@ const RULES = { comboMs: 12000, comboPerChar: 50, comboMaxMs: 24000, minDwellMs:
       life.debt = { start: n, left: n, step, done: false };
       save(); closeSheet(); renderDebt(false);
       unlockAudio(); fx.party(); cheerBuddy();
-      toast("🪶", t("debtTitle"), t("debtLeft", { n: n.toLocaleString() }));
+      toast("⚖️", t("debtTitle"), t("debtLeft", { n: n.toLocaleString() }));
     };
     if ($("debtRm")) $("debtRm").onclick = () => { life.debt = null; save(); renderDebt(false); closeSheet(); };
   }
@@ -1585,7 +1585,7 @@ const RULES = { comboMs: 12000, comboPerChar: 50, comboMaxMs: 24000, minDwellMs:
             ${tile("✦", life.said.toLocaleString(), t("allPts"))}${tile("🔥", sm.bestCombo, t("bestCombo"))}${tile("⏱", fmtTime(sm.end - sm.start), t("time"))}
             ${tile("⭐", sm.golden, t("goldenTile"))}${tile("📅", life.streak, t("streak"))}${tile("📿", rows.length, t("types"))}
           </div>
-          ${life.debt ? `<div class="panel"><div class="label">🪶 ${esc(t("debtTitle"))}</div><div style="display:flex;justify-content:space-between;font-weight:800;gap:8px"><span>${esc(t("debtLifted", { n: (sm.lifted || 0).toLocaleString() }))}</span><span>${esc(life.debt.done ? t("debtDoneChip") : t("debtLeft", { n: life.debt.left.toLocaleString() }))}</span></div><div class="progress"><b style="width:${((1 - life.debt.left / life.debt.start) * 100).toFixed(1)}%"></b></div></div>` : ""}
+          ${life.debt ? `<div class="panel"><div class="label">⚖️ ${esc(t("debtTitle"))}</div><div style="display:flex;justify-content:space-between;font-weight:800;gap:8px"><span>${esc(t("debtLifted", { n: (sm.lifted || 0).toLocaleString() }))}</span><span>${esc(life.debt.done ? t("debtDoneChip") : t("debtLeft", { n: life.debt.left.toLocaleString() }))}</span></div><div class="progress"><b style="width:${((1 - life.debt.left / life.debt.start) * 100).toFixed(1)}%"></b></div></div>` : ""}
           ${sm.badges.length ? `<div class="panel"><div class="label">${esc(t("newBadges"))}</div><div class="badges">${sm.badges.map(b => badgeHtml(b, true)).join("")}</div></div>` : ""}
           <div class="panel"><div class="label">${esc(t("perDhikr"))}</div>${rows.length ? rows.map(r => `
             <div class="row"><div class="top"><span class="t">${esc(r.d.tr)}</span><span class="a" lang="ar">${esc(r.d.ar)}</span><span class="n">×${r.n}</span></div>
@@ -1651,7 +1651,7 @@ const RULES = { comboMs: 12000, comboPerChar: 50, comboMaxMs: 24000, minDwellMs:
           ${top.length ? `<div class="panel"><div class="label">${esc(t("mostScrolled"))}</div>${top.map(([id, n]) => `<div class="row"><div class="top"><span class="t">${esc(BY_ID[id].tr)}</span><span class="n">${n.toLocaleString()}</span></div></div>`).join("")}</div>` : ""}
           ${rateHtml(false, false)}
           <div class="panel">
-            <button class="secondary" id="debtOpen" style="height:48px">🪶 ${esc(life.debt ? t("debtNew") : t("debtTitle"))}</button>
+            <button class="secondary" id="debtOpen" style="height:48px">⚖️ ${esc(life.debt ? t("debtNew") : t("debtTitle"))}</button>
             ${langSelect()}
             <label class="toggle" for="soundT">${esc(t("sounds"))}<input type="checkbox" id="soundT" ${life.sound ? "checked" : ""}></label>
             <label class="langRow" for="sndSel"><span>🔊 ${esc(t("scrollSnd"))}</span><select id="sndSel">${[["dial", "sndDial"], ["chime", "sndChime"], ["off", "sndOff"]].map(([k, n]) => `<option value="${k}"${(life.scrollSound || "dial") === k ? " selected" : ""}>${esc(t(n))}</option>`).join("")}</select></label>
@@ -1663,7 +1663,7 @@ const RULES = { comboMs: 12000, comboPerChar: 50, comboMaxMs: 24000, minDwellMs:
             <button class="secondary wipe" id="wipeBtn" style="height:44px">${esc(t("wipe"))}</button>
             <button class="secondary" id="swapBtn" style="height:44px">${esc(life.gender === "f" ? t("swapBoy") : t("swapGirl"))}</button>
           </div>
-          <p class="note">${esc(t("disclaimer"))}<br>${esc(t("saved"))}<br>v31</p>
+          <p class="note">${esc(t("disclaimer"))}<br>${esc(t("saved"))}<br>v32</p>
         </div>
       </div>
       <div class="actions"><button class="primary" id="closeBtn">${esc(t("back"))}</button></div>`;
