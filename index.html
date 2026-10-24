@@ -911,16 +911,16 @@ button:focus-visible { outline: 2px solid var(--gold-1); outline-offset: 3px; }
   };
   for (const k of Object.keys(TUT_T)) Object.assign(T[k].ui, TUT_T[k]);
   const TAB_T = {
-    en: {tabQuran: "Qur'an", tabDhikr: "Dhikr", tabDua: "Duas", tabMuh: "Muhammad ﷺ", kSeerah: "MUHAMMAD ﷺ · محمد", tutTabs: "Switch between Dhikr, Duas and Muhammad ﷺ here. Muhammad ﷺ has cards about his life and character."},
-    ar: {tabQuran: "قرآن", tabDhikr: "ذكر", tabDua: "أدعية", tabMuh: "محمد ﷺ", kSeerah: "محمد ﷺ · MUHAMMAD", tutTabs: "من هنا تنتقل بين الذكر والأدعية ومحمد ﷺ. في محمد ﷺ بطاقات عن سيرته وأخلاقه."},
-    fr: {tabQuran: "Coran", tabDhikr: "Dhikr", tabDua: "Duas", tabMuh: "Muhammad ﷺ", kSeerah: "MUHAMMAD ﷺ · محمد", tutTabs: "Passe ici entre Dhikr, Duas et Muhammad ﷺ. Muhammad ﷺ contient des cartes sur sa vie et son caractère."},
-    es: {tabQuran: "Corán", tabDhikr: "Dhikr", tabDua: "Duas", tabMuh: "Muhammad ﷺ", kSeerah: "MUHAMMAD ﷺ · محمد", tutTabs: "Cambia aquí entre Dhikr, Duas y Muhammad ﷺ. Muhammad ﷺ tiene tarjetas sobre su vida y su carácter."},
-    tr: {tabQuran: "Kur'an", tabDhikr: "Zikir", tabDua: "Dualar", tabMuh: "Muhammed ﷺ", kSeerah: "MUHAMMED ﷺ · محمد", tutTabs: "Zikir, Dualar ve Muhammed ﷺ arasında buradan geçiş yap. Muhammed ﷺ sekmesinde hayatı ve ahlakı hakkında kartlar var."},
-    ur: {tabQuran: "قرآن", tabDhikr: "ذکر", tabDua: "دعائیں", tabMuh: "محمد ﷺ", kSeerah: "محمد ﷺ · MUHAMMAD", tutTabs: "یہاں ذکر، دعاؤں اور محمد ﷺ کے درمیان بدلیں۔ محمد ﷺ میں ان کی زندگی اور اخلاق کے کارڈ ہیں۔"},
-    id: {tabQuran: "Al-Qur'an", tabDhikr: "Zikir", tabDua: "Doa", tabMuh: "Muhammad ﷺ", kSeerah: "MUHAMMAD ﷺ · محمد", tutTabs: "Pindah di sini antara Zikir, Doa, dan Muhammad ﷺ. Muhammad ﷺ berisi kartu tentang kehidupan dan akhlak beliau."},
-    bn: {tabQuran: "কুরআন", tabDhikr: "যিকির", tabDua: "দোয়া", tabMuh: "মুহাম্মদ ﷺ", kSeerah: "মুহাম্মদ ﷺ · محمد", tutTabs: "এখানে যিকির, দোয়া ও মুহাম্মদ ﷺ-এর মধ্যে বদলাও। মুহাম্মদ ﷺ-এ তাঁর জীবন ও চরিত্র নিয়ে কার্ড আছে।"},
-    ru: {tabQuran: "Коран", tabDhikr: "Зикр", tabDua: "Дуа", tabMuh: "Мухаммад ﷺ", kSeerah: "МУХАММАД ﷺ · محمد", tutTabs: "Здесь переключайся между Зикром, Дуа и Мухаммадом ﷺ. В разделе Мухаммад ﷺ карточки о его жизни и нраве."},
-    de: {tabQuran: "Koran", tabDhikr: "Dhikr", tabDua: "Duas", tabMuh: "Muhammad ﷺ", kSeerah: "MUHAMMAD ﷺ · محمد", tutTabs: "Wechsle hier zwischen Dhikr, Duas und Muhammad ﷺ. Muhammad ﷺ enthält Karten über sein Leben und seinen Charakter."},
+    en: {tabQuran: "Qur'an", tabDhikr: "Dhikr", tabDua: "Duas", tabMuh: "Muhammad ﷺ", kSeerah: "MUHAMMAD ﷺ · محمد", tutTabs: "Switch between Dhikr, Duas, Muhammad ﷺ and Qur'an here. Muhammad ﷺ has hadith and cards about his life; Qur'an has verses."},
+    ar: {tabQuran: "قرآن", tabDhikr: "ذكر", tabDua: "أدعية", tabMuh: "محمد ﷺ", kSeerah: "محمد ﷺ · MUHAMMAD", tutTabs: "من هنا تنتقل بين الذكر والأدعية ومحمد ﷺ والقرآن. في محمد ﷺ أحاديث وبطاقات عن سيرته، وفي القرآن آيات."},
+    fr: {tabQuran: "Coran", tabDhikr: "Dhikr", tabDua: "Duas", tabMuh: "Muhammad ﷺ", kSeerah: "MUHAMMAD ﷺ · محمد", tutTabs: "Passe ici entre Dhikr, Duas, Muhammad ﷺ et Coran. Muhammad ﷺ contient des hadiths et sa vie ; Coran contient des versets."},
+    es: {tabQuran: "Corán", tabDhikr: "Dhikr", tabDua: "Duas", tabMuh: "Muhammad ﷺ", kSeerah: "MUHAMMAD ﷺ · محمد", tutTabs: "Cambia aquí entre Dhikr, Duas, Muhammad ﷺ y Corán. Muhammad ﷺ tiene hadices y su vida; Corán tiene versículos."},
+    tr: {tabQuran: "Kur'an", tabDhikr: "Zikir", tabDua: "Dualar", tabMuh: "Muhammed ﷺ", kSeerah: "MUHAMMED ﷺ · محمد", tutTabs: "Zikir, Dualar, Muhammed ﷺ ve Kur'an arasında buradan geçiş yap. Muhammed ﷺ'de hadisler ve hayatı, Kur'an'da âyetler var."},
+    ur: {tabQuran: "قرآن", tabDhikr: "ذکر", tabDua: "دعائیں", tabMuh: "محمد ﷺ", kSeerah: "محمد ﷺ · MUHAMMAD", tutTabs: "یہاں ذکر، دعاؤں، محمد ﷺ اور قرآن کے درمیان بدلیں۔ محمد ﷺ میں احادیث اور ان کی زندگی ہے، قرآن میں آیات ہیں۔"},
+    id: {tabQuran: "Al-Qur'an", tabDhikr: "Zikir", tabDua: "Doa", tabMuh: "Muhammad ﷺ", kSeerah: "MUHAMMAD ﷺ · محمد", tutTabs: "Pindah di sini antara Zikir, Doa, Muhammad ﷺ, dan Al-Qur'an. Muhammad ﷺ berisi hadis dan kisah hidup beliau; Al-Qur'an berisi ayat."},
+    bn: {tabQuran: "কুরআন", tabDhikr: "যিকির", tabDua: "দোয়া", tabMuh: "মুহাম্মদ ﷺ", kSeerah: "মুহাম্মদ ﷺ · محمد", tutTabs: "এখানে যিকির, দোয়া, মুহাম্মদ ﷺ ও কুরআনের মধ্যে বদলাও। মুহাম্মদ ﷺ-এ হাদিস ও তাঁর জীবন, কুরআনে আয়াত আছে।"},
+    ru: {tabQuran: "Коран", tabDhikr: "Зикр", tabDua: "Дуа", tabMuh: "Мухаммад ﷺ", kSeerah: "МУХАММАД ﷺ · محمد", tutTabs: "Здесь переключайся между Зикром, Дуа, Мухаммадом ﷺ и Кораном. В разделе Мухаммад ﷺ хадисы и его жизнь, в Коране — аяты."},
+    de: {tabQuran: "Koran", tabDhikr: "Dhikr", tabDua: "Duas", tabMuh: "Muhammad ﷺ", kSeerah: "MUHAMMAD ﷺ · محمد", tutTabs: "Wechsle hier zwischen Dhikr, Duas, Muhammad ﷺ und Koran. Muhammad ﷺ enthält Hadithe und sein Leben; Koran enthält Verse."},
   };
   for (const k of Object.keys(TAB_T)) Object.assign(T[k].ui, TAB_T[k]);
   // Translated meanings for the duas and the Prophet ﷺ cards. Not yet reviewed by native speakers or scholars.
@@ -1803,7 +1803,7 @@ const RULES = { comboMs: 12000, comboPerChar: 50, comboMaxMs: 24000, minDwellMs:
             <button class="secondary wipe" id="wipeBtn" style="height:44px">${esc(t("wipe"))}</button>
             <button class="secondary" id="swapBtn" style="height:44px">${esc(life.gender === "f" ? t("swapBoy") : t("swapGirl"))}</button>
           </div>
-          <p class="note">${esc(t("disclaimer"))}<br>${esc(t("saved"))}<br>v35</p>
+          <p class="note">${esc(t("disclaimer"))}<br>${esc(t("saved"))}<br>v36</p>
         </div>
       </div>
       <div class="actions"><button class="primary" id="closeBtn">${esc(t("back"))}</button></div>`;
