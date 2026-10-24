@@ -1715,6 +1715,7 @@ const RULES = { comboMs: 12000, comboPerChar: 50, comboMaxMs: 24000, minDwellMs:
 
   let openView = null, lastSm = null, debtDraft = null;
 
+  const TAB_ORDER = [["dhikr", "tabDhikr"], ["dua", "tabDua"], ["quran", "tabQuran"], ["muh", "tabMuh"]];
   function showSummary(sm) {
     openView = "summary"; lastSm = sm;
     const rows = Object.entries(sm.said).map(([id, n]) => ({ d: BY_ID[id], n })).filter(r => r.d && r.n > 0).sort((a, b) => b.n - a.n);
@@ -1740,9 +1741,12 @@ const RULES = { comboMs: 12000, comboPerChar: 50, comboMaxMs: 24000, minDwellMs:
           </div>
           ${life.debt ? `<div class="panel"><div class="label">⚖️ ${esc(t("debtTitle"))}</div><div style="display:flex;justify-content:space-between;font-weight:800;gap:8px"><span>${esc(t("debtLifted", { n: (sm.lifted || 0).toLocaleString() }))}</span><span>${esc(life.debt.done ? t("debtDoneChip") : t("debtLeft", { n: life.debt.left.toLocaleString() }))}</span></div><div class="progress"><b style="width:${((1 - life.debt.left / life.debt.start) * 100).toFixed(1)}%"></b></div></div>` : ""}
           ${sm.badges.length ? `<div class="panel"><div class="label">${esc(t("newBadges"))}</div><div class="badges">${sm.badges.map(b => badgeHtml(b, true)).join("")}</div></div>` : ""}
-          <div class="panel"><div class="label">${esc(t("perDhikr"))}</div>${rows.length ? rows.map(r => `
+          ${rows.length ? TAB_ORDER.map(([tb, key]) => {
+            const rs = rows.filter(r => tabOf(r.d) === tb);
+            return rs.length ? `<div class="panel"><div class="label">${esc(t(key))}</div>${rs.map(r => `
             <div class="row"><div class="top"><span class="t">${esc(r.d.tr)}</span><span class="a" lang="ar">${esc(r.d.ar)}</span><span class="n">×${r.n}</span></div>
-            <div class="meter"><b data-w="${(r.n / max * 100).toFixed(1)}%"></b></div></div>`).join("") : `<div class="cap" style="color:var(--ink-faint);font-size:13px">${esc(t("nothing"))}</div>`}</div>
+            <div class="meter"><b data-w="${(r.n / max * 100).toFixed(1)}%"></b></div></div>`).join("")}</div>` : "";
+          }).join("") : `<div class="panel"><div class="label">${esc(t("perDhikr"))}</div><div class="cap" style="color:var(--ink-faint);font-size:13px">${esc(t("nothing"))}</div></div>`}
           <div class="panel">
             <div class="label">${esc(t("allTime"))}</div>
             <div style="display:flex;justify-content:space-between;font-weight:800"><span>${esc(t("lvLine", { n: lv, t: levelTitle(lv) }))}</span><span>${lt.toLocaleString()} ${esc(t("pointsWord"))}</span></div>
@@ -1801,7 +1805,10 @@ const RULES = { comboMs: 12000, comboPerChar: 50, comboMaxMs: 24000, minDwellMs:
             ${tile("🗂", life.sessions, t("sessions"))}${tile("🏆", Math.max(life.best, sTaps()).toLocaleString(), t("bestSession"))}${tile("⭐", life.golden + S.golden, t("goldenTile"))}
           </div>
           <div class="panel"><div class="label">${esc(t("badgesH", { a: life.badges.length, b: BADGES.length }))}</div><div class="badges">${BADGES.map(b => badgeHtml(b, life.badges.includes(b.id))).join("")}</div></div>
-          ${top.length ? `<div class="panel"><div class="label">${esc(t("mostScrolled"))}</div>${top.map(([id, n]) => `<div class="row"><div class="top"><span class="t">${esc(BY_ID[id].tr)}</span><span class="n">${n.toLocaleString()}</span></div></div>`).join("")}</div>` : ""}
+          ${TAB_ORDER.map(([tb, key]) => {
+            const tp = Object.entries(life.per).filter(([id]) => BY_ID[id] && tabOf(BY_ID[id]) === tb).sort((x, y) => y[1] - x[1]).slice(0, 5);
+            return tp.length ? `<div class="panel"><div class="label">${esc(t(key))} · ${esc(t("mostScrolled"))}</div>${tp.map(([id, n]) => `<div class="row"><div class="top"><span class="t">${esc(BY_ID[id].tr)}</span><span class="n">${n.toLocaleString()}</span></div></div>`).join("")}</div>` : "";
+          }).join("")}
           ${rateHtml(false, false)}
           <div class="panel">
             <button class="secondary" id="prayerOpen" style="height:48px">🕌 ${esc(t("prTitle"))}</button>
@@ -1817,7 +1824,7 @@ const RULES = { comboMs: 12000, comboPerChar: 50, comboMaxMs: 24000, minDwellMs:
             <button class="secondary wipe" id="wipeBtn" style="height:44px">${esc(t("wipe"))}</button>
             <button class="secondary" id="swapBtn" style="height:44px">${esc(life.gender === "f" ? t("swapBoy") : t("swapGirl"))}</button>
           </div>
-          <p class="note">${esc(t("disclaimer"))}<br>${esc(t("saved"))}<br>v38</p>
+          <p class="note">${esc(t("disclaimer"))}<br>${esc(t("saved"))}<br>v39</p>
         </div>
       </div>
       <div class="actions"><button class="primary" id="closeBtn">${esc(t("back"))}</button></div>`;
