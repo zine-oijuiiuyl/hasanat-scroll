@@ -145,8 +145,8 @@ button:focus-visible { outline: 2px solid var(--gold-1); outline-offset: 3px; }
   pointer-events: none;
 }
 #hud > * { pointer-events: auto; }
-.tabs { display: flex; gap: 22px; justify-content: center; }
-.tabs button { font-size: 15px; font-weight: 800; color: rgba(244,239,226,.55); padding: 4px 2px 6px; border-bottom: 2px solid transparent; text-shadow: 0 1px 3px rgba(0,0,0,.5); transition: color .2s, border-color .2s; }
+.tabs { display: flex; gap: 14px; justify-content: center; }
+.tabs button { font-size: 14px; font-weight: 800; color: rgba(244,239,226,.55); padding: 4px 2px 6px; border-bottom: 2px solid transparent; text-shadow: 0 1px 3px rgba(0,0,0,.5); transition: color .2s, border-color .2s; }
 .tabs button.on { color: var(--ink, #F4EFE2); border-bottom-color: var(--gold-1); }
 .bar { width: 100%; display: grid; grid-template-columns: 76px 1fr 76px; align-items: center; }
 .lvl { width: 76px; display: grid; justify-items: center; gap: 3px; }
@@ -433,7 +433,7 @@ button:focus-visible { outline: 2px solid var(--gold-1); outline-offset: 3px; }
 
   <div id="hud">
     <div class="tabs" id="tabs" role="tablist">
-      <button data-tab="dhikr" id="tabDhikr" role="tab"></button><button data-tab="dua" id="tabDua" role="tab"></button><button data-tab="muh" id="tabMuh" role="tab"></button>
+      <button data-tab="dhikr" id="tabDhikr" role="tab"></button><button data-tab="dua" id="tabDua" role="tab"></button><button data-tab="muh" id="tabMuh" role="tab"></button><button data-tab="quran" id="tabQuran" role="tab"></button>
     </div>
     <div class="bar">
       <button class="lvl" id="lvlBtn" aria-label="Show your progress and buddy">
@@ -504,12 +504,12 @@ button:focus-visible { outline: 2px solid var(--gold-1); outline-offset: 3px; }
     D("d_parents", "رَّبِّ ٱغْفِرْ لِي وَلِوَٰلِدَيَّ وَلِمَن دَخَلَ بَيْتِيَ مُؤْمِنًا", "Rabbighfir li wa liwalidayya wa liman dakhala baytiya mu'minan", "My Lord, forgive me, my parents, and whoever enters my home as a believer", "Dua of Nuh · Nuh 71:28", "dua", 1),
     D("d_help", "ٱللَّٰهُمَّ أَعِنِّي عَلَىٰ ذِكْرِكَ وَشُكْرِكَ وَحُسْنِ عِبَادَتِكَ", "Allahumma a'inni 'ala dhikrika wa shukrika wa husni 'ibadatik", "O Allah, help me to remember You, to thank You, and to worship You well", "Sunan Abi Dawud 1522", "dua", 4),
     D("d_steady", "يَا مُقَلِّبَ ٱلْقُلُوبِ ثَبِّتْ قَلْبِي عَلَىٰ دِينِكَ", "Ya muqallibal-qulub, thabbit qalbi 'ala dinik", "O Turner of hearts, keep my heart firm on Your religion", "Jami' at-Tirmidhi 2140", "dua", 7),
-    D("m_mercy", "وَمَآ أَرْسَلْنَٰكَ إِلَّا رَحْمَةً لِّلْعَٰلَمِينَ", "Wa ma arsalnaka illa rahmatan lil-'alamin", "Allah sent Muhammad ﷺ as nothing but a mercy to all the worlds", "Al-Anbiya 21:107", "seerah", 0),
-    D("m_char", "وَإِنَّكَ لَعَلَىٰ خُلُقٍ عَظِيمٍ", "Wa innaka la'ala khuluqin 'azim", "Allah praised the Prophet ﷺ: you are truly of great moral character", "Al-Qalam 68:4", "seerah", 1),
-    D("m_example", "لَّقَدْ كَانَ لَكُمْ فِي رَسُولِ ٱللَّهِ أُسْوَةٌ حَسَنَةٌ", "Laqad kana lakum fi rasulillahi uswatun hasanah", "In the Messenger of Allah ﷺ you have an excellent example to follow", "Al-Ahzab 33:21", "seerah", 4),
+    D("m_mercy", "وَمَآ أَرْسَلْنَٰكَ إِلَّا رَحْمَةً لِّلْعَٰلَمِينَ", "Wa ma arsalnaka illa rahmatan lil-'alamin", "Allah sent Muhammad ﷺ as nothing but a mercy to all the worlds", "Al-Anbiya 21:107", "quran", 0),
+    D("m_char", "وَإِنَّكَ لَعَلَىٰ خُلُقٍ عَظِيمٍ", "Wa innaka la'ala khuluqin 'azim", "Allah praised the Prophet ﷺ: you are truly of great moral character", "Al-Qalam 68:4", "quran", 1),
+    D("m_example", "لَّقَدْ كَانَ لَكُمْ فِي رَسُولِ ٱللَّهِ أُسْوَةٌ حَسَنَةٌ", "Laqad kana lakum fi rasulillahi uswatun hasanah", "In the Messenger of Allah ﷺ you have an excellent example to follow", "Al-Ahzab 33:21", "quran", 4),
     D("m_born", "مُحَمَّدُ بْنُ عَبْدِ ٱللَّهِ ﷺ", "Muhammad ibn 'Abdillah", "He was born in Makkah around the year 570 CE, the Year of the Elephant. His father Abdullah died before his birth, and his mother Aminah when he was about six", "Sira Ibn Hisham · dates are approximate", "seerah", 2),
     D("m_amin", "ٱلصَّادِقُ ٱلْأَمِينُ", "As-Sadiq al-Amin", "Before prophethood, his people called him the Truthful and the Trustworthy, and left their valuables with him", "Sira Ibn Hisham", "seerah", 5),
-    D("m_iqra", "ٱقْرَأْ بِٱسْمِ رَبِّكَ ٱلَّذِي خَلَقَ", "Iqra' bismi rabbikal-ladhi khalaq", "Around the age of forty, in the Cave of Hira, the first revelation came to him: Read in the name of your Lord who created", "Al-'Alaq 96:1 · Bukhari 3", "seerah", 9),
+    D("m_iqra", "ٱقْرَأْ بِٱسْمِ رَبِّكَ ٱلَّذِي خَلَقَ", "Iqra' bismi rabbikal-ladhi khalaq", "Around the age of forty, in the Cave of Hira, the first revelation came to him: Read in the name of your Lord who created", "Al-'Alaq 96:1", "quran", 9),
     D("m_hijra", "ٱلْهِجْرَةُ ٱلنَّبَوِيَّةُ", "Al-Hijrah an-nabawiyyah", "In 622 CE he migrated from Makkah to Madinah. This Hijrah is the start of the Islamic calendar", "Sira Ibn Hisham · Bukhari 3906", "seerah", 3),
     D("m_home", "كَانَ فِي مِهْنَةِ أَهْلِهِ، فَإِذَا حَضَرَتِ ٱلصَّلَاةُ خَرَجَ إِلَى ٱلصَّلَاةِ", "Kana fi mihnati ahlih, fa idha hadarat-is-salatu kharaja ilas-salah", "Asked what he did at home, Aisha said: he helped his family, and when prayer time came he went out to pray", "Sahih al-Bukhari 676", "seerah", 8),
     D("m_smile", "تَبَسُّمُكَ فِي وَجْهِ أَخِيكَ صَدَقَةٌ", "Tabassumuka fi wajhi akhika sadaqah", "Your smile in the face of your brother is charity", "Jami' at-Tirmidhi 1956", "seerah", 6),
@@ -517,7 +517,7 @@ button:focus-visible { outline: 2px solid var(--gold-1); outline-offset: 3px; }
     D("m_tongue", "ٱلْمُسْلِمُ مَنْ سَلِمَ ٱلْمُسْلِمُونَ مِنْ لِسَانِهِ وَيَدِهِ", "Al-muslimu man salimal-muslimuna min lisanihi wa yadih", "A Muslim is the one from whose tongue and hand other Muslims are safe", "Sahih al-Bukhari 10", "seerah", 7),
     D("m_akhlaq", "إِنَّمَا بُعِثْتُ لِأُتَمِّمَ مَكَارِمَ ٱلْأَخْلَاقِ", "Innama bu'ithtu li utammima makarimal-akhlaq", "I was sent only to perfect good character", "Musnad Ahmad 8952", "seerah", 0),
     D("m_farewell", "لَا فَضْلَ لِعَرَبِيٍّ عَلَىٰ أَعْجَمِيٍّ إِلَّا بِٱلتَّقْوَىٰ", "La fadla li'arabiyyin 'ala 'ajamiyyin illa bit-taqwa", "From his Farewell Sermon: no Arab is better than a non-Arab except by piety and awareness of Allah", "Musnad Ahmad · Farewell Sermon", "seerah", 2),
-    D("m_salawat", "إِنَّ ٱللَّهَ وَمَلَٰٓئِكَتَهُۥ يُصَلُّونَ عَلَى ٱلنَّبِيِّ", "Innallaha wa mala'ikatahu yusalluna 'alan-nabi", "Allah and His angels send blessings upon the Prophet ﷺ. O believers, send blessings upon him too", "Al-Ahzab 33:56", "seerah", 8),
+    D("m_salawat", "إِنَّ ٱللَّهَ وَمَلَٰٓئِكَتَهُۥ يُصَلُّونَ عَلَى ٱلنَّبِيِّ", "Innallaha wa mala'ikatahu yusalluna 'alan-nabi", "Allah and His angels send blessings upon the Prophet ﷺ. O believers, send blessings upon him too", "Al-Ahzab 33:56", "quran", 8),
     D("m_last", "ٱللَّٰهُمَّ فِي ٱلرَّفِيقِ ٱلْأَعْلَىٰ", "Allahumma fir-rafiqil-a'la", "His last words, as reported by Aisha. He passed away in Madinah in 11 AH (632 CE)", "Sahih al-Bukhari 4437", "seerah", 5),
   );
   const BY_ID = Object.fromEntries(LIB.map(d => [d.id, d]));
@@ -911,16 +911,16 @@ button:focus-visible { outline: 2px solid var(--gold-1); outline-offset: 3px; }
   };
   for (const k of Object.keys(TUT_T)) Object.assign(T[k].ui, TUT_T[k]);
   const TAB_T = {
-    en: {tabDhikr: "Dhikr", tabDua: "Duas", tabMuh: "Muhammad ﷺ", kSeerah: "MUHAMMAD ﷺ · محمد", tutTabs: "Switch between Dhikr, Duas and Muhammad ﷺ here. Muhammad ﷺ has cards about his life and character."},
-    ar: {tabDhikr: "ذكر", tabDua: "أدعية", tabMuh: "محمد ﷺ", kSeerah: "محمد ﷺ · MUHAMMAD", tutTabs: "من هنا تنتقل بين الذكر والأدعية ومحمد ﷺ. في محمد ﷺ بطاقات عن سيرته وأخلاقه."},
-    fr: {tabDhikr: "Dhikr", tabDua: "Duas", tabMuh: "Muhammad ﷺ", kSeerah: "MUHAMMAD ﷺ · محمد", tutTabs: "Passe ici entre Dhikr, Duas et Muhammad ﷺ. Muhammad ﷺ contient des cartes sur sa vie et son caractère."},
-    es: {tabDhikr: "Dhikr", tabDua: "Duas", tabMuh: "Muhammad ﷺ", kSeerah: "MUHAMMAD ﷺ · محمد", tutTabs: "Cambia aquí entre Dhikr, Duas y Muhammad ﷺ. Muhammad ﷺ tiene tarjetas sobre su vida y su carácter."},
-    tr: {tabDhikr: "Zikir", tabDua: "Dualar", tabMuh: "Muhammed ﷺ", kSeerah: "MUHAMMED ﷺ · محمد", tutTabs: "Zikir, Dualar ve Muhammed ﷺ arasında buradan geçiş yap. Muhammed ﷺ sekmesinde hayatı ve ahlakı hakkında kartlar var."},
-    ur: {tabDhikr: "ذکر", tabDua: "دعائیں", tabMuh: "محمد ﷺ", kSeerah: "محمد ﷺ · MUHAMMAD", tutTabs: "یہاں ذکر، دعاؤں اور محمد ﷺ کے درمیان بدلیں۔ محمد ﷺ میں ان کی زندگی اور اخلاق کے کارڈ ہیں۔"},
-    id: {tabDhikr: "Zikir", tabDua: "Doa", tabMuh: "Muhammad ﷺ", kSeerah: "MUHAMMAD ﷺ · محمد", tutTabs: "Pindah di sini antara Zikir, Doa, dan Muhammad ﷺ. Muhammad ﷺ berisi kartu tentang kehidupan dan akhlak beliau."},
-    bn: {tabDhikr: "যিকির", tabDua: "দোয়া", tabMuh: "মুহাম্মদ ﷺ", kSeerah: "মুহাম্মদ ﷺ · محمد", tutTabs: "এখানে যিকির, দোয়া ও মুহাম্মদ ﷺ-এর মধ্যে বদলাও। মুহাম্মদ ﷺ-এ তাঁর জীবন ও চরিত্র নিয়ে কার্ড আছে।"},
-    ru: {tabDhikr: "Зикр", tabDua: "Дуа", tabMuh: "Мухаммад ﷺ", kSeerah: "МУХАММАД ﷺ · محمد", tutTabs: "Здесь переключайся между Зикром, Дуа и Мухаммадом ﷺ. В разделе Мухаммад ﷺ карточки о его жизни и нраве."},
-    de: {tabDhikr: "Dhikr", tabDua: "Duas", tabMuh: "Muhammad ﷺ", kSeerah: "MUHAMMAD ﷺ · محمد", tutTabs: "Wechsle hier zwischen Dhikr, Duas und Muhammad ﷺ. Muhammad ﷺ enthält Karten über sein Leben und seinen Charakter."},
+    en: {tabQuran: "Qur'an", tabDhikr: "Dhikr", tabDua: "Duas", tabMuh: "Muhammad ﷺ", kSeerah: "MUHAMMAD ﷺ · محمد", tutTabs: "Switch between Dhikr, Duas and Muhammad ﷺ here. Muhammad ﷺ has cards about his life and character."},
+    ar: {tabQuran: "قرآن", tabDhikr: "ذكر", tabDua: "أدعية", tabMuh: "محمد ﷺ", kSeerah: "محمد ﷺ · MUHAMMAD", tutTabs: "من هنا تنتقل بين الذكر والأدعية ومحمد ﷺ. في محمد ﷺ بطاقات عن سيرته وأخلاقه."},
+    fr: {tabQuran: "Coran", tabDhikr: "Dhikr", tabDua: "Duas", tabMuh: "Muhammad ﷺ", kSeerah: "MUHAMMAD ﷺ · محمد", tutTabs: "Passe ici entre Dhikr, Duas et Muhammad ﷺ. Muhammad ﷺ contient des cartes sur sa vie et son caractère."},
+    es: {tabQuran: "Corán", tabDhikr: "Dhikr", tabDua: "Duas", tabMuh: "Muhammad ﷺ", kSeerah: "MUHAMMAD ﷺ · محمد", tutTabs: "Cambia aquí entre Dhikr, Duas y Muhammad ﷺ. Muhammad ﷺ tiene tarjetas sobre su vida y su carácter."},
+    tr: {tabQuran: "Kur'an", tabDhikr: "Zikir", tabDua: "Dualar", tabMuh: "Muhammed ﷺ", kSeerah: "MUHAMMED ﷺ · محمد", tutTabs: "Zikir, Dualar ve Muhammed ﷺ arasında buradan geçiş yap. Muhammed ﷺ sekmesinde hayatı ve ahlakı hakkında kartlar var."},
+    ur: {tabQuran: "قرآن", tabDhikr: "ذکر", tabDua: "دعائیں", tabMuh: "محمد ﷺ", kSeerah: "محمد ﷺ · MUHAMMAD", tutTabs: "یہاں ذکر، دعاؤں اور محمد ﷺ کے درمیان بدلیں۔ محمد ﷺ میں ان کی زندگی اور اخلاق کے کارڈ ہیں۔"},
+    id: {tabQuran: "Al-Qur'an", tabDhikr: "Zikir", tabDua: "Doa", tabMuh: "Muhammad ﷺ", kSeerah: "MUHAMMAD ﷺ · محمد", tutTabs: "Pindah di sini antara Zikir, Doa, dan Muhammad ﷺ. Muhammad ﷺ berisi kartu tentang kehidupan dan akhlak beliau."},
+    bn: {tabQuran: "কুরআন", tabDhikr: "যিকির", tabDua: "দোয়া", tabMuh: "মুহাম্মদ ﷺ", kSeerah: "মুহাম্মদ ﷺ · محمد", tutTabs: "এখানে যিকির, দোয়া ও মুহাম্মদ ﷺ-এর মধ্যে বদলাও। মুহাম্মদ ﷺ-এ তাঁর জীবন ও চরিত্র নিয়ে কার্ড আছে।"},
+    ru: {tabQuran: "Коран", tabDhikr: "Зикр", tabDua: "Дуа", tabMuh: "Мухаммад ﷺ", kSeerah: "МУХАММАД ﷺ · محمد", tutTabs: "Здесь переключайся между Зикром, Дуа и Мухаммадом ﷺ. В разделе Мухаммад ﷺ карточки о его жизни и нраве."},
+    de: {tabQuran: "Koran", tabDhikr: "Dhikr", tabDua: "Duas", tabMuh: "Muhammad ﷺ", kSeerah: "MUHAMMAD ﷺ · محمد", tutTabs: "Wechsle hier zwischen Dhikr, Duas und Muhammad ﷺ. Muhammad ﷺ enthält Karten über sein Leben und seinen Charakter."},
   };
   for (const k of Object.keys(TAB_T)) Object.assign(T[k].ui, TAB_T[k]);
   // Translated meanings for the duas and the Prophet ﷺ cards. Not yet reviewed by native speakers or scholars.
@@ -1221,8 +1221,8 @@ const RULES = { comboMs: 12000, comboPerChar: 50, comboMaxMs: 24000, minDwellMs:
 
   // ---------- Feed ----------
   const feed = document.getElementById("feed");
-  const tabOf = d => d.kind === "dua" ? "dua" : d.kind === "seerah" ? "muh" : "dhikr";
-  let tab = ["dhikr", "dua", "muh"].includes(life.tab) ? life.tab : "dhikr";
+  const tabOf = d => d.kind === "dua" ? "dua" : d.kind === "seerah" ? "muh" : d.kind === "quran" ? "quran" : "dhikr";
+  let tab = ["dhikr", "dua", "muh", "quran"].includes(life.tab) ? life.tab : "dhikr";
   let bag = [], lastId = null, nextIdx = 0;
   function pick() {
     if (!bag.length) bag = LIB.filter(d => tabOf(d) === tab).flatMap(d => Array(d.w).fill(d)).sort(() => Math.random() - .5);
@@ -1803,7 +1803,7 @@ const RULES = { comboMs: 12000, comboPerChar: 50, comboMaxMs: 24000, minDwellMs:
             <button class="secondary wipe" id="wipeBtn" style="height:44px">${esc(t("wipe"))}</button>
             <button class="secondary" id="swapBtn" style="height:44px">${esc(life.gender === "f" ? t("swapBoy") : t("swapGirl"))}</button>
           </div>
-          <p class="note">${esc(t("disclaimer"))}<br>${esc(t("saved"))}<br>v34</p>
+          <p class="note">${esc(t("disclaimer"))}<br>${esc(t("saved"))}<br>v35</p>
         </div>
       </div>
       <div class="actions"><button class="primary" id="closeBtn">${esc(t("back"))}</button></div>`;
@@ -2015,7 +2015,7 @@ const RULES = { comboMs: 12000, comboPerChar: 50, comboMaxMs: 24000, minDwellMs:
     app.lang = lang; app.dir = LANGS[lang].dir;
     document.documentElement.lang = lang;
     $("doneBtn").textContent = t("done");
-    $("tabDhikr").textContent = t("tabDhikr"); $("tabDua").textContent = t("tabDua"); $("tabMuh").textContent = t("tabMuh");
+    $("tabDhikr").textContent = t("tabDhikr"); $("tabDua").textContent = t("tabDua"); $("tabMuh").textContent = t("tabMuh"); $("tabQuran").textContent = t("tabQuran");
     $("lvlBtn").setAttribute("aria-label", t("progress"));
     feed.querySelectorAll(".card[data-full]").forEach(refreshCard);
     renderHud(false); renderDebt(false); if (tourStep >= 0) renderTour();
