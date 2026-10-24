@@ -164,7 +164,7 @@ button:focus-visible { outline: 2px solid var(--gold-1); outline-offset: 3px; }
 .combo[data-off] { opacity: 0; transform: scale(.7); pointer-events: none; }
 .combo .flame { font-size: 16px; }
 .combo .drain { width: 70px; height: 6px; border-radius: 999px; background: var(--line); overflow: hidden; }
-.combo .drain b { display: block; height: 100%; background: var(--flame); border-radius: inherit; transform-origin: left; }
+.combo .drain b { display: block; height: 100%; background: var(--gold-2); border-radius: inherit; transform-origin: left; }
 
 .toast {
   display: flex; align-items: center; gap: 10px; text-align: start;
@@ -434,7 +434,7 @@ button:focus-visible { outline: 2px solid var(--gold-1); outline-offset: 3px; }
     <button class="debtAdd" id="debtAdd"><span>🪶</span><span id="debtAddT">Lighten the load</span></button>
     <button class="debt" id="debtBtn" hidden><span class="dIcon">🪶</span><span id="debtNum"></span><span class="dBar"><b id="debtFill"></b></span></button>
     <div class="combo" id="combo" data-off>
-      <span class="flame">🔥</span><span id="comboNum">0 combo</span>
+      <span class="flame">📿</span><span id="comboNum">0 combo</span>
       <span class="drain"><b id="drain"></b></span>
     </div>
     <div id="toastSlot"></div>
@@ -903,7 +903,9 @@ button:focus-visible { outline: 2px solid var(--gold-1); outline-offset: 3px; }
 
   // ---------- Rules ----------
   // The score is simply how many dhikr cards you scrolled through. It is a counter, not a claim about reward.
-  const RULES = { comboMs: 3000, goldenChance: 1 / 12, comboMarks: [10, 25, 50, 100] };
+  // The combo rewards a steady reading rhythm, not speed: the window to keep it grows with the length of the dhikr,
+// and flicking past a card in under minDwellMs still scores the point but does not grow the combo.
+const RULES = { comboMs: 12000, comboPerChar: 50, comboMaxMs: 24000, minDwellMs: 1200, goldenChance: 1 / 12, comboMarks: [10, 25, 50, 100] };
   const isMilestone = n => n === 10 || n === 33 || n === 99 || (n > 0 && n % 100 === 0);
   const threshold = n => n <= 1 ? 0 : Math.floor(20 * Math.pow(n - 1, 1.6));
   const levelFor = p => { let n = 1; while (threshold(n + 1) <= p) n++; return n; };
@@ -961,13 +963,19 @@ button:focus-visible { outline: 2px solid var(--gold-1); outline-offset: 3px; }
   const sSeen = () => sum(S.seen);
   const lifeTaps = () => life.said + sTaps();
   const stageNow = () => stageFor(lifeTaps(), life.badges.length);
-  const newSession = () => ({ start: Date.now(), seen: {}, said: {}, combo: 0, bestCombo: 0, golden: 0, last: 0, lifted: 0, badges: [], stageStart: stageFor(life.said, life.badges.length) });
+  const newSession = () => ({ start: Date.now(), seen: {}, said: {}, combo: 0, bestCombo: 0, golden: 0, last: 0, window: RULES.comboMs, lifted: 0, badges: [], stageStart: stageFor(life.said, life.badges.length) });
   let S = newSession();
 
-  function tick() {
-    const now = Date.now();
-    if (now - S.last > RULES.comboMs) S.combo = 0;
-    S.combo++; S.bestCombo = Math.max(S.bestCombo, S.combo); S.last = now;
+  // Returns true when this card grew the combo.
+  function tick(el) {
+    const now = Date.now(), first = !S.last, gap = now - S.last;
+    if (first || gap > S.window) S.combo = 0;
+    const grew = first || gap >= RULES.minDwellMs;
+    if (grew) S.combo++;
+    S.bestCombo = Math.max(S.bestCombo, S.combo); S.last = now;
+    const d = BY_ID[el.dataset.id];
+    S.window = Math.min(RULES.comboMaxMs, RULES.comboMs + (d ? d.ar.length : 0) * RULES.comboPerChar);
+    return grew;
   }
 
   // ---------- Buddy: a cartoon boy or girl who grows wings and a halo ----------
@@ -1193,7 +1201,7 @@ button:focus-visible { outline: 2px solid var(--gold-1); outline-offset: 3px; }
     const before = snap();
     S.said[id] = (S.said[id] || 0) + 1;
     if (golden) S.golden++;
-    tick();
+    const grew = tick(el);
     life.lastSeen = Date.now();
     if (buddyMood !== "happy" && ++moodCards >= 3) { moodCards = 0; moodCheerUp(); }
     const cleared = lowerDebt();
@@ -1202,7 +1210,7 @@ button:focus-visible { outline: 2px solid var(--gold-1); outline-offset: 3px; }
     let big = false;
     if (quiet) big = true;   // skipped cards still count, but only the card you land on gets the show
     else if (golden) { fx.golden(); confetti(true); cheerBuddy(); toast("⭐", t("goldenT"), t("goldenS")); big = true; }
-    if (!quiet && RULES.comboMarks.includes(S.combo)) { fx.up(); cheerBuddy(); toast("🔥", t("comboT", { n: S.combo }), t("comboS")); big = true; }
+    if (!quiet && grew && RULES.comboMarks.includes(S.combo)) { fx.up(); cheerBuddy(); toast("📿", t("comboT", { n: S.combo }), t("comboS")); big = true; }
     const pts = sTaps();
     if (!quiet && isMilestone(pts)) { fx.party(); confetti(false); cheerBuddy(); toast("🎉", t("mileT", { n: pts }), t("mileS")); big = true; }
     if (cleared) { celebrate({ key: "debt" + life.debtsCleared, icon: "🪶", title: t("debtDoneT"), sub: t("debtDoneS"), confetti: "gold", sound: fx.evolve, evolve: true }); big = true; }
@@ -1252,7 +1260,7 @@ button:focus-visible { outline: 2px solid var(--gold-1); outline-offset: 3px; }
     if (bump) { const el = $("pts"); el.classList.remove("bump"); void el.offsetWidth; el.classList.add("bump"); }
   }
   (function comboLoop() {
-    const left = Math.max(0, 1 - (Date.now() - S.last) / RULES.comboMs);
+    const left = Math.max(0, 1 - (Date.now() - S.last) / S.window);
     if (left === 0 && S.combo) S.combo = 0;
     const box = $("combo");
     if (S.combo >= 2) {
@@ -1655,7 +1663,7 @@ button:focus-visible { outline: 2px solid var(--gold-1); outline-offset: 3px; }
             <button class="secondary wipe" id="wipeBtn" style="height:44px">${esc(t("wipe"))}</button>
             <button class="secondary" id="swapBtn" style="height:44px">${esc(life.gender === "f" ? t("swapBoy") : t("swapGirl"))}</button>
           </div>
-          <p class="note">${esc(t("disclaimer"))}<br>${esc(t("saved"))}<br>v30</p>
+          <p class="note">${esc(t("disclaimer"))}<br>${esc(t("saved"))}<br>v31</p>
         </div>
       </div>
       <div class="actions"><button class="primary" id="closeBtn">${esc(t("back"))}</button></div>`;
