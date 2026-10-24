@@ -114,6 +114,13 @@ button:focus-visible { outline: 2px solid var(--gold-1); outline-offset: 3px; }
 .swipe { width: 64px; height: 64px; opacity: .3; animation: swipeUp 1.8s ease-in-out infinite; }
 .swipe svg { width: 100%; height: 100%; fill: none; stroke: var(--ink); stroke-width: 4.5; stroke-linecap: round; stroke-linejoin: round; }
 @keyframes swipeUp { 0%, 100% { transform: translateY(6px); opacity: .18; } 50% { transform: translateY(-6px); opacity: .38; } }
+.card { touch-action: pan-y; }
+.rep { justify-self: center; margin-top: 6px; padding: 5px 14px; border-radius: 999px; background: rgba(245,184,61,.18); border: 1.5px solid rgba(245,184,61,.5); color: var(--gold-1); font-weight: 800; font-size: 15px; }
+.rep.pop { animation: repPop .35s ease-out; }
+@keyframes repPop { 0% { transform: scale(.7); } 55% { transform: scale(1.25); } 100% { transform: scale(1); } }
+.card.tapped .ar { animation: arTap .28s ease-out; }
+@keyframes arTap { 40% { transform: scale(1.045); text-shadow: 0 0 22px rgba(255,224,138,.55); } }
+.tapHint { font-size: 11px; font-weight: 700; color: var(--ink-faint); opacity: .7; }
 .hint { font-size: 13px; font-weight: 700; color: var(--ink-faint); animation: breathe 2.2s ease-in-out infinite;  max-width: 44vw; text-align: center; line-height: 1.3;}
 @keyframes breathe { 50% { opacity: .35; } }
 
@@ -403,6 +410,8 @@ button:focus-visible { outline: 2px solid var(--gold-1); outline-offset: 3px; }
 .tourSpot { position: absolute; border-radius: 18px; box-shadow: 0 0 0 100vmax rgba(3, 20, 20, .76); outline: 2px solid var(--gold-2); animation: tourPulse 1.6s ease-in-out infinite; }
 @keyframes tourPulse { 50% { outline-color: var(--gold-1); outline-offset: 4px; } }
 .tourHand { position: absolute; left: 50%; top: 62%; font-size: 52px; line-height: 1; filter: drop-shadow(0 4px 8px rgba(0, 0, 0, .5)); animation: tourSwipe 1.7s ease-in-out infinite; }
+.tourTap { position: absolute; left: 50%; top: 57%; margin-left: -26px; font-size: 52px; line-height: 1; filter: drop-shadow(0 4px 8px rgba(0, 0, 0, .5)); animation: tourTapA 1.3s ease-in-out infinite; }
+@keyframes tourTapA { 0%, 100% { transform: translateY(22px) scale(1); } 45% { transform: translateY(0) scale(.88); } 60% { transform: translateY(0) scale(.88); } }
 @keyframes tourSwipe { 0% { transform: translate(-50%, 50px); opacity: 0; } 20% { opacity: 1; } 80% { transform: translate(-50%, -110px); opacity: 1; } 100% { transform: translate(-50%, -130px); opacity: 0; } }
 .tourTip { position: absolute; left: 16px; right: 16px; margin-inline: auto; max-width: 24rem; padding: 16px 18px 14px; border-radius: 22px; background: #0f2f2b; border: 1.5px solid var(--gold-2); box-shadow: 0 12px 34px rgba(0, 0, 0, .5); pointer-events: auto; text-align: start; }
 .tourTip p { margin: 0 0 12px; font-size: 16px; line-height: 1.4; font-weight: 600; text-wrap: pretty; }
@@ -884,6 +893,19 @@ button:focus-visible { outline: 2px solid var(--gold-1); outline-offset: 3px; }
     de: {"rateTitle": "App bewerten", "rateAsk": "Gefällt dir die App? Tippe auf einen Stern, um sie zu bewerten.", "rateThanks": "Danke für deine Bewertung!", "rateLater": "Jetzt nicht"},
   };
   for (const k of Object.keys(RATE_T)) Object.assign(T[k].ui, RATE_T[k]);
+  const REP_T = {
+    en: {"tapHint": "Tap the dhikr to repeat it", "repT": "{n} repeats!", "repS": "Keep going", "tutRepeat": "Want to say the same dhikr again? Tap it to repeat it. Every tap gives +1 point. Try it now!"},
+    ar: {"tapHint": "اضغط على الذكر لتكراره", "repT": "{n} تكرارًا!", "repS": "واصل", "tutRepeat": "تريد تكرار الذكر نفسه؟ اضغط عليه لتكراره. كل ضغطة تمنحك +1 نقطة. جرّب الآن!"},
+    fr: {"tapHint": "Touche le dhikr pour le répéter", "repT": "{n} répétitions !", "repS": "Continue", "tutRepeat": "Envie de redire le même dhikr ? Touche-le pour le répéter. Chaque pression donne +1 point. Essaie !"},
+    es: {"tapHint": "Toca el dhikr para repetirlo", "repT": "¡{n} repeticiones!", "repS": "Sigue así", "tutRepeat": "¿Quieres repetir el mismo dhikr? Tócalo para repetirlo. Cada toque da +1 punto. ¡Pruébalo!"},
+    tr: {"tapHint": "Tekrarlamak için zikre dokun", "repT": "{n} tekrar!", "repS": "Devam et", "tutRepeat": "Aynı zikri tekrar mı etmek istiyorsun? Tekrarlamak için ona dokun. Her dokunuş +1 puan verir. Şimdi dene!"},
+    ur: {"tapHint": "دہرانے کے لیے ذکر پر ٹیپ کریں", "repT": "{n} بار!", "repS": "جاری رکھیں", "tutRepeat": "وہی ذکر دوبارہ کرنا چاہتے ہیں؟ دہرانے کے لیے اس پر ٹیپ کریں۔ ہر ٹیپ +1 پوائنٹ دیتا ہے۔ ابھی آزمائیں!"},
+    id: {"tapHint": "Ketuk dzikir untuk mengulanginya", "repT": "{n} kali!", "repS": "Terus lanjutkan", "tutRepeat": "Ingin mengulang dzikir yang sama? Ketuk untuk mengulanginya. Setiap ketukan memberi +1 poin. Coba sekarang!"},
+    bn: {"tapHint": "পুনরাবৃত্তি করতে জিকিরে ট্যাপ করো", "repT": "{n} বার!", "repS": "চালিয়ে যাও", "tutRepeat": "একই জিকির আবার করতে চাও? পুনরাবৃত্তি করতে এতে ট্যাপ করো। প্রতিটি ট্যাপে +১ পয়েন্ট। এখনই চেষ্টা করো!"},
+    ru: {"tapHint": "Нажми на зикр, чтобы повторить", "repT": "{n} повторов!", "repS": "Продолжай", "tutRepeat": "Хочешь повторить тот же зикр? Нажми на него. Каждое нажатие даёт +1 очко. Попробуй!"},
+    de: {"tapHint": "Tippe auf den Dhikr, um ihn zu wiederholen", "repT": "{n} Wiederholungen!", "repS": "Weiter so", "tutRepeat": "Möchtest du denselben Dhikr noch einmal sagen? Tippe darauf, um ihn zu wiederholen. Jeder Tipp gibt +1 Punkt. Probier es jetzt!"},
+  };
+  for (const k of Object.keys(REP_T)) Object.assign(T[k].ui, REP_T[k]);
   // Language in use. Falls back to the browser language, then English.
   const pickLang = () => { const b = (navigator.language || "en").slice(0, 2).toLowerCase(); return LANGS[b] ? b : "en"; };
   let lang = "en";
@@ -1147,14 +1169,32 @@ const RULES = { comboMs: 12000, comboPerChar: 50, comboMaxMs: 24000, minDwellMs:
     el.innerHTML = `
       <div class="kind"></div>
       <div class="ar ${size}" lang="ar">${esc(d.ar)}</div>
-      <div class="meta"><div class="tr">${esc(d.tr)}</div><div class="en"></div><div class="src"></div></div>
+      <div class="meta"><div class="tr">${esc(d.tr)}</div><div class="en"></div><div class="src"></div><div class="rep" hidden></div></div>
       <div class="counter">
         <div class="swipe" aria-hidden="true"><svg viewBox="0 0 48 48"><path d="M9 28 L24 13 L39 28"/><path d="M9 41 L24 26 L39 41" opacity=".5"/></svg></div>
         <div class="hint"></div>
+        <div class="tapHint"></div>
       </div>`;
     refreshCard(el);
     el.dataset.full = "1";
   }
+  // Tap the dhikr to say it again: +1 point per tap, same rules as a scrolled card (combo, sins counter, levels).
+  function repeatCard(el) {
+    const now = performance.now();
+    if (!life.gender || now - (el._rep || 0) < 280) return;   // ignore a double tap
+    el._rep = now;
+    el.dataset.rep = (+el.dataset.rep || 0) + 1;
+    scoreCard(el, false, true);
+    updateRep(el, true);
+    el.classList.remove("tapped"); void el.offsetWidth; el.classList.add("tapped");
+    const n = +el.dataset.rep;
+    if ([33, 66, 99, 100].includes(n)) { fx.up(); cheerBuddy(); toast("📿", t("repT", { n }), t("repS")); }
+    tourAdvance("repeat");
+  }
+  feed.addEventListener("click", e => {
+    const el = e.target.closest && e.target.closest(".card");
+    if (el && el === current) { hapTick(); repeatCard(el); }
+  });
   function addCards(n) { const f = document.createDocumentFragment(); for (let i = 0; i < n; i++) f.appendChild(makeCard()); feed.appendChild(f); }
 
   let current = null, lastIdx = -1;
@@ -1193,11 +1233,13 @@ const RULES = { comboMs: 12000, comboPerChar: 50, comboMaxMs: 24000, minDwellMs:
   const snap = () => ({ lv: levelFor(lifeTaps()), st: stageNow() });
 
   // Every new card you scroll to is worth one point. The card you open the app on is free.
-  function scoreCard(el, quiet) {
-    if (el.classList.contains("counted")) return;
-    el.classList.add("counted");
+  function scoreCard(el, quiet, repeat) {
+    if (!repeat) {
+      if (el.classList.contains("counted")) return;
+      el.classList.add("counted");
+    }
     if (!life.gender) return;
-    const id = el.dataset.id, golden = !!el.dataset.golden;
+    const id = el.dataset.id, golden = !repeat && !!el.dataset.golden;   // repeating a card never counts as a golden find
     const before = snap();
     S.said[id] = (S.said[id] || 0) + 1;
     if (golden) S.golden++;
@@ -1663,7 +1705,7 @@ const RULES = { comboMs: 12000, comboPerChar: 50, comboMaxMs: 24000, minDwellMs:
             <button class="secondary wipe" id="wipeBtn" style="height:44px">${esc(t("wipe"))}</button>
             <button class="secondary" id="swapBtn" style="height:44px">${esc(life.gender === "f" ? t("swapBoy") : t("swapGirl"))}</button>
           </div>
-          <p class="note">${esc(t("disclaimer"))}<br>${esc(t("saved"))}<br>v32</p>
+          <p class="note">${esc(t("disclaimer"))}<br>${esc(t("saved"))}<br>v33</p>
         </div>
       </div>
       <div class="actions"><button class="primary" id="closeBtn">${esc(t("back"))}</button></div>`;
@@ -1773,6 +1815,7 @@ const RULES = { comboMs: 12000, comboPerChar: 50, comboMaxMs: 24000, minDwellMs:
   const TOUR = [
     { k: "tutSwipe", wait: "scroll", hand: true, hole: "feed" },
     { k: "tutPoints", target: "#pts", next: true },
+    { k: "tutRepeat", wait: "repeat", hole: "feed", tapHand: true },
     { k: "tutBuddy", target: "#buddy", next: true },
     { k: "tutLevel", target: "#lvlBtn", wait: "open", hole: "target" },
     { k: "tutBack", target: "#closeBtn", wait: "close", hole: "target", vars: () => ({ b: t("back") }), delay: 450 },
@@ -1815,6 +1858,7 @@ const RULES = { comboMs: 12000, comboPerChar: 50, comboMaxMs: 24000, minDwellMs:
     tourEl.innerHTML = `${block}
       ${spot ? `<div class="tourSpot" style="left:${spot.x}px;top:${spot.y}px;width:${spot.w}px;height:${spot.h}px"></div>` : ""}
       ${s.hand ? `<div class="tourHand" aria-hidden="true">👆</div>` : ""}
+      ${s.tapHand ? `<div class="tourTap" aria-hidden="true">👆</div>` : ""}
       <div class="tourTip" style="${pos}" role="dialog"><p>${esc(t(s.k, s.vars && s.vars()))}</p>
         <div class="tourFoot"><span class="tourCount" dir="ltr">${tourStep + 1} / ${TOUR.length}</span><span class="tourBtns">
           ${s.last ? "" : `<button class="tourSkip">${esc(t("tutSkip"))}</button>`}
@@ -1856,6 +1900,16 @@ const RULES = { comboMs: 12000, comboPerChar: 50, comboMaxMs: 24000, minDwellMs:
     el.querySelector(".en").textContent = meaning(d);
     const src = el.querySelector(".src"); src.textContent = sourceText(d); src.hidden = !src.textContent;
     el.querySelector(".hint").textContent = t("swipe");
+    el.querySelector(".tapHint").textContent = t("tapHint");
+    updateRep(el, false);
+  }
+  // How many times this card has been repeated by tapping.
+  function updateRep(el, pulse) {
+    const chip = el.querySelector(".rep"), n = +el.dataset.rep || 0;
+    if (!chip) return;
+    chip.hidden = !n;
+    chip.textContent = n ? "📿 ×" + n : "";
+    if (pulse) { chip.classList.remove("pop"); void chip.offsetWidth; chip.classList.add("pop"); }
   }
   function applyLang() {
     const app = $("app");
