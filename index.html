@@ -923,6 +923,19 @@ button:focus-visible { outline: 2px solid var(--gold-1); outline-offset: 3px; }
     de: {tabQuran: "Koran", tabDhikr: "Dhikr", tabDua: "Duas", tabMuh: "Muhammad ﷺ", kSeerah: "MUHAMMAD ﷺ · محمد", tutTabs: "Wechsle hier zwischen Dhikr, Duas, Koran und Muhammad ﷺ. Koran enthält Verse; Muhammad ﷺ enthält Hadithe und sein Leben."},
   };
   for (const k of Object.keys(TAB_T)) Object.assign(T[k].ui, TAB_T[k]);
+  const PR_T = {
+    en: {prTitle: "Prayer times", pr_fajr: "Fajr", pr_sunrise: "Sunrise", pr_dhuhr: "Dhuhr", pr_asr: "Asr", pr_maghrib: "Maghrib", pr_isha: "Isha", prLoc: "Use my location", prUpdate: "Update my location", prLocating: "Finding you…", prDenied: "Location is blocked. Allow it in iPhone Settings → Privacy → Location Services → Safari (or this app), then try again.", prFail: "Couldn't get your location. Try again.", prFar: "At this latitude the sun doesn't reach the prayer angles today, so some times can't be worked out.", prIntro: "Share your location to see today's prayer times where you are.", prNext: "Next: {p}", prAt: "Location: {c}", prMethod: "Calculation method", prHanafi: "Hanafi Asr (later)", prRem: "Prayer reminders", prBefore: "Remind me", prMin: "{n} min before", prOnTime: "At prayer time", prNotifT: "It's time for {p}", prNotifNow: "Hasanat", prNotifSoon: "In {n} minutes", prNoPerm: "Notifications are blocked. Allow them in iPhone Settings → Notifications → this app.", prNote: "Reminders ring while the app is open or running in the background. A web app on iPhone can't wake itself when it is fully closed.", prAdd: "To get notifications, first add the app to your Home Screen (Share → Add to Home Screen).", prDisc: "Times are calculated on your phone and can differ by a few minutes from your local mosque. Check with your mosque, especially in high-latitude countries."},
+    ar: {prTitle: "مواقيت الصلاة", pr_fajr: "الفجر", pr_sunrise: "الشروق", pr_dhuhr: "الظهر", pr_asr: "العصر", pr_maghrib: "المغرب", pr_isha: "العشاء", prLoc: "استخدم موقعي", prUpdate: "حدّث موقعي", prLocating: "جارٍ تحديد موقعك…", prDenied: "الموقع محظور. اسمح به من إعدادات الآيفون ← الخصوصية ← خدمات الموقع ← Safari ثم أعد المحاولة.", prFail: "تعذّر تحديد موقعك. حاول مجددًا.", prFar: "في هذا خط العرض لا تبلغ الشمس زوايا الصلاة اليوم، لذا لا يمكن حساب بعض الأوقات.", prIntro: "شارك موقعك لعرض مواقيت الصلاة في مكانك.", prNext: "التالية: {p}", prAt: "الموقع: {c}", prMethod: "طريقة الحساب", prHanafi: "العصر على المذهب الحنفي (أبعد)", prRem: "تذكير بالصلاة", prBefore: "ذكّرني", prMin: "قبل {n} دقيقة", prOnTime: "عند وقت الصلاة", prNotifT: "حان وقت {p}", prNotifNow: "حسنات", prNotifSoon: "بعد {n} دقيقة", prNoPerm: "الإشعارات محظورة. اسمح بها من إعدادات الآيفون ← الإشعارات.", prNote: "تعمل التذكيرات أثناء فتح التطبيق أو في الخلفية. لا يستطيع تطبيق ويب على الآيفون إيقاظ نفسه وهو مغلق تمامًا.", prAdd: "للحصول على إشعارات، أضف التطبيق أولًا إلى الشاشة الرئيسية (مشاركة ← إضافة إلى الشاشة الرئيسية).", prDisc: "تُحسب الأوقات على هاتفك وقد تختلف دقائق عن مسجدك المحلي. تحقق من مسجدك خاصة في البلدان ذات خطوط العرض العالية."},
+    fr: {prTitle: "Horaires de prière", pr_fajr: "Fajr", pr_sunrise: "Lever du soleil", pr_dhuhr: "Dhuhr", pr_asr: "Asr", pr_maghrib: "Maghrib", pr_isha: "Isha", prLoc: "Utiliser ma position", prUpdate: "Mettre à jour ma position", prLocating: "Recherche de ta position…", prDenied: "La localisation est bloquée. Autorise-la dans Réglages iPhone → Confidentialité → Service de localisation → Safari, puis réessaie.", prFail: "Impossible d'obtenir ta position. Réessaie.", prFar: "À cette latitude, le soleil n'atteint pas les angles de prière aujourd'hui ; certains horaires sont impossibles à calculer.", prIntro: "Partage ta position pour voir les horaires de prière où tu es.", prNext: "Prochaine : {p}", prAt: "Position : {c}", prMethod: "Méthode de calcul", prHanafi: "Asr hanafite (plus tard)", prRem: "Rappels de prière", prBefore: "Me rappeler", prMin: "{n} min avant", prOnTime: "À l'heure de la prière", prNotifT: "C'est l'heure de {p}", prNotifNow: "Hasanat", prNotifSoon: "Dans {n} minutes", prNoPerm: "Les notifications sont bloquées. Autorise-les dans Réglages iPhone → Notifications.", prNote: "Les rappels sonnent quand l'app est ouverte ou en arrière-plan. Une app web sur iPhone ne peut pas se réveiller quand elle est totalement fermée.", prAdd: "Pour recevoir des notifications, ajoute d'abord l'app à l'écran d'accueil (Partager → Sur l'écran d'accueil).", prDisc: "Les horaires sont calculés sur ton téléphone et peuvent différer de quelques minutes de ta mosquée. Vérifie auprès d'elle, surtout aux hautes latitudes."},
+    es: {prTitle: "Horarios de oración", pr_fajr: "Fajr", pr_sunrise: "Amanecer", pr_dhuhr: "Dhuhr", pr_asr: "Asr", pr_maghrib: "Maghrib", pr_isha: "Isha", prLoc: "Usar mi ubicación", prUpdate: "Actualizar mi ubicación", prLocating: "Buscándote…", prDenied: "La ubicación está bloqueada. Permítela en Ajustes del iPhone → Privacidad → Localización → Safari y vuelve a intentarlo.", prFail: "No se pudo obtener tu ubicación. Inténtalo de nuevo.", prFar: "A esta latitud el sol no alcanza hoy los ángulos de oración, así que algunas horas no se pueden calcular.", prIntro: "Comparte tu ubicación para ver los horarios de oración donde estás.", prNext: "Siguiente: {p}", prAt: "Ubicación: {c}", prMethod: "Método de cálculo", prHanafi: "Asr hanafí (más tarde)", prRem: "Recordatorios de oración", prBefore: "Recordarme", prMin: "{n} min antes", prOnTime: "A la hora de la oración", prNotifT: "Es hora de {p}", prNotifNow: "Hasanat", prNotifSoon: "En {n} minutos", prNoPerm: "Las notificaciones están bloqueadas. Permítelas en Ajustes del iPhone → Notificaciones.", prNote: "Los recordatorios suenan con la app abierta o en segundo plano. Una app web en iPhone no puede despertarse sola si está totalmente cerrada.", prAdd: "Para recibir notificaciones, primero añade la app a la pantalla de inicio (Compartir → Añadir a pantalla de inicio).", prDisc: "Los horarios se calculan en tu teléfono y pueden diferir unos minutos de tu mezquita. Consúltala, sobre todo en latitudes altas."},
+    tr: {prTitle: "Namaz vakitleri", pr_fajr: "İmsak", pr_sunrise: "Güneş", pr_dhuhr: "Öğle", pr_asr: "İkindi", pr_maghrib: "Akşam", pr_isha: "Yatsı", prLoc: "Konumumu kullan", prUpdate: "Konumumu güncelle", prLocating: "Konumun bulunuyor…", prDenied: "Konum engelli. iPhone Ayarlar → Gizlilik → Konum Servisleri → Safari'den izin ver ve tekrar dene.", prFail: "Konumun alınamadı. Tekrar dene.", prFar: "Bu enlemde güneş bugün namaz açılarına ulaşmıyor, bu yüzden bazı vakitler hesaplanamıyor.", prIntro: "Bulunduğun yerin namaz vakitlerini görmek için konumunu paylaş.", prNext: "Sıradaki: {p}", prAt: "Konum: {c}", prMethod: "Hesaplama yöntemi", prHanafi: "Hanefi ikindi (daha geç)", prRem: "Namaz hatırlatıcıları", prBefore: "Hatırlat", prMin: "{n} dk önce", prOnTime: "Vakit girince", prNotifT: "{p} vakti", prNotifNow: "Hasanat", prNotifSoon: "{n} dakika sonra", prNoPerm: "Bildirimler engelli. iPhone Ayarlar → Bildirimler'den izin ver.", prNote: "Hatırlatıcılar uygulama açıkken veya arka plandayken çalar. iPhone'daki bir web uygulaması tamamen kapalıyken kendini uyandıramaz.", prAdd: "Bildirim almak için önce uygulamayı Ana Ekrana ekle (Paylaş → Ana Ekrana Ekle).", prDisc: "Vakitler telefonunda hesaplanır ve camiden birkaç dakika farklı olabilir. Özellikle yüksek enlemlerde camine danış."},
+    ur: {prTitle: "نماز کے اوقات", pr_fajr: "فجر", pr_sunrise: "طلوعِ آفتاب", pr_dhuhr: "ظہر", pr_asr: "عصر", pr_maghrib: "مغرب", pr_isha: "عشاء", prLoc: "میرا مقام استعمال کریں", prUpdate: "میرا مقام اپ ڈیٹ کریں", prLocating: "آپ کا مقام تلاش ہو رہا ہے…", prDenied: "مقام بلاک ہے۔ آئی فون سیٹنگز ← پرائیویسی ← لوکیشن سروسز ← Safari میں اجازت دیں اور دوبارہ کوشش کریں۔", prFail: "آپ کا مقام نہیں مل سکا۔ دوبارہ کوشش کریں۔", prFar: "اس عرض بلد پر آج سورج نماز کے زاویوں تک نہیں پہنچتا، اس لیے کچھ اوقات نہیں نکالے جا سکتے۔", prIntro: "اپنی جگہ کے نماز کے اوقات دیکھنے کے لیے مقام شیئر کریں۔", prNext: "اگلی: {p}", prAt: "مقام: {c}", prMethod: "حساب کا طریقہ", prHanafi: "حنفی عصر (دیر سے)", prRem: "نماز کی یاد دہانی", prBefore: "مجھے یاد دلائیں", prMin: "{n} منٹ پہلے", prOnTime: "نماز کے وقت", prNotifT: "{p} کا وقت ہو گیا", prNotifNow: "حسنات", prNotifSoon: "{n} منٹ میں", prNoPerm: "اطلاعات بلاک ہیں۔ آئی فون سیٹنگز ← نوٹیفکیشنز میں اجازت دیں۔", prNote: "یاد دہانیاں ایپ کھلی ہو یا بیک گراؤنڈ میں ہو تب بجتی ہیں۔ آئی فون پر ویب ایپ مکمل بند ہو تو خود کو جگا نہیں سکتی۔", prAdd: "اطلاعات کے لیے پہلے ایپ کو ہوم اسکرین پر شامل کریں (شیئر ← ہوم اسکرین میں شامل کریں)۔", prDisc: "اوقات آپ کے فون پر حساب کیے جاتے ہیں اور مقامی مسجد سے چند منٹ مختلف ہو سکتے ہیں۔ اپنی مسجد سے تصدیق کریں۔"},
+    id: {prTitle: "Waktu shalat", pr_fajr: "Subuh", pr_sunrise: "Terbit", pr_dhuhr: "Zuhur", pr_asr: "Asar", pr_maghrib: "Magrib", pr_isha: "Isya", prLoc: "Gunakan lokasiku", prUpdate: "Perbarui lokasiku", prLocating: "Mencari lokasimu…", prDenied: "Lokasi diblokir. Izinkan di Pengaturan iPhone → Privasi → Layanan Lokasi → Safari, lalu coba lagi.", prFail: "Lokasimu tidak ditemukan. Coba lagi.", prFar: "Pada lintang ini matahari hari ini tidak mencapai sudut shalat, sehingga sebagian waktu tidak bisa dihitung.", prIntro: "Bagikan lokasimu untuk melihat waktu shalat di tempatmu.", prNext: "Berikutnya: {p}", prAt: "Lokasi: {c}", prMethod: "Metode perhitungan", prHanafi: "Asar Hanafi (lebih lambat)", prRem: "Pengingat shalat", prBefore: "Ingatkan aku", prMin: "{n} menit sebelum", prOnTime: "Saat waktu shalat", prNotifT: "Waktunya {p}", prNotifNow: "Hasanat", prNotifSoon: "{n} menit lagi", prNoPerm: "Notifikasi diblokir. Izinkan di Pengaturan iPhone → Notifikasi.", prNote: "Pengingat berbunyi saat aplikasi terbuka atau di latar belakang. Aplikasi web di iPhone tidak bisa bangun sendiri saat tertutup penuh.", prAdd: "Untuk menerima notifikasi, tambahkan dulu aplikasi ke Layar Utama (Bagikan → Tambah ke Layar Utama).", prDisc: "Waktu dihitung di ponselmu dan bisa berbeda beberapa menit dari masjid setempat. Cek ke masjidmu, terutama di lintang tinggi."},
+    bn: {prTitle: "নামাজের সময়", pr_fajr: "ফজর", pr_sunrise: "সূর্যোদয়", pr_dhuhr: "যোহর", pr_asr: "আসর", pr_maghrib: "মাগরিব", pr_isha: "এশা", prLoc: "আমার অবস্থান ব্যবহার করো", prUpdate: "অবস্থান হালনাগাদ করো", prLocating: "তোমার অবস্থান খোঁজা হচ্ছে…", prDenied: "লোকেশন ব্লক করা। আইফোন সেটিংস → প্রাইভেসি → লোকেশন সার্ভিস → Safari-তে অনুমতি দিয়ে আবার চেষ্টা করো।", prFail: "তোমার অবস্থান পাওয়া যায়নি। আবার চেষ্টা করো।", prFar: "এই অক্ষাংশে আজ সূর্য নামাজের কোণে পৌঁছায় না, তাই কিছু সময় হিসাব করা যাচ্ছে না।", prIntro: "তোমার জায়গার নামাজের সময় দেখতে লোকেশন শেয়ার করো।", prNext: "পরবর্তী: {p}", prAt: "অবস্থান: {c}", prMethod: "হিসাবের পদ্ধতি", prHanafi: "হানাফি আসর (দেরিতে)", prRem: "নামাজের রিমাইন্ডার", prBefore: "মনে করিয়ে দাও", prMin: "{n} মিনিট আগে", prOnTime: "নামাজের সময়ে", prNotifT: "{p}-এর সময় হয়েছে", prNotifNow: "হাসানাত", prNotifSoon: "{n} মিনিট পরে", prNoPerm: "নোটিফিকেশন ব্লক করা। আইফোন সেটিংস → নোটিফিকেশনে অনুমতি দাও।", prNote: "অ্যাপ খোলা বা ব্যাকগ্রাউন্ডে থাকলে রিমাইন্ডার বাজে। আইফোনে সম্পূর্ণ বন্ধ থাকলে ওয়েব অ্যাপ নিজে জাগতে পারে না।", prAdd: "নোটিফিকেশন পেতে আগে অ্যাপটি হোম স্ক্রিনে যোগ করো (শেয়ার → হোম স্ক্রিনে যোগ করুন)।", prDisc: "সময় তোমার ফোনে হিসাব করা হয় এবং স্থানীয় মসজিদ থেকে কয়েক মিনিট আলাদা হতে পারে। মসজিদে মিলিয়ে নিও।"},
+    ru: {prTitle: "Время намаза", pr_fajr: "Фаджр", pr_sunrise: "Восход", pr_dhuhr: "Зухр", pr_asr: "Аср", pr_maghrib: "Магриб", pr_isha: "Иша", prLoc: "Использовать мое местоположение", prUpdate: "Обновить местоположение", prLocating: "Определяем где ты…", prDenied: "Геолокация заблокирована. Разреши в Настройки iPhone → Конфиденциальность → Службы геолокации → Safari и повтори.", prFail: "Не удалось определить местоположение. Попробуй снова.", prFar: "На этой широте солнце сегодня не достигает углов намаза, поэтому часть времени рассчитать нельзя.", prIntro: "Поделись местоположением, чтобы увидеть время намаза там, где ты.", prNext: "Следующий: {p}", prAt: "Место: {c}", prMethod: "Метод расчета", prHanafi: "Аср по ханафитам (позже)", prRem: "Напоминания о намазе", prBefore: "Напоминать", prMin: "за {n} мин", prOnTime: "В момент намаза", prNotifT: "Время {p}", prNotifNow: "Hasanat", prNotifSoon: "Через {n} минут", prNoPerm: "Уведомления заблокированы. Разреши в Настройки iPhone → Уведомления.", prNote: "Напоминания звучат, пока приложение открыто или в фоне. Веб-приложение на iPhone не может проснуться, если оно полностью закрыто.", prAdd: "Чтобы получать уведомления, сначала добавь приложение на экран «Домой» (Поделиться → На экран «Домой»).", prDisc: "Время считается на телефоне и может отличаться на несколько минут от местной мечети. Сверяйся с мечетью, особенно в высоких широтах."},
+    de: {prTitle: "Gebetszeiten", pr_fajr: "Fadschr", pr_sunrise: "Sonnenaufgang", pr_dhuhr: "Dhuhr", pr_asr: "Asr", pr_maghrib: "Maghrib", pr_isha: "Ischa", prLoc: "Meinen Standort nutzen", prUpdate: "Standort aktualisieren", prLocating: "Standort wird gesucht…", prDenied: "Standort ist gesperrt. Erlaube ihn unter iPhone-Einstellungen → Datenschutz → Ortungsdienste → Safari und versuche es erneut.", prFail: "Dein Standort konnte nicht ermittelt werden. Versuche es erneut.", prFar: "Auf dieser Breite erreicht die Sonne heute die Gebetswinkel nicht, daher lassen sich manche Zeiten nicht berechnen.", prIntro: "Teile deinen Standort, um die Gebetszeiten an deinem Ort zu sehen.", prNext: "Nächstes: {p}", prAt: "Standort: {c}", prMethod: "Berechnungsmethode", prHanafi: "Hanafitisches Asr (später)", prRem: "Gebetserinnerungen", prBefore: "Erinnere mich", prMin: "{n} Min. vorher", prOnTime: "Zur Gebetszeit", prNotifT: "Zeit für {p}", prNotifNow: "Hasanat", prNotifSoon: "In {n} Minuten", prNoPerm: "Mitteilungen sind gesperrt. Erlaube sie unter iPhone-Einstellungen → Mitteilungen.", prNote: "Erinnerungen läuten, solange die App offen oder im Hintergrund ist. Eine Web-App auf dem iPhone kann sich nicht selbst wecken, wenn sie ganz geschlossen ist.", prAdd: "Für Mitteilungen füge die App zuerst zum Home-Bildschirm hinzu (Teilen → Zum Home-Bildschirm).", prDisc: "Die Zeiten werden auf deinem Handy berechnet und können einige Minuten von deiner Moschee abweichen. Frage deine Moschee, besonders in hohen Breiten."},
+  };
+  for (const k of Object.keys(PR_T)) Object.assign(T[k].ui, PR_T[k]);
   // Translated meanings for the duas and the Prophet ﷺ cards. Not yet reviewed by native speakers or scholars.
   const NEW_T = {
     ar: {
@@ -1791,6 +1804,7 @@ const RULES = { comboMs: 12000, comboPerChar: 50, comboMaxMs: 24000, minDwellMs:
           ${top.length ? `<div class="panel"><div class="label">${esc(t("mostScrolled"))}</div>${top.map(([id, n]) => `<div class="row"><div class="top"><span class="t">${esc(BY_ID[id].tr)}</span><span class="n">${n.toLocaleString()}</span></div></div>`).join("")}</div>` : ""}
           ${rateHtml(false, false)}
           <div class="panel">
+            <button class="secondary" id="prayerOpen" style="height:48px">🕌 ${esc(t("prTitle"))}</button>
             <button class="secondary" id="debtOpen" style="height:48px">⚖️ ${esc(life.debt ? t("debtNew") : t("debtTitle"))}</button>
             ${langSelect()}
             <label class="toggle" for="soundT">${esc(t("sounds"))}<input type="checkbox" id="soundT" ${life.sound ? "checked" : ""}></label>
@@ -1803,13 +1817,14 @@ const RULES = { comboMs: 12000, comboPerChar: 50, comboMaxMs: 24000, minDwellMs:
             <button class="secondary wipe" id="wipeBtn" style="height:44px">${esc(t("wipe"))}</button>
             <button class="secondary" id="swapBtn" style="height:44px">${esc(life.gender === "f" ? t("swapBoy") : t("swapGirl"))}</button>
           </div>
-          <p class="note">${esc(t("disclaimer"))}<br>${esc(t("saved"))}<br>v37</p>
+          <p class="note">${esc(t("disclaimer"))}<br>${esc(t("saved"))}<br>v38</p>
         </div>
       </div>
       <div class="actions"><button class="primary" id="closeBtn">${esc(t("back"))}</button></div>`;
     bindLang(); bindRate();
     $("closeBtn").onclick = closeSheet;
     $("debtOpen").onclick = showDebt;
+    $("prayerOpen").onclick = () => showPrayer();
     $("soundT").onchange = e => { life.sound = e.target.checked; save(); if (!life.sound) ac = null; };
     $("sndSel").onchange = e => {
       life.scrollSound = e.target.value; save();
@@ -1831,10 +1846,162 @@ const RULES = { comboMs: 12000, comboPerChar: 50, comboMaxMs: 24000, minDwellMs:
     $("restoreFile").onchange = e => { const f = e.target.files[0]; if (f) restoreProgress(f); };
     $("swapBtn").onclick = () => { life.gender = life.gender === "f" ? "m" : "f"; save(); buddyKey = ""; renderBuddy(); showProgress(); };
   }
+  // ---------- Prayer times: worked out on the phone from GPS (no server), reminders while the app is open ----------
+  const PR_NAMES = ["fajr", "sunrise", "dhuhr", "asr", "maghrib", "isha"];
+  const PR_METHODS = {   // fajr angle, isha angle (or minutes after maghrib)
+    mwl: { n: "Muslim World League", f: 18, i: 17 }, isna: { n: "ISNA (North America)", f: 15, i: 15 },
+    egypt: { n: "Egyptian General Authority", f: 19.5, i: 17.5 }, makkah: { n: "Umm al-Qura (Makkah)", f: 18.5, im: 90 },
+    karachi: { n: "Univ. of Islamic Sciences, Karachi", f: 18, i: 18 }, turkey: { n: "Diyanet (Turkey)", f: 18, i: 17 },
+  };
+  const rad = x => x * Math.PI / 180, deg = x => x * 180 / Math.PI;
+  const fixA = a => ((a % 360) + 360) % 360, fixH = h => ((h % 24) + 24) % 24;
+  function sunAt(jd) {
+    const D = jd - 2451545, g = rad(fixA(357.529 + .98560028 * D)), q = fixA(280.459 + .98564736 * D);
+    const L = rad(fixA(q + 1.915 * Math.sin(g) + .02 * Math.sin(2 * g))), e = rad(23.439 - 3.6e-7 * D);
+    const ra = fixH(deg(Math.atan2(Math.cos(e) * Math.sin(L), Math.cos(L))) / 15);
+    return { decl: deg(Math.asin(Math.sin(e) * Math.sin(L))), eqt: q / 15 - ra };
+  }
+  // Returns hours of the local day for each prayer, or null when the sun never reaches that angle (far north/south).
+  function prayerHours(date, lat, lng, tz, method, hanafi) {
+    const y = date.getFullYear(), m0 = date.getMonth() + 1, d = date.getDate();
+    let Y = y, M = m0; if (M <= 2) { Y--; M += 12; }
+    const A = Math.floor(Y / 100), B = 2 - A + Math.floor(A / 4);
+    const jd0 = Math.floor(365.25 * (Y + 4716)) + Math.floor(30.6001 * (M + 1)) + d + B - 1524.5 - lng / 360;
+    const M_ = PR_METHODS[method] || PR_METHODS.mwl;
+    const mid = t => fixH(12 - sunAt(jd0 + t).eqt);
+    const ang = (a, t, ccw) => {
+      const s = sunAt(jd0 + t), c = (-Math.sin(rad(a)) - Math.sin(rad(s.decl)) * Math.sin(rad(lat))) / (Math.cos(rad(s.decl)) * Math.cos(rad(lat)));
+      if (c < -1 || c > 1) return null;
+      return mid(t) + (ccw ? -1 : 1) * deg(Math.acos(c)) / 15;
+    };
+    const asr = t => { const s = sunAt(jd0 + t); return ang(-deg(Math.atan(1 / ((hanafi ? 2 : 1) + Math.tan(rad(Math.abs(lat - s.decl)))))), t); };
+    let t = [5, 6, 12, 13, 18, 18].map(h => h / 24);
+    for (let k = 0; k < 2; k++) {
+      const r = [ang(M_.f, t[0], true), ang(.833, t[1], true), mid(t[2]), asr(t[3]), ang(.833, t[4]), M_.im ? null : ang(M_.i, t[5])];
+      if (M_.im && r[4] != null) r[5] = r[4] + M_.im / 60;
+      t = r.map((h, i) => h == null ? t[i] : h / 24);
+      if (r.some(h => h == null)) return null;
+    }
+    return t.map((x, i) => fixH(x * 24 + tz - lng / 15 + (i === 2 ? 1 / 60 : 0)));
+  }
+  function prayerDay(date, pr) {
+    const tz = -date.getTimezoneOffset() / 60, hs = prayerHours(date, pr.lat, pr.lng, tz, pr.method, pr.hanafi);
+    if (!hs) return null;
+    const base = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    return hs.map(h => new Date(base.getTime() + Math.round(h * 36e5)));
+  }
+  function guessMethod() {
+    const z = (Intl.DateTimeFormat().resolvedOptions().timeZone || "");
+    if (/Riyadh|Kuwait|Qatar|Bahrain|Dubai|Muscat/.test(z)) return "makkah";
+    if (/Cairo|Tripoli|Khartoum|Damascus|Beirut|Amman|Baghdad/.test(z)) return "egypt";
+    if (/Karachi|Kolkata|Dhaka|Kabul/.test(z)) return "karachi";
+    if (/Istanbul/.test(z)) return "turkey";
+    if (/^America\//.test(z)) return "isna";
+    return "mwl";
+  }
+  const hhmm = d => d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  const pName = k => t("pr_" + k);
+  function nextPrayer(pr) {
+    const now = Date.now();
+    for (let off = 0; off < 2; off++) {
+      const day = prayerDay(new Date(now + off * 864e5), pr);
+      if (!day) return null;
+      for (const i of [0, 2, 3, 4, 5]) if (day[i].getTime() > now) return { k: PR_NAMES[i], at: day[i], i };
+    }
+    return null;
+  }
+  const notifOK = () => "Notification" in window && Notification.permission === "granted";
+  let prTimer = 0;
+  function schedulePrayer() {
+    clearTimeout(prTimer);
+    const pr = life.prayer;
+    if (!pr || !pr.remind) return;
+    const now = Date.now();
+    let best = null;
+    for (let off = 0; off < 2; off++) {
+      const day = prayerDay(new Date(now + off * 864e5), pr);
+      if (!day) return;
+      for (const i of [0, 2, 3, 4, 5]) {
+        const k = PR_NAMES[i], at = day[i].getTime() - (pr.before || 0) * 6e4;
+        if (pr.on[k] !== false && at > now + 500 && (!best || at < best.at)) best = { k, at };
+      }
+    }
+    if (!best) return;
+    prTimer = setTimeout(() => { firePrayer(best.k); schedulePrayer(); }, Math.min(best.at - now, 2 ** 31 - 1));
+  }
+  async function firePrayer(k) {
+    const title = t("prNotifT", { p: pName(k) }), body = (life.prayer.before ? t("prNotifSoon", { n: life.prayer.before }) : t("prNotifNow"));
+    toast("🕌", title, body); fx.party && fx.party();
+    if (!notifOK()) return;
+    try {
+      const reg = navigator.serviceWorker && await navigator.serviceWorker.getRegistration();
+      if (reg && reg.showNotification) await reg.showNotification(title, { body, icon: "icon-192.png", tag: "prayer-" + k });
+      else new Notification(title, { body, icon: "icon-192.png" });
+    } catch (e) {}
+  }
+  const standalone = () => window.navigator.standalone === true || (window.matchMedia && matchMedia("(display-mode: standalone)").matches);
+
+  function showPrayer(msg) {
+    openView = "prayer";
+    const pr = life.prayer, day = pr && prayerDay(new Date(), pr), nx = pr && nextPrayer(pr);
+    const row = (i) => `<div class="row"><div class="top"><span class="t">${esc(pName(PR_NAMES[i]))}</span><span class="n">${day ? hhmm(day[i]) : "—"}</span></div></div>`;
+    const reminderRows = pr ? [0, 2, 3, 4, 5].map(i => `<label class="toggle">${esc(pName(PR_NAMES[i]))}<input type="checkbox" data-pk="${PR_NAMES[i]}" ${pr.on[PR_NAMES[i]] !== false ? "checked" : ""}></label>`).join("") : "";
+    slot.innerHTML = `
+      <div class="sheet" role="dialog" aria-label="${esc(t("prTitle"))}">
+        <div class="inner">
+          <div class="hero"><div class="label">🕌 ${esc(t("prTitle"))}</div>
+            ${nx ? `<div class="big" style="font-size:44px">${hhmm(nx.at)}</div><div class="cap">${esc(t("prNext", { p: pName(nx.k) }))}</div>` : `<div class="cap">${esc(t("prIntro"))}</div>`}
+          </div>
+          ${msg ? `<div class="panel gold"><span>${esc(msg)}</span></div>` : ""}
+          <div class="panel">
+            <button class="primary" id="prLoc" style="height:52px">📍 ${esc(pr ? t("prUpdate") : t("prLoc"))}</button>
+            ${pr ? `<div class="cap" style="font-size:12px;color:var(--ink-faint);text-align:center">${esc(t("prAt", { c: pr.lat.toFixed(2) + ", " + pr.lng.toFixed(2) }))}</div>` : ""}
+          </div>
+          ${pr ? `<div class="panel">${[0, 1, 2, 3, 4, 5].map(row).join("")}</div>
+          <div class="panel">
+            <label class="langRow" for="prMethod"><span>${esc(t("prMethod"))}</span><select id="prMethod">${Object.entries(PR_METHODS).map(([k, m]) => `<option value="${k}"${pr.method === k ? " selected" : ""}>${esc(m.n)}</option>`).join("")}</select></label>
+            <label class="toggle" for="prHan">${esc(t("prHanafi"))}<input type="checkbox" id="prHan" ${pr.hanafi ? "checked" : ""}></label>
+          </div>
+          <div class="panel">
+            <label class="toggle" for="prRem">${esc(t("prRem"))}<input type="checkbox" id="prRem" ${pr.remind ? "checked" : ""}></label>
+            ${pr.remind ? `<label class="langRow" for="prBefore"><span>${esc(t("prBefore"))}</span><select id="prBefore">${[0, 5, 10, 15, 30].map(n => `<option value="${n}"${(pr.before || 0) === n ? " selected" : ""}>${n ? esc(t("prMin", { n })) : esc(t("prOnTime"))}</option>`).join("")}</select></label>${reminderRows}` : ""}
+            <div class="cap" style="font-size:12px;color:var(--ink-faint)">${esc(t("prNote"))}${standalone() ? "" : " " + esc(t("prAdd"))}</div>
+          </div>` : ""}
+          <p class="note">${esc(t("prDisc"))}</p>
+        </div>
+      </div>
+      <div class="actions"><button class="primary" id="closeBtn">${esc(t("back"))}</button></div>`;
+    $("closeBtn").onclick = showProgress;
+    $("prLoc").onclick = askLocation;
+    if (!pr) return;
+    $("prMethod").onchange = e => { pr.method = e.target.value; save(); schedulePrayer(); showPrayer(); };
+    $("prHan").onchange = e => { pr.hanafi = e.target.checked; save(); schedulePrayer(); showPrayer(); };
+    $("prRem").onchange = async e => {
+      if (!e.target.checked) { pr.remind = false; save(); schedulePrayer(); return showPrayer(); }
+      let denied = false;
+      if ("Notification" in window && Notification.permission === "default") { try { await Notification.requestPermission(); } catch (x) {} }
+      if (!("Notification" in window) || Notification.permission === "denied") denied = true;
+      pr.remind = true; save(); schedulePrayer(); showPrayer(denied ? t("prNoPerm") : "");
+    };
+    if (pr.remind) {
+      $("prBefore").onchange = e => { pr.before = +e.target.value; save(); schedulePrayer(); };
+      slot.querySelectorAll("input[data-pk]").forEach(c => c.onchange = () => { pr.on[c.dataset.pk] = c.checked; save(); schedulePrayer(); });
+    }
+  }
+  function askLocation() {
+    const b = $("prLoc"); b.disabled = true; b.textContent = "📍 " + t("prLocating");
+    if (!navigator.geolocation) return showPrayer(t("prFail"));
+    navigator.geolocation.getCurrentPosition(pos => {
+      const old = life.prayer || {};
+      life.prayer = { lat: pos.coords.latitude, lng: pos.coords.longitude, method: old.method || guessMethod(), hanafi: !!old.hanafi, remind: !!old.remind, before: old.before || 0, on: old.on || {} };
+      save(); schedulePrayer();
+      if (openView === "prayer") showPrayer(prayerDay(new Date(), life.prayer) ? "" : t("prFar"));
+    }, err => { if (openView === "prayer") showPrayer(err && err.code === 1 ? t("prDenied") : t("prFail")); }, { enableHighAccuracy: false, timeout: 15000, maximumAge: 36e5 });
+  }
   // ---------- Backup: progress lives in this browser only, so let people save it as a file ----------
   // Back to zero. The buddy, language and sound choices stay, since those are settings, not progress.
   function wipeEverything() {
-    const keep = { gender: life.gender, lang: life.lang, sound: life.sound, haptics: life.haptics, scrollSound: life.scrollSound, tourDone: life.tourDone, rating: life.rating };
+    const keep = { gender: life.gender, lang: life.lang, sound: life.sound, haptics: life.haptics, scrollSound: life.scrollSound, tourDone: life.tourDone, rating: life.rating, prayer: life.prayer };
     life = Object.assign(fresh(), keep);
     buddyMood = "happy";
     S = newSession(); undo = null; clearCheers();
@@ -2029,6 +2196,7 @@ const RULES = { comboMs: 12000, comboPerChar: 50, comboMaxMs: 24000, minDwellMs:
     else if (openView === "progress") showProgress();
     else if (openView === "summary" && lastSm) showSummary(lastSm);
     else if (openView === "debt") showDebt();
+    else if (openView === "prayer") showPrayer();
   }
 
   $("doneBtn").onclick = () => { unlockAudio(); showSummary(finish()); };
@@ -2048,6 +2216,8 @@ const RULES = { comboMs: 12000, comboPerChar: 50, comboMaxMs: 24000, minDwellMs:
 
   addCards(30);
   renderTabs();
+  schedulePrayer();
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) schedulePrayer(); });
   applyLang();
   renderDebt(false);
   renderBuddy();
