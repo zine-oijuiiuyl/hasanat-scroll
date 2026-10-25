@@ -17,22 +17,33 @@ const FILES = {
 let settings = { sound: true, haptics: true, scrollSound: "dial" };
 export const setFxSettings = s => { settings = { ...settings, ...s }; };
 
+// Three players per sound, used in turn, so a quick run of cards never cuts off or blocks the next click.
+const POOL = 3;
 const players = {};
+const turn = {};
 let ready = false;
 export function initSounds() {
   if (ready) return;
   ready = true;
   setAudioModeAsync({ playsInSilentMode: false, interruptionMode: "mixWithOthers" }).catch(() => {});
   for (const [k, src] of Object.entries(FILES)) {
-    try { players[k] = createAudioPlayer(src); } catch (e) {}
+    players[k] = [];
+    turn[k] = 0;
+    for (let i = 0; i < POOL; i++) {
+      try { players[k].push(createAudioPlayer(src)); } catch (e) {}
+    }
   }
 }
 
 function play(name) {
   if (!settings.sound) return;
-  const p = players[name];
-  if (!p) return;
-  try { p.seekTo(0); p.play(); } catch (e) {}
+  const pool = players[name];
+  if (!pool || !pool.length) return;
+  const p = pool[turn[name]++ % pool.length];
+  try {
+    const go = () => { try { p.play(); } catch (e) {} };
+    Promise.resolve(p.seekTo(0)).then(go, go);
+  } catch (e) {}
 }
 
 const h = fn => { if (settings.haptics) fn().catch(() => {}); };

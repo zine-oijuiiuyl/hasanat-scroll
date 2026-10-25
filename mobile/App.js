@@ -29,8 +29,9 @@ export default function App() {
     initSounds();
     load().then(schedulePrayer);
     const sub = AppState.addEventListener("change", st => {
+      // "inactive" also fires for the location and notification permission pop-ups, which must not end the session.
       if (st === "active") { onForeground(); schedulePrayer(); }
-      else onBackground();
+      else if (st === "background") onBackground();
     });
     return () => sub.remove();
   }, []);
