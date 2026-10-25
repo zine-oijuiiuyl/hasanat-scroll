@@ -7,7 +7,9 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
     "backgroundColor": "#061a18",
-    "splash": { "backgroundColor": "#061a18" },
+    "splash": {
+      "backgroundColor": "#061a18"
+    },
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "app.hasanatscroll.mobile"
@@ -20,9 +22,29 @@
       "expo-localization",
       "expo-sharing",
       "expo-audio",
-      ["expo-location", { "locationWhenInUsePermission": "Used once to work out prayer times where you are. Your location stays on your phone." }],
-      ["expo-notifications", { "color": "#f5b83d" }]
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Used once to work out prayer times where you are. Your location stays on your phone."
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "color": "#f5b83d"
+        }
+      ]
     ],
-    "extra": { "eas": { "projectId": "449bdd6c-4533-4805-831c-31159366ac5b" } }
+    "extra": {
+      "eas": {
+        "projectId": "449bdd6c-4533-4805-831c-31159366ac5b"
+      }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/449bdd6c-4533-4805-831c-31159366ac5b"
+    }
   }
 }
