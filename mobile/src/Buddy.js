@@ -2,7 +2,14 @@
 import { memo, useEffect, useMemo, useRef } from "react";
 import { Animated, Easing } from "react-native";
 import { SvgXml } from "react-native-svg";
-import { charSVG } from "./web-data";
+import { charSVG, PAL } from "./web-data";
+
+// The girl wears white like the boy, with the same green trim that turns gold at the last stage (Zine, 2026-10-25).
+PAL.f = [
+  { hijab: "#f8f5ee", dress: "#efe9d8", trim: "#2f7f6d" },
+  { hijab: "#ffffff", dress: "#f8f5ee", trim: "#3a9a86" },
+  { hijab: "#fff8ec", dress: "#ffffff", trim: "#f5b83d" },
+];
 
 // react-native-svg ignores CSS classes and inline styles, so they are stripped.
 const clean = s => s.replace(/ class="[^"]*"/g, "").replace(/ style="[^"]*"/g, "").replace(/ role="img" aria-label="[^"]*"/, "");

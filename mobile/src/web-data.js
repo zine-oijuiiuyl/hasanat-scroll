@@ -753,4 +753,4 @@ const PR_NAMES = ["fajr", "sunrise", "dhuhr", "asr", "maghrib", "isha"];
   }
   
 
-export { PALETTES, LIB, BY_ID, LANGS, T, NEW_T, RULES, isMilestone, threshold, levelFor, levelProgress, STAGES, growthFor, stageFor, stageProgress, BADGES, charSVG, PR_NAMES, PR_METHODS, prayerHours, prayerDay, guessMethod };
+export { PAL, PALETTES, LIB, BY_ID, LANGS, T, NEW_T, RULES, isMilestone, threshold, levelFor, levelProgress, STAGES, growthFor, stageFor, stageProgress, BADGES, charSVG, PR_NAMES, PR_METHODS, prayerHours, prayerDay, guessMethod };
