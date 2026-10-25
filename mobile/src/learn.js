@@ -17,7 +17,9 @@ export const MASTER = 5;
 // ---------- Saved progress ----------
 export function L() {
   const l = G.life;
-  if (!l.learn) l.learn = { q: 0, h: 0, d: 0, srs: {}, checks: 0, perfect: 0, streak: 0, best: 0, medals: [] };
+  if (!l.learn) l.learn = { q: 0, h: 0, d: 0, srs: {}, checks: 0, perfect: 0, streak: 0, best: 0, medals: [], hv: 1 };
+  // The Muhammad ﷺ track gained a first unit (his life) in front of the hadith; keep earlier progress in place.
+  if (!l.learn.hv) { if (l.learn.h > 0) l.learn.h += LIFE_LESSONS; l.learn.hv = 1; }
   return l.learn;
 }
 
@@ -28,6 +30,8 @@ const DHIKR_UNITS = [
   LIB.filter(d => d.kind === "dhikr" || d.kind === "salawat").map(d => d.id),
   LIB.filter(d => d.kind === "dua").map(d => d.id),
 ];
+// The Muhammad ﷺ track starts with the app's cards on his life and character, then the hadith collections.
+const LIFE = LIB.filter(d => d.kind === "seerah").map(d => d.id);
 const chunk = (a, n) => Array.from({ length: Math.ceil(a.length / n) }, (_, i) => a.slice(i * n, i * n + n));
 
 function withStarts(units) {
@@ -37,20 +41,23 @@ function withStarts(units) {
 }
 export const TRACKS = {
   q: withStarts(QUNITS.map(([s, part, lessons]) => ({ track: "q", s, part, lessons }))),
-  h: withStarts(HUNITS.map(([col, sec, part, lessons]) => ({ track: "h", col, sec, part, lessons }))),
+  h: withStarts([{ track: "h", life: true, lessons: chunk(LIFE, 3) }, ...HUNITS.map(([col, sec, part, lessons]) => ({ track: "h", col, sec, part, lessons }))]),
   d: withStarts(DHIKR_UNITS.map((ids, i) => ({ track: "d", i, lessons: chunk(ids, 3) }))),
 };
 export const TRACK_KEYS = ["q", "h", "d"];
+const LIFE_LESSONS = Math.ceil(LIFE.length / 3);
 
 export const surahName = s => QNAMES[s - 1][1];
 export function unitTitle(u) {
   const part = u.part ? " · " + t("part", { n: u.part }) : "";
   if (u.track === "q") return surahName(u.s) + (getLang() === "en" ? " · " + QNAMES[u.s - 1][2] : "") + part;
+  if (u.life) return t("lifeUnit");
   if (u.track === "h") return t("c_" + u.col) + part;
   return t(u.i ? "dUnit2" : "dUnit1");
 }
 export function unitSub(u) {
   if (u.track === "q") return QNAMES[u.s - 1][0];
+  if (u.life) return "";
   if (u.track === "h") return HMETA[u.col].sections[u.sec] && HMETA[u.col].sections[u.sec] !== HMETA[u.col].name ? HMETA[u.col].sections[u.sec] : "";
   return "";
 }
@@ -59,12 +66,14 @@ export function unitSub(u) {
 export function lessonItems(u, i) {
   const l = u.lessons[i];
   if (u.track === "q") return range(l[0], l[1]).map(a => `q:${u.s}:${a}`);
+  if (u.life) return l.map(id => "d:" + id);
   if (u.track === "h") return range(l[0], l[1]).filter(n => !skip[u.col].has(n)).map(n => `h:${u.col}:${n}`);
   return l.map(id => "d:" + id);
 }
 export function lessonLabel(u, i) {
   const l = u.lessons[i];
   if (u.track === "q") return l[0] === l[1] ? t("ayah", { a: l[0] }) : t("ayat", { a: l[0], b: l[1] });
+  if (u.life) return l.map(id => BY_ID[id].tr || "").filter(Boolean).join(" · ");
   if (u.track === "h") return l[0] === l[1] ? "#" + l[0] : `#${l[0]}–${l[1]}`;
   return l.map(id => BY_ID[id].tr || "").filter(Boolean).join(" · ");
 }
@@ -99,7 +108,7 @@ export async function loadItem(key) {
   const d = BY_ID[a];
   return {
     key, kind: "d", ar: d.ar, mean: meaning(d), tl: d.tr, ref: sourceText(d),
-    poolAr: LIB.filter(x => x.id !== a).map(x => x.ar), poolMean: LIB.filter(x => x.id !== a && x.kind !== "seerah").map(meaning),
+    poolAr: LIB.filter(x => x.id !== a).map(x => x.ar), poolMean: LIB.filter(x => x.id !== a && (x.kind === "seerah") === (d.kind === "seerah")).map(meaning),
   };
 }
 const seenHadith = new Map();   // hadith translations already loaded, used as wrong answers

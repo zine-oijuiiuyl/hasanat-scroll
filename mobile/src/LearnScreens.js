@@ -17,7 +17,7 @@ import { C, F, GOLD, SHEET_BG, tabSpace } from "./theme";
 import { fx, hapTick, buzz } from "./fx";
 
 const TRACK_ICON = { q: "📖", h: "📜", d: "📿" };
-const TRACK_NAME = { q: "trQ", h: "trH", d: "trD" };
+const TRACK_NAME = { q: "trQ", h: "tabMuh", d: "trD" };
 // Unit banner colours, in turn.
 const BANNERS = [["#1d7a5f", "#14574a"], ["#2b6cb0", "#1e4e86"], ["#8a5cc7", "#5f3c94"], ["#c7792b", "#93561a"], ["#c2456b", "#8e2f4e"], ["#2a8f9e", "#1c6672"]];
 const strip = s => s.replace(/[ؐ-ًؚ-ٰٟۖ-ۭـ]/g, "");
@@ -46,9 +46,9 @@ function TrackPills({ track, onChange }) {
   return (
     <View style={s.pills}>
       {TRACK_KEYS.map(k => (
-        <Pressable key={k} onPress={() => { hapTick(); onChange(k); }} style={[s.pill, track === k && s.pillOn]}>
+        <Pressable key={k} onPress={() => { hapTick(); onChange(k); }} style={[s.pill, k === "h" && { flex: 1.4 }, track === k && s.pillOn]}>
           <Text style={{ fontSize: 15 }}>{TRACK_ICON[k]}</Text>
-          <Text style={[s.pillT, track === k && { color: C.ink }]}>{t(TRACK_NAME[k])}</Text>
+          <Text style={[s.pillT, track === k && { color: C.ink }]} numberOfLines={1} adjustsFontSizeToFit>{t(TRACK_NAME[k])}</Text>
         </Pressable>
       ))}
     </View>
@@ -620,10 +620,10 @@ const s = StyleSheet.create({
   xT: { color: C.ink, fontSize: 20, fontFamily: F.heavy, marginTop: -2 },
   headT: { color: C.ink, fontFamily: F.heavy, fontSize: 17, textAlign: "center" },
   headStat: { color: C.gold1, fontFamily: F.heavy, fontSize: 14 },
-  pills: { flexDirection: "row", gap: 8, backgroundColor: "rgba(0,0,0,0.18)", padding: 4, borderRadius: 999 },
-  pill: { flex: 1, flexDirection: "row", gap: 6, alignItems: "center", justifyContent: "center", paddingVertical: 9, borderRadius: 999 },
+  pills: { flexDirection: "row", gap: 4, backgroundColor: "rgba(0,0,0,0.18)", padding: 4, borderRadius: 999 },
+  pill: { flex: 1, flexDirection: "row", gap: 5, alignItems: "center", justifyContent: "center", paddingVertical: 9, paddingHorizontal: 6, borderRadius: 999 },
   pillOn: { backgroundColor: "rgba(245,184,61,0.22)", borderWidth: 1.5, borderColor: C.gold2 },
-  pillT: { fontFamily: F.heavy, fontSize: 14, color: C.inkSoft },
+  pillT: { flexShrink: 1, fontFamily: F.heavy, fontSize: 13.5, color: C.inkSoft },
   action: { flex: 1, flexDirection: "row", gap: 10, alignItems: "center", padding: 12, borderRadius: 18, backgroundColor: C.panel, borderWidth: 1.5, borderColor: C.line },
   actionHot: { borderColor: "#4fd1a5", backgroundColor: "rgba(79,209,165,0.12)" },
   actionT: { fontFamily: F.heavy, fontSize: 14, color: C.ink },

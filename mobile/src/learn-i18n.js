@@ -4,7 +4,7 @@ import { T } from "./web-data";
 
 const L = {
   en: {
-    scrollTab: "Scroll", learn: "Learn", trQ: "Qur'an", trH: "Hadith", trD: "Dhikr", library: "Library", memCheck: "Memory check",
+    lifeUnit: "His life and character", scrollTab: "Scroll", learn: "Learn", trQ: "Qur'an", trH: "Hadith", trD: "Dhikr", library: "Library", memCheck: "Memory check",
     memDue: "{n} to review", start: "Start", unit: "Unit {n}", part: "part {n}", lesson: "Lesson {n}",
     locked: "Finish the lesson before this one first", newTag: "New", check: "Check", correct: "Excellent!",
     wrongT: "Correct answer:", meaningQ: "What does this mean?", nextQ: "Which ayah comes next?",
@@ -24,7 +24,7 @@ const L = {
     medalT: "Reward: {t}", pathDone: "You finished this path. ما شاء الله",
   },
   ar: {
-    scrollTab: "تصفّح", learn: "تعلّم", trQ: "القرآن", trH: "الحديث", trD: "الذكر", library: "المكتبة", memCheck: "اختبار الذاكرة",
+    lifeUnit: "سيرته وأخلاقه", scrollTab: "تصفّح", learn: "تعلّم", trQ: "القرآن", trH: "الحديث", trD: "الذكر", library: "المكتبة", memCheck: "اختبار الذاكرة",
     memDue: "{n} للمراجعة", start: "ابدأ", unit: "الوحدة {n}", part: "الجزء {n}", lesson: "الدرس {n}",
     locked: "أكمل الدرس الذي قبله أولًا", newTag: "جديد", check: "تحقّق", correct: "ممتاز!",
     wrongT: "الإجابة الصحيحة:", meaningQ: "ما معنى هذا؟", nextQ: "ما الآية التالية؟",
@@ -44,7 +44,7 @@ const L = {
     medalT: "مكافأة: {t}", pathDone: "أكملت هذا المسار. ما شاء الله",
   },
   fr: {
-    scrollTab: "Défiler", learn: "Apprendre", trQ: "Coran", trH: "Hadith", trD: "Dhikr", library: "Bibliothèque", memCheck: "Test de mémoire",
+    lifeUnit: "Sa vie et son caractère", scrollTab: "Défiler", learn: "Apprendre", trQ: "Coran", trH: "Hadith", trD: "Dhikr", library: "Bibliothèque", memCheck: "Test de mémoire",
     memDue: "{n} à réviser", start: "Commencer", unit: "Unité {n}", part: "partie {n}", lesson: "Leçon {n}",
     locked: "Termine d'abord la leçon précédente", newTag: "Nouveau", check: "Vérifier", correct: "Excellent !",
     wrongT: "Bonne réponse :", meaningQ: "Que veut dire ceci ?", nextQ: "Quel verset vient ensuite ?",
@@ -64,7 +64,7 @@ const L = {
     medalT: "Récompense : {t}", pathDone: "Tu as terminé ce parcours. ما شاء الله",
   },
   es: {
-    scrollTab: "Deslizar", learn: "Aprender", trQ: "Corán", trH: "Hadiz", trD: "Dhikr", library: "Biblioteca", memCheck: "Prueba de memoria",
+    lifeUnit: "Su vida y su carácter", scrollTab: "Deslizar", learn: "Aprender", trQ: "Corán", trH: "Hadiz", trD: "Dhikr", library: "Biblioteca", memCheck: "Prueba de memoria",
     memDue: "{n} por repasar", start: "Empezar", unit: "Unidad {n}", part: "parte {n}", lesson: "Lección {n}",
     locked: "Primero termina la lección anterior", newTag: "Nuevo", check: "Comprobar", correct: "¡Excelente!",
     wrongT: "Respuesta correcta:", meaningQ: "¿Qué significa esto?", nextQ: "¿Qué aleya viene después?",
@@ -84,7 +84,7 @@ const L = {
     medalT: "Premio: {t}", pathDone: "Terminaste este camino. ما شاء الله",
   },
   tr: {
-    scrollTab: "Kaydır", learn: "Öğren", trQ: "Kur'an", trH: "Hadis", trD: "Zikir", library: "Kütüphane", memCheck: "Hafıza testi",
+    lifeUnit: "Hayatı ve ahlakı", scrollTab: "Kaydır", learn: "Öğren", trQ: "Kur'an", trH: "Hadis", trD: "Zikir", library: "Kütüphane", memCheck: "Hafıza testi",
     memDue: "{n} tekrar", start: "Başla", unit: "Ünite {n}", part: "bölüm {n}", lesson: "Ders {n}",
     locked: "Önce bir önceki dersi bitir", newTag: "Yeni", check: "Kontrol et", correct: "Harika!",
     wrongT: "Doğru cevap:", meaningQ: "Bunun anlamı ne?", nextQ: "Sonraki ayet hangisi?",
@@ -104,7 +104,7 @@ const L = {
     medalT: "Ödül: {t}", pathDone: "Bu yolu bitirdin. ما شاء الله",
   },
   ur: {
-    scrollTab: "اسکرول", learn: "سیکھیں", trQ: "قرآن", trH: "حدیث", trD: "ذکر", library: "لائبریری", memCheck: "یادداشت کا امتحان",
+    lifeUnit: "آپ ﷺ کی سیرت اور اخلاق", scrollTab: "اسکرول", learn: "سیکھیں", trQ: "قرآن", trH: "حدیث", trD: "ذکر", library: "لائبریری", memCheck: "یادداشت کا امتحان",
     memDue: "{n} دہرانے کے لیے", start: "شروع کریں", unit: "یونٹ {n}", part: "حصہ {n}", lesson: "سبق {n}",
     locked: "پہلے اس سے پچھلا سبق مکمل کریں", newTag: "نیا", check: "جانچیں", correct: "بہت خوب!",
     wrongT: "درست جواب:", meaningQ: "اس کا مطلب کیا ہے؟", nextQ: "اگلی آیت کون سی ہے؟",
@@ -124,7 +124,7 @@ const L = {
     medalT: "انعام: {t}", pathDone: "آپ نے یہ راستہ مکمل کر لیا۔ ما شاء الله",
   },
   id: {
-    scrollTab: "Gulir", learn: "Belajar", trQ: "Al-Qur'an", trH: "Hadis", trD: "Zikir", library: "Perpustakaan", memCheck: "Tes hafalan",
+    lifeUnit: "Kehidupan dan akhlak beliau", scrollTab: "Gulir", learn: "Belajar", trQ: "Al-Qur'an", trH: "Hadis", trD: "Zikir", library: "Perpustakaan", memCheck: "Tes hafalan",
     memDue: "{n} untuk diulang", start: "Mulai", unit: "Unit {n}", part: "bagian {n}", lesson: "Pelajaran {n}",
     locked: "Selesaikan dulu pelajaran sebelumnya", newTag: "Baru", check: "Periksa", correct: "Hebat!",
     wrongT: "Jawaban benar:", meaningQ: "Apa artinya?", nextQ: "Ayat mana yang berikutnya?",
@@ -144,7 +144,7 @@ const L = {
     medalT: "Hadiah: {t}", pathDone: "Kamu menyelesaikan jalur ini. ما شاء الله",
   },
   bn: {
-    scrollTab: "স্ক্রল", learn: "শিখুন", trQ: "কুরআন", trH: "হাদিস", trD: "জিকির", library: "লাইব্রেরি", memCheck: "স্মৃতি পরীক্ষা",
+    lifeUnit: "তাঁর জীবন ও চরিত্র", scrollTab: "স্ক্রল", learn: "শিখুন", trQ: "কুরআন", trH: "হাদিস", trD: "জিকির", library: "লাইব্রেরি", memCheck: "স্মৃতি পরীক্ষা",
     memDue: "{n}টি পুনরাবৃত্তি", start: "শুরু করো", unit: "ইউনিট {n}", part: "অংশ {n}", lesson: "পাঠ {n}",
     locked: "আগে আগের পাঠটি শেষ করো", newTag: "নতুন", check: "যাচাই করো", correct: "চমৎকার!",
     wrongT: "সঠিক উত্তর:", meaningQ: "এর অর্থ কী?", nextQ: "পরের আয়াত কোনটি?",
@@ -164,7 +164,7 @@ const L = {
     medalT: "পুরস্কার: {t}", pathDone: "তুমি এই পথ শেষ করেছ। ما شاء الله",
   },
   ru: {
-    scrollTab: "Лента", learn: "Учиться", trQ: "Коран", trH: "Хадисы", trD: "Зикр", library: "Библиотека", memCheck: "Проверка памяти",
+    lifeUnit: "Его жизнь и нрав", scrollTab: "Лента", learn: "Учиться", trQ: "Коран", trH: "Хадисы", trD: "Зикр", library: "Библиотека", memCheck: "Проверка памяти",
     memDue: "{n} на повтор", start: "Начать", unit: "Раздел {n}", part: "часть {n}", lesson: "Урок {n}",
     locked: "Сначала пройди предыдущий урок", newTag: "Новое", check: "Проверить", correct: "Отлично!",
     wrongT: "Правильный ответ:", meaningQ: "Что это значит?", nextQ: "Какой аят следующий?",
@@ -184,7 +184,7 @@ const L = {
     medalT: "Награда: {t}", pathDone: "Ты прошёл этот путь. ما شاء الله",
   },
   de: {
-    scrollTab: "Scrollen", learn: "Lernen", trQ: "Koran", trH: "Hadith", trD: "Dhikr", library: "Bibliothek", memCheck: "Gedächtnistest",
+    lifeUnit: "Sein Leben und Charakter", scrollTab: "Scrollen", learn: "Lernen", trQ: "Koran", trH: "Hadith", trD: "Dhikr", library: "Bibliothek", memCheck: "Gedächtnistest",
     memDue: "{n} zum Wiederholen", start: "Start", unit: "Einheit {n}", part: "Teil {n}", lesson: "Lektion {n}",
     locked: "Schließe zuerst die vorige Lektion ab", newTag: "Neu", check: "Prüfen", correct: "Ausgezeichnet!",
     wrongT: "Richtige Antwort:", meaningQ: "Was bedeutet das?", nextQ: "Welcher Vers kommt als Nächstes?",
