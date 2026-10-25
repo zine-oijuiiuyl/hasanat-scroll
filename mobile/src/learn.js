@@ -44,7 +44,8 @@ export const TRACKS = {
   h: withStarts([{ track: "h", life: true, lessons: chunk(LIFE, 3) }, ...HUNITS.map(([col, sec, part, lessons]) => ({ track: "h", col, sec, part, lessons }))]),
   d: withStarts(DHIKR_UNITS.map((ids, i) => ({ track: "d", i, lessons: chunk(ids, 3) }))),
 };
-export const TRACK_KEYS = ["q", "h", "d"];
+// Same order as the feed's tabs.
+export const TRACK_KEYS = ["d", "q", "h"];
 const LIFE_LESSONS = Math.ceil(LIFE.length / 3);
 
 export const surahName = s => QNAMES[s - 1][1];
@@ -94,15 +95,25 @@ export async function loadItem(key) {
   const [k, a, b] = key.split(":");
   if (k === "q") {
     const s = +a, n = +b, c = await surah(s, lang);
+    // Some ayat recur in a surah with a different ayah after each (ar-Rahman, ash-Shu'ara, al-Qamar).
+    // Then every ayah that follows it somewhere is kept out of the wrong answers, and the ayah before is shown too.
+    const flat = flatOf(c), same = [];
+    flat.forEach((x, i) => { if (x === flat[n - 1]) same.push(i); });
+    const follows = new Set(same.map(i => flat[i + 1]));
     return {
-      key, kind: "q", ar: c.ar[n - 1], mean: c.tr[n - 1], next: c.ar[n] || null,
+      key, kind: "q", ar: c.ar[n - 1], mean: c.tr[n - 1],
+      next: c.ar[n] || null, nextKey: c.ar[n] ? `q:${s}:${n + 1}` : null,
+      before: same.length > 1 && n > 1 ? c.ar[n - 2] : null,
       ref: `${surahName(s)} ${s}:${n}`, by: (QURAN_ED[lang] || QURAN_ED.en)[1],
-      poolAr: c.ar.filter((_, i) => i !== n - 1 && i !== n), poolMean: c.tr.filter((_, i) => i !== n - 1),
+      poolAr: c.ar.filter((_, i) => i !== n - 1 && !follows.has(flat[i]) && flat[i] !== flat[n - 1]),
+      poolMean: c.tr.filter((_, i) => i !== n - 1),
     };
   }
   if (k === "h") {
     const h = await hadith(a, +b, lang);
+    seenHadith.delete(key);
     seenHadith.set(key, h.tr);
+    if (seenHadith.size > 60) seenHadith.delete(seenHadith.keys().next().value);
     return { key, kind: "h", ar: h.ar, mean: h.tr, ref: `${t("c_" + a)} ${b}`, by: hadithEd(a, lang) === "eng" && lang !== "en" ? "English" : "" };
   }
   const d = BY_ID[a];
@@ -111,7 +122,10 @@ export async function loadItem(key) {
     poolAr: LIB.filter(x => x.id !== a).map(x => x.ar), poolMean: LIB.filter(x => x.id !== a && (x.kind === "seerah") === (d.kind === "seerah")).map(meaning),
   };
 }
-const seenHadith = new Map();   // hadith translations already loaded, used as wrong answers
+const seenHadith = new Map();   // the last hadith translations loaded, used as wrong answers
+// Each surah's ayat without diacritics, to spot ayat that recur.
+const flats = new WeakMap();
+const flatOf = c => { let f = flats.get(c); if (!f) flats.set(c, f = c.ar.map(strip)); return f; };
 
 export async function loadItems(keys) { return Promise.all(keys.map(loadItem)); }
 
@@ -120,13 +134,13 @@ const shuffle = a => { const b = a.slice(); for (let i = b.length - 1; i > 0; i-
 const pick = (a, n) => shuffle(a).slice(0, n);
 const cut = (s, n) => s.length > n ? s.slice(0, n).replace(/\s+\S*$/, "") + "…" : s;
 
+// The right answer and up to n wrong ones from the pool, none of them the same as another.
+// Draws at random first (pools can be a whole surah's words), then walks the pool if that comes up short.
 function options(right, pool, n = 3, norm = x => x) {
   const seen = new Set([norm(right)]), out = [];
-  for (const p of shuffle(pool)) {
-    if (out.length >= n) break;
-    if (!p || seen.has(norm(p))) continue;
-    seen.add(norm(p)); out.push(p);
-  }
+  const take = p => { if (p && !seen.has(norm(p))) { seen.add(norm(p)); out.push(p); } };
+  for (let tries = 0; out.length < n && tries < n * 8 && pool.length; tries++) take(pool[Math.random() * pool.length | 0]);
+  if (out.length < n) for (const p of shuffle(pool)) { if (out.length >= n) break; take(p); }
   return out.length ? shuffle([right, ...out]) : null;
 }
 
@@ -143,21 +157,31 @@ function missingWord(text, pool, arabic, keep) {
   const clean = w => arabic ? w : w.replace(/[.,;:!?"“”()]/g, "");
   const right = clean(ws[i]);
   const others = pool.flatMap(words).map(clean).filter(w => ok(w) && w !== right);
-  const opts = options(right, others, 3, arabic ? strip : x => x.toLowerCase());
+  const opts = options(right, others, 3, arabic ? plain : x => x.toLowerCase());
   if (!opts) return null;
   let before = ws.slice(0, i).join(" "), after = ws.slice(i + 1).join(" ");
   if (keep) { before = before.length > keep ? "…" + before.slice(-keep).replace(/^\S*\s/, "") : before; after = cut(after, keep); }
   return { type: "missing", arabic, before, after, right, opts };
 }
 
-function exercisesFor(it) {
+// Where a hadith is split for "how does it end": past the middle, after a comma or full stop when there is one.
+function splitAt(ws) {
+  const lo = Math.max(6, Math.ceil(ws.length * 0.45)), hi = Math.floor(ws.length * 0.7);
+  for (let k = Math.floor(ws.length * 0.55); k >= lo; k--) if (/[.,;:!?”"’]$/.test(ws[k - 1])) return k;
+  for (let k = Math.floor(ws.length * 0.55) + 1; k <= hi; k++) if (/[.,;:!?”"’]$/.test(ws[k - 1])) return k;
+  return Math.max(6, Math.floor(ws.length * 0.55));
+}
+const ending = x => { const ws = words(x); return cut(ws.slice(splitAt(ws)).join(" "), 160); };
+
+// known(key) says whether an item has been taught, so "what comes next" only asks for ayat already learned.
+function exercisesFor(it, known) {
   const out = [];
   if (it.kind === "q" || it.kind === "d") {
     const m = options(cut(it.mean, 220), it.poolMean.map(x => cut(x, 220)));
     if (m) out.push({ type: "meaning", prompt: it.ar, right: cut(it.mean, 220), opts: m });
-    if (it.next) {
+    if (it.next && known(it.nextKey)) {
       const o = options(it.next, it.poolAr, 3, strip);
-      if (o) out.push({ type: "next", prompt: it.ar, right: it.next, opts: o });
+      if (o) out.push({ type: "next", prompt: it.ar, before: it.before, ref: it.ref, right: it.next, opts: o });
     }
     const ws = words(it.ar);
     if (ws.length >= 3 && ws.length <= 8) out.push({ type: "order", right: ws, tiles: shuffle(ws.map((w, i) => ({ w, i }))) });
@@ -169,13 +193,15 @@ function exercisesFor(it) {
     const arTail = words(it.ar).slice(-24).join(" ");
     const mw = missingWord(arTail, [it.ar], true, 200);
     if (mw) out.push(mw);
-    const others = [...seenHadith.values()].filter(x => x !== it.mean);
-    if (others.length >= 2) {
-      const ws = words(it.mean), half = Math.max(6, Math.floor(ws.length * 0.55));
-      const end = x => cut(words(x).slice(Math.max(6, Math.floor(words(x).length * 0.55))).join(" "), 160);
-      const right = end(it.mean);
-      const o = options(right, others.map(end));
-      if (o && ws.length > 10) out.push({ type: "end", prompt: cut(ws.slice(0, half).join(" "), 320), right, opts: o });
+    const ws = words(it.mean);
+    const others = [...seenHadith.values()].filter(x => x !== it.mean && words(x).length > 10);
+    if (others.length >= 2 && ws.length > 10) {
+      // The prompt is the text right up to the split, so the right answer carries straight on from it.
+      const k = splitAt(ws), head = ws.slice(0, k).join(" ");
+      const prompt = head.length > 320 ? "…" + head.slice(-320).replace(/^\S*\s/, "") : head;
+      const right = ending(it.mean);
+      const o = options(right, others.map(ending));
+      if (o) out.push({ type: "end", prompt, right, opts: o });
     }
   }
   return out.map(e => ({ ...e, key: it.key, item: it }));
@@ -183,15 +209,17 @@ function exercisesFor(it) {
 
 // A lesson: two exercises per item, up to eight, in mixed order.
 export function lessonExercises(items) {
-  const per = items.map(it => shuffle(exercisesFor(it)));
+  const keys = new Set(items.map(it => it.key)), srs = L().srs;
+  const per = items.map(it => shuffle(exercisesFor(it, k => keys.has(k) || !!srs[k])));
   const out = [];
   for (let r = 0; r < 2; r++) for (const list of per) if (list[r]) out.push(list[r]);
   return shuffle(out.slice(0, 8));
 }
 // A memory check: one exercise per item.
 export function reviewExercises(items) {
+  const srs = L().srs;
   return shuffle(items.map(it => {
-    const list = exercisesFor(it);
+    const list = exercisesFor(it, k => !!srs[k]);
     const best = list.filter(e => e.type !== "order");
     return (best.length ? pick(best, 1) : list)[0];
   }).filter(Boolean));
@@ -201,19 +229,36 @@ export function reviewExercises(items) {
 export function learned(keys) {
   const srs = L().srs, now = Date.now();
   for (const k of keys) if (!srs[k]) srs[k] = [1, now + GAP[1] * DAY];
+  memo = null;
 }
 export function grade(key, ok) {
   const srs = L().srs, now = Date.now();
   const box = ok ? Math.min(GAP.length - 1, ((srs[key] || [0])[0]) + 1) : 1;
   srs[key] = [box, now + GAP[box] * DAY];
+  memo = null;
 }
-export const dueKeys = () => {
-  const now = Date.now();
-  return Object.entries(L().srs).filter(([, v]) => v[1] <= now).sort((a, b) => a[1][0] - b[1][0] || a[1][1] - b[1][1]).map(([k]) => k);
-};
+// The tab bar and the path read these on every render, so they are worked out once and kept
+// until the memory boxes change or the next item falls due.
+let memo = null;
+function stats() {
+  const srs = L().srs, now = Date.now();
+  if (memo && memo.srs === srs && now < memo.until) return memo;
+  const due = [];
+  let mastered = 0, learnedN = 0, until = Infinity;
+  for (const k in srs) {
+    const v = srs[k];
+    learnedN++;
+    if (v[0] >= MASTER) mastered++;
+    if (v[1] <= now) due.push([k, v]); else if (v[1] < until) until = v[1];
+  }
+  due.sort((a, b) => a[1][0] - b[1][0] || a[1][1] - b[1][1]);
+  return (memo = { srs, until, due: due.map(([k]) => k), mastered, learned: learnedN });
+}
+export const dueKeys = () => stats().due;
+export const dueCount = () => stats().due.length;
 export const boxOf = k => (L().srs[k] || [0])[0];
-export const masteredCount = () => Object.values(L().srs).filter(v => v[0] >= MASTER).length;
-export const learnedCount = () => Object.keys(L().srs).length;
+export const masteredCount = () => stats().mastered;
+export const learnedCount = () => stats().learned;
 
 // ---------- Rewards ----------
 export const MEDALS = [

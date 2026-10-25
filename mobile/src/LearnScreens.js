@@ -1,18 +1,18 @@
 // The learning screens: the path of lessons, a lesson (learn, then exercises), the memory check,
 // the library of everything learned and the reader for one lesson.
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { ActivityIndicator, Animated, Easing, FlatList, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { G, closeView, openView, stageNow, emit, showToast } from "./game";
+import { G, closeView, openView, stageNow, emit, showToast, subscribe, on } from "./game";
 import {
   L, TRACKS, TRACK_KEYS, unitTitle, unitSub, lessonItems, lessonLabel, unitAt, loadItems, lessonExercises, reviewExercises,
-  finishLesson, finishReview, dueKeys, boxOf, MASTER, masteredCount, learnedCount, MEDALS, medalName, REVIEW_SIZE, setTrack, backToPath,
+  finishLesson, finishReview, dueKeys, dueCount, boxOf, MASTER, masteredCount, learnedCount, MEDALS, medalName, REVIEW_SIZE, setTrack, backToPath,
 } from "./learn";
 import { BuddyArt } from "./Buddy";
 import { Pattern70 } from "./Pattern";
 import { Btn, Tile, Tiles, Label, Panel } from "./ui";
-import { t, num, isRTL } from "./i18n";
+import { t, num, isRTL, getLang } from "./i18n";
 import { C, F, GOLD, SHEET_BG, tabSpace } from "./theme";
 import { fx, hapTick, buzz } from "./fx";
 
@@ -130,17 +130,31 @@ const Unit = memo(function Unit({ u, n, progress, onNode }) {
   );
 });
 
-// The Learn page, beside the feed.
-export function LearnPath() {
+// The Learn page, beside the feed. It stays mounted under the feed, so it re-renders only when
+// something it shows changes, and is first drawn a moment after launch or as soon as it is opened.
+const pathKey = () => {
+  const track = G.life.learnTrack || "q";
+  return `${track}|${L()[track]}|${dueCount()}|${masteredCount()}|${learnedCount()}|${getLang()}`;
+};
+export const LearnPath = memo(function LearnPath() {
+  useSyncExternalStore(subscribe, pathKey);
+  const [shown, setShown] = useState(G.page === "learn");
+  useEffect(() => {
+    if (shown) return;
+    const id = setTimeout(() => setShown(true), 1500);
+    const off = on("page", p => { if (p === "learn") setShown(true); });
+    return () => { clearTimeout(id); off(); };
+  }, [shown]);
+  if (!shown) return <Screen page title={t("learn")} scroll={false} />;
   const track = G.life.learnTrack || "q";
   return <Path key={track} track={track} />;
-}
+});
 
 function Path({ track }) {
   const insets = useSafeAreaInsets();
   const progress = L()[track];
   const T = TRACKS[track];
-  const due = dueKeys().length;
+  const due = dueCount();
   const list = useRef(null);
   const offsets = useMemo(() => { let y = 0; return T.units.map(u => { const o = y; y += unitHeight(u); return o; }); }, [T]);
   const cur = useMemo(() => Math.max(0, T.units.indexOf(unitAt(track, Math.min(progress, T.total - 1)))), [T, track, progress]);
@@ -307,7 +321,12 @@ function Exercise({ ex, answer, done, onAnswer }) {
     <View style={{ gap: 18 }}>
       <Text style={s.q}>{t(QUESTION[ex.type])}</Text>
       {ex.type === "meaning" || ex.type === "next" ? (
-        <View style={s.item}><Text style={[s.ar, { fontSize: arSize(ex.prompt, 32), lineHeight: arSize(ex.prompt, 32) * 1.9 }]}>{ex.prompt}</Text></View>
+        <View style={s.item}>
+          {/* An ayah that recurs in its surah comes with the one before it, so the next one is clear. */}
+          {ex.before ? <Text style={[s.ar, s.before, { fontSize: arSize(ex.before, 22), lineHeight: arSize(ex.before, 22) * 1.8 }]} numberOfLines={3}>{ex.before}</Text> : null}
+          <Text style={[s.ar, { fontSize: arSize(ex.prompt, 32), lineHeight: arSize(ex.prompt, 32) * 1.9 }]}>{ex.prompt}</Text>
+          {ex.type === "next" ? <Text style={s.ref}>{ex.ref}</Text> : null}
+        </View>
       ) : null}
       {ex.type === "end" ? <View style={s.item}><Text style={[s.mean, { color: C.ink }]}>{ex.prompt} …</Text></View> : null}
       {ex.type === "order" ? <Text style={s.hintSmall}>{t("tapWords")}</Text> : null}
@@ -491,7 +510,7 @@ export function Review({ offer }) {
           <Pulse on><BuddyArt gender={G.life.gender || "m"} stage={stageNow()} mood={G.buddyMood} width={220} height={188} /></Pulse>
           <Text style={s.resT}>🧠 {t("memCheck")}</Text>
           <Text style={s.centerT}>{t("reviewIntro")}</Text>
-          <Text style={s.resS}>{t("memDue", { n: num(dueKeys().length) })}</Text>
+          <Text style={s.resS}>{t("memDue", { n: num(dueCount()) })}</Text>
           <Btn primary title={t("start")} onPress={() => setPhase("go")} style={{ alignSelf: "stretch" }} />
           <Btn title={t("later")} onPress={closeView} style={{ alignSelf: "stretch" }} />
         </View>
@@ -647,6 +666,7 @@ const s = StyleSheet.create({
   item: { backgroundColor: C.panel, borderRadius: 22, padding: 20, gap: 14, borderWidth: 1.5, borderColor: C.line },
   newTag: { alignSelf: "center", fontFamily: F.heavy, fontSize: 11, letterSpacing: 1.5, color: "#16714f", backgroundColor: "#7ee2b8", paddingHorizontal: 10, paddingVertical: 3, borderRadius: 999, overflow: "hidden", textTransform: "uppercase" },
   ar: { fontFamily: F.ar, color: C.ink, textAlign: "center", writingDirection: "rtl" },
+  before: { opacity: 0.45 },
   tl: { fontFamily: F.bold, fontStyle: "italic", fontSize: 16, color: C.ink, textAlign: "center" },
   mean: { fontFamily: F.ui, fontSize: 16, lineHeight: 24, color: C.inkSoft, textAlign: "center" },
   ref: { fontFamily: F.bold, fontSize: 12, color: C.inkFaint, textAlign: "center" },

@@ -1,11 +1,11 @@
 // The feed and the learning path side by side, like Instagram's tabs: swipe sideways or use the bottom bar.
-import { useEffect, useRef } from "react";
+import { memo, useEffect, useRef, useSyncExternalStore } from "react";
 import { Animated, Pressable, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import Svg, { Path, Rect } from "react-native-svg";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { G, on, setPage } from "./game";
-import { dueKeys } from "./learn";
-import { t } from "./i18n";
+import { G, on, setPage, subscribe } from "./game";
+import { dueCount } from "./learn";
+import { t, getLang } from "./i18n";
 import { C, F, GOLD, TAB_H, tabSpace } from "./theme";
 import { hapTick } from "./fx";
 
@@ -66,9 +66,12 @@ const LearnIcon = ({ color }) => (
   </Svg>
 );
 
-function TabBar({ x, width }) {
+// Re-renders only when the page, the number of due memory checks or the language changes.
+const barKey = () => `${G.page}|${dueCount()}|${getLang()}`;
+const TabBar = memo(function TabBar({ x, width }) {
+  useSyncExternalStore(subscribe, barKey);
   const insets = useSafeAreaInsets();
-  const due = dueKeys().length;
+  const due = dueCount();
   const half = width / 2;
   const items = [["scroll", t("scrollTab"), ScrollIcon], ["learn", t("learn"), LearnIcon]];
   return (
@@ -90,7 +93,7 @@ function TabBar({ x, width }) {
       })}
     </View>
   );
-}
+});
 
 const s = StyleSheet.create({
   bar: { position: "absolute", left: 0, right: 0, bottom: 0, flexDirection: "row", backgroundColor: "rgba(4,20,18,0.94)", borderTopWidth: 1, borderTopColor: C.line },
