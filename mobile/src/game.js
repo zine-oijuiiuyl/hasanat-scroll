@@ -5,6 +5,9 @@ import { LIB, BY_ID, LANGS, RULES, isMilestone, levelFor, stageFor, BADGES, STAG
 import { t, levelTitle, levelLine, badgeText, stageName, stageLine, setLangRaw, pickLang, getLang, num } from "./i18n";
 import { fx, scrollSound, setFxSettings } from "./fx";
 
+// Zine chose a shorter wait for the native app (2026-10-25): normal swipes grow the combo, only flicks under 0.5s don't.
+RULES.minDwellMs = 500;
+
 export const KEY = "hasanat.lifetime.v2";
 export const fresh = () => ({ seen: 0, said: 0, sessions: 0, best: 0, per: {}, streak: 0, bestStreak: 0, lastDay: null, badges: [], golden: 0, sound: true, gender: null, lang: null, debt: null, debtsCleared: 0, haptics: true, scrollSound: "dial", lastSeen: 0, tourDone: undefined, rating: 0, rateLater: 0 });
 
