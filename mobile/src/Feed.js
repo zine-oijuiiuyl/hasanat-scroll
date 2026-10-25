@@ -2,7 +2,7 @@
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { Animated, Easing, FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import Svg, { Defs, G, Path, Pattern, Rect } from "react-native-svg";
+import Svg, { Defs, G as SvgG, Path, Pattern, Rect } from "react-native-svg";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BY_ID, PALETTES } from "./web-data";
 import { G, on, repeatCard, setCurrent } from "./game";
@@ -16,10 +16,10 @@ const Pattern70 = memo(function Pattern70() {
     <Svg style={StyleSheet.absoluteFill} pointerEvents="none">
       <Defs>
         <Pattern id="geo" width="70" height="70" patternUnits="userSpaceOnUse">
-          <G fill="none" stroke="#fff" strokeOpacity={0.09}>
+          <SvgG fill="none" stroke="#fff" strokeOpacity={0.09}>
             <Rect x="19" y="19" width="32" height="32" />
             <Rect x="19" y="19" width="32" height="32" rotation="45" origin="35, 35" />
-          </G>
+          </SvgG>
         </Pattern>
       </Defs>
       <Rect x="0" y="0" width="100%" height="100%" fill="url(#geo)" />
