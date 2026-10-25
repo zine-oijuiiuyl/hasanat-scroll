@@ -2,13 +2,30 @@
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { Animated, Easing, FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import Svg, { Path } from "react-native-svg";
+import Svg, { Defs, G, Path, Pattern, Rect } from "react-native-svg";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BY_ID, PALETTES } from "./web-data";
 import { G, on, repeatCard, setCurrent } from "./game";
 import { t, meaning, kindLabel, sourceText } from "./i18n";
 import { C, F, GOLD } from "./theme";
 import { hapTick } from "./fx";
+
+// The faint tiled pattern behind every card: a square and the same square turned 45 degrees (as on the web app).
+const Pattern70 = memo(function Pattern70() {
+  return (
+    <Svg style={StyleSheet.absoluteFill} pointerEvents="none">
+      <Defs>
+        <Pattern id="geo" width="70" height="70" patternUnits="userSpaceOnUse">
+          <G fill="none" stroke="#fff" strokeOpacity={0.09}>
+            <Rect x="19" y="19" width="32" height="32" />
+            <Rect x="19" y="19" width="32" height="32" rotation="45" origin="35, 35" />
+          </G>
+        </Pattern>
+      </Defs>
+      <Rect x="0" y="0" width="100%" height="100%" fill="url(#geo)" />
+    </Svg>
+  );
+});
 
 function SwipeHint() {
   const a = useRef(new Animated.Value(0)).current;
@@ -49,6 +66,7 @@ const Card = memo(function Card({ card, height, lang, rep, insetTop, insetBottom
       style={{ height }}
     >
       <LinearGradient colors={colors} start={{ x: 0.33, y: 0 }} end={{ x: 0.67, y: 1 }} style={[s.card, { paddingTop: insetTop + 130, paddingBottom: insetBottom + 40 }]}>
+        <Pattern70 />
         <Text style={[s.kind, card.golden && { color: C.gold1 }]}>{card.golden ? t("golden") : kindLabel(d)}</Text>
         <Animated.Text style={[s.ar, { fontSize: size, lineHeight: size * 1.65 }, card.golden && s.arGold, { transform: [{ scale }] }]} adjustsFontSizeToFit>{d.ar}</Animated.Text>
         <View style={s.meta}>
