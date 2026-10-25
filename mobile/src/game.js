@@ -252,6 +252,19 @@ export function dismissCinematic() {
   changed();
   setTimeout(() => emit("cheerBuddy", true), 250);
 }
+// ---------- Points from the learning path (learn.js) ----------
+// Counted with the session like scrolled cards, under their own key so the per-dhikr list ignores them.
+export function award(n) {
+  if (!n) return;
+  const before = snap();
+  G.S.said.learn = (G.S.said.learn || 0) + n;
+  G.life.lastSeen = Date.now(); save();
+  afterChange(before);
+  emit("floater", true); emit("bump"); emit("hop");
+  changed();
+}
+export { emit, toast as showToast };
+
 function clearCheers() { cheers.length = 0; nextCheer(); }
 
 // ---------- "Lighten the load": a number you set that each scrolled card lowers ----------
@@ -421,6 +434,10 @@ function tourAdvance(ev) {
 // ---------- App lifecycle ----------
 // Leaving the app ends the session; the summary waits for the return.
 let pending = null;
+// After this long away, the app offers a memory check of what is due (learn.js).
+const AWAY_MS = 8 * 36e5;
+let offerReview = () => {};
+export const setReviewOffer = fn => { offerReview = fn; };
 export function onBackground() {
   if (hasSession()) pending = finish();
   saveNow();
@@ -428,6 +445,7 @@ export function onBackground() {
 export function onForeground() {
   if (pending) { const sm = pending; pending = null; openView("summary", { sm }); }
   const l = G.life;
+  if (l.lastSeen && Date.now() - l.lastSeen > AWAY_MS && !G.view && G.tourStep < 0 && l.gender) offerReview();
   if (l.lastSeen) {
     const m = moodFor((Date.now() - l.lastSeen) / 36e5);
     if (m !== "happy" && G.buddyMood === "happy") { G.buddyMood = m; G.moodCards = 0; changed(); showMood(); }
@@ -451,6 +469,7 @@ export async function load() {
   G.loaded = true;
   changed();
   showMood();
+  if (l.lastSeen && Date.now() - l.lastSeen > AWAY_MS && l.gender) setTimeout(() => { if (!G.view && G.tourStep < 0) offerReview(); }, 2500);
 }
 
 export { STAGES, BADGES };

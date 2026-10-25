@@ -10,6 +10,7 @@ import { BuddyArt } from "./Buddy";
 import { C, F, GOLD } from "./theme";
 import { hapTick } from "./fx";
 import { target } from "./targets";
+import { openLearn, dueKeys } from "./learn";
 
 const TABS = [["dhikr", "tabDhikr"], ["dua", "tabDua"], ["quran", "tabQuran"], ["muh", "tabMuh"]];
 
@@ -79,6 +80,17 @@ function Debt() {
   );
 }
 
+function LearnPill() {
+  if (!G.life.gender) return null;
+  const due = dueKeys().length;
+  return (
+    <Pressable testID="learn" onPress={() => { hapTick(); openLearn(); }} style={s.learn}>
+      <Text style={{ fontSize: 15 }}>🎓</Text><Text style={s.debtAddT}>{t("learn")}</Text>
+      {due ? <View style={s.dueDot}><Text style={s.dueT}>{due > 99 ? "99+" : due}</Text></View> : null}
+    </Pressable>
+  );
+}
+
 export default function Hud() {
   const insets = useSafeAreaInsets();
   const scale = useBump("bump");
@@ -114,7 +126,10 @@ export default function Hud() {
           </Pressable>
         </View>
       </View>
-      <Debt />
+      <View style={s.pills}>
+        <LearnPill />
+        <Debt />
+      </View>
       <Combo />
       <Toast />
     </View>
@@ -150,4 +165,8 @@ const s = StyleSheet.create({
   dBar: { width: 64, height: 6, borderRadius: 999, backgroundColor: C.line, overflow: "hidden" },
   debtAdd: { flexDirection: "row", alignItems: "center", gap: 8, paddingVertical: 8, paddingHorizontal: 16, borderRadius: 999, backgroundColor: C.glass, borderWidth: 1.5, borderStyle: "dashed", borderColor: C.gold2 },
   debtAddT: { fontSize: 15, fontFamily: F.heavy, color: C.ink },
+  pills: { flexDirection: "row", flexWrap: "wrap", gap: 8, justifyContent: "center", alignItems: "center" },
+  learn: { flexDirection: "row", alignItems: "center", gap: 8, paddingVertical: 8, paddingHorizontal: 16, borderRadius: 999, backgroundColor: "rgba(31,122,95,0.85)", borderWidth: 1.5, borderColor: "#4fd1a5" },
+  dueDot: { minWidth: 20, height: 20, paddingHorizontal: 5, borderRadius: 10, backgroundColor: "#ff6b5b", alignItems: "center", justifyContent: "center" },
+  dueT: { color: "#fff", fontFamily: F.heavy, fontSize: 11 },
 });
