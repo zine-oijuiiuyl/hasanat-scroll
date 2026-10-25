@@ -11,6 +11,8 @@ export const C = {
   panel: "rgba(244,239,226,0.07)",
 };
 export const GOLD = [C.gold1, C.gold2, C.gold3];
+// Height of the bottom bar (Scroll | Learn), above the safe-area inset.
+export const TAB_H = 58;
 export const SHEET_BG = ["#0b2b26", "#163832", "#051f20"];
 export const F = {
   ar: "Amiri_700Bold",

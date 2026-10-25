@@ -7,13 +7,13 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { G, closeView, openView, stageNow, emit, showToast } from "./game";
 import {
   L, TRACKS, TRACK_KEYS, unitTitle, unitSub, lessonItems, lessonLabel, unitAt, loadItems, lessonExercises, reviewExercises,
-  finishLesson, finishReview, dueKeys, boxOf, MASTER, masteredCount, learnedCount, MEDALS, medalName, REVIEW_SIZE, setTrack,
+  finishLesson, finishReview, dueKeys, boxOf, MASTER, masteredCount, learnedCount, MEDALS, medalName, REVIEW_SIZE, setTrack, backToPath,
 } from "./learn";
 import { BuddyArt } from "./Buddy";
 import { Pattern70 } from "./Pattern";
 import { Btn, Tile, Tiles, Label, Panel } from "./ui";
 import { t, num, isRTL } from "./i18n";
-import { C, F, GOLD, SHEET_BG } from "./theme";
+import { C, F, GOLD, SHEET_BG, TAB_H } from "./theme";
 import { fx, hapTick, buzz } from "./fx";
 
 const TRACK_ICON = { q: "📖", h: "📜", d: "📿" };
@@ -24,16 +24,16 @@ const strip = s => s.replace(/[ؐ-ًؚ-ٰٟۖ-ۭـ]/g, "");
 const arSize = (s, base = 32) => { const n = s.length; return Math.max(18, n < 40 ? base : n < 120 ? base - 5 : n < 300 ? base - 9 : n < 700 ? base - 12 : base - 14); };
 
 // ---------- Shared pieces ----------
-function Screen({ children, onBack, back = "✕", title, right, scroll = true }) {
+function Screen({ children, onBack, back = "✕", title, right, scroll = true, page }) {
   const insets = useSafeAreaInsets();
-  const a = useRef(new Animated.Value(0)).current;
-  useEffect(() => { Animated.timing(a, { toValue: 1, duration: 320, easing: Easing.out(Easing.cubic), useNativeDriver: true }).start(); }, [a]);
+  const a = useRef(new Animated.Value(page ? 1 : 0)).current;
+  useEffect(() => { if (!page) Animated.timing(a, { toValue: 1, duration: 320, easing: Easing.out(Easing.cubic), useNativeDriver: true }).start(); }, [a, page]);
   return (
     <Animated.View style={[StyleSheet.absoluteFill, { opacity: a, transform: [{ translateY: a.interpolate({ inputRange: [0, 1], outputRange: [30, 0] }) }] }]}>
       <LinearGradient colors={SHEET_BG} locations={[0, 0.45, 1]} style={StyleSheet.absoluteFill} />
       <Pattern70 />
       <View style={[s.head, { paddingTop: insets.top + 8 }]}>
-        <Pressable hitSlop={12} onPress={() => { hapTick(); onBack(); }} style={s.x}><Text style={s.xT}>{back}</Text></Pressable>
+        {onBack ? <Pressable hitSlop={12} onPress={() => { hapTick(); onBack(); }} style={s.x}><Text style={s.xT}>{back}</Text></Pressable> : <View style={{ width: 36 }} />}
         <View style={{ flex: 1 }}>{typeof title === "string" ? <Text style={s.headT} numberOfLines={1}>{title}</Text> : title}</View>
         <View style={{ minWidth: 36, alignItems: "flex-end" }}>{right}</View>
       </View>
@@ -130,7 +130,14 @@ const Unit = memo(function Unit({ u, n, progress, onNode }) {
   );
 });
 
-export function LearnPath({ track }) {
+// The Learn page, beside the feed.
+export function LearnPath() {
+  const track = G.life.learnTrack || "q";
+  return <Path key={track} track={track} />;
+}
+
+function Path({ track }) {
+  const insets = useSafeAreaInsets();
   const progress = L()[track];
   const T = TRACKS[track];
   const due = dueKeys().length;
@@ -143,7 +150,7 @@ export function LearnPath({ track }) {
     openView("lesson", { track, g });
   }, [track]);
   return (
-    <Screen onBack={closeView} title={t("learn")} scroll={false}
+    <Screen page title={t("learn")} scroll={false}
       right={<Text style={s.headStat}>👑 {num(masteredCount())}</Text>}>
       <View style={{ paddingHorizontal: 16, gap: 12, paddingBottom: 8 }}>
         <TrackPills track={track} onChange={setTrack} />
@@ -174,7 +181,7 @@ export function LearnPath({ track }) {
         windowSize={5}
         initialNumToRender={2}
         maxToRenderPerBatch={3}
-        contentContainerStyle={{ paddingBottom: 140 }}
+        contentContainerStyle={{ paddingBottom: insets.bottom + TAB_H + 60 }}
         ListHeaderComponent={<Text style={s.hint}>{t("learnHint")}</Text>}
         ListFooterComponent={progress >= T.total ? <Text style={[s.hint, { color: C.gold1 }]}>{t("pathDone")}</Text> : null}
       />
@@ -413,7 +420,7 @@ export function Lesson({ track, g }) {
   const [res, setRes] = useState(null);
   const fresh = g >= L()[track];
   const exercises = useMemo(() => items ? lessonExercises(items) : [], [items]);
-  const back = () => openView("learn", { track });
+  const back = backToPath;
   const steps = keys.length + exercises.length;
   const title = <Text style={s.headT} numberOfLines={1}>{unitTitle(u)} · {lessonLabel(u, i)}</Text>;
   if (!items) return <Screen onBack={back} title={title} scroll={false}><Loading error={error} onRetry={retry} /></Screen>;
@@ -466,7 +473,7 @@ export function Review({ offer }) {
   const [phase, setPhase] = useState(offer ? "offer" : "go");
   const keys = useMemo(() => dueKeys().slice(0, REVIEW_SIZE), []);
   const [res, setRes] = useState(null);
-  const back = () => offer ? closeView() : openView("learn", { track: G.life.learnTrack || "q" });
+  const back = () => offer ? closeView() : backToPath();
   if (!keys.length) {
     return (
       <Screen onBack={back} title={t("memCheck")}>
@@ -564,7 +571,7 @@ export function Library({ track }) {
     </View>
   );
   return (
-    <Screen onBack={() => openView("learn", { track })} back="←" title={t("library")} scroll={false}>
+    <Screen onBack={backToPath} back="←" title={t("library")} scroll={false}>
       <FlatList
         data={rows}
         keyExtractor={r => r.key}

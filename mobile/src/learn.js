@@ -4,7 +4,7 @@ import "./learn-i18n";
 import { QNAMES, QUNITS, HMETA, HUNITS, HSKIP } from "./learn-data";
 import { LIB, BY_ID } from "./web-data";
 import { surah, hadith, QURAN_ED, hadithEd } from "./content";
-import { G, award, changed, save, openView, emit, showToast, setReviewOffer } from "./game";
+import { G, award, changed, save, openView, closeView, setPage, emit, showToast, setReviewOffer } from "./game";
 import { getLang, t, meaning, sourceText } from "./i18n";
 import { medalText } from "./learn-i18n";
 import { fx } from "./fx";
@@ -260,6 +260,12 @@ export function finishReview(results) {
 export const REVIEW_SIZE = 6;
 setReviewOffer(() => { if (dueKeys().length) openView("review", { offer: true }); });
 
-export function openLearn(track) { openView("learn", { track: track || G.life.learnTrack || "q" }); }
-export function setTrack(track) { G.life.learnTrack = track; save(); openView("learn", { track }); }
+// The learning path is the page to the right of the feed; lessons and the library open over it.
+export function openLearn(track) {
+  if (track) G.life.learnTrack = track;
+  if (G.view) closeView();
+  setPage("learn");
+}
+export const backToPath = () => openLearn();
+export function setTrack(track) { G.life.learnTrack = track; save(); changed(); }
 export { changed };

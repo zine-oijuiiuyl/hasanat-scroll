@@ -38,6 +38,7 @@ export const G = {
   toast: null,
   cheer: null,
   cinematic: null,  // { from, to, id } while the growth scene plays
+  page: "scroll",   // "scroll" (the feed) or "learn" (the learning path), side by side like Instagram's tabs
 };
 
 let saveTimer = 0;
@@ -339,6 +340,12 @@ export function keepScrolling(sm) {
 export function openView(name, extra) {
   G.view = { name, ...extra };
   if (name === "progress") tourAdvance("open");
+  changed();
+}
+export function setPage(p) {
+  if (G.page === p) return;
+  G.page = p;
+  emit("page", p);
   changed();
 }
 export function closeView() {

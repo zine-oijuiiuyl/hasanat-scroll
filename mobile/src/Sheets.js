@@ -17,7 +17,7 @@ import { Panel, Label, Cap, Bar, Tile, Tiles, Btn, Toggle, Choice, LangPicker, s
 import { C, F, GOLD, SHEET_BG } from "./theme";
 import { fx, hapTick } from "./fx";
 import { target } from "./targets";
-import { LearnPath, Lesson, Review, Library, Reader } from "./LearnScreens";
+import { Lesson, Review, Library, Reader } from "./LearnScreens";
 import { askLocation, hhmm, nextPrayer, pName, setPrayerOn, setReminders, updatePrayer } from "./prayer";
 
 const TAB_ORDER = [["dhikr", "tabDhikr"], ["dua", "tabDua"], ["quran", "tabQuran"], ["muh", "tabMuh"]];
@@ -321,7 +321,6 @@ export default function Sheets() {
   if (v.name === "progress") return <Progress />;
   if (v.name === "debt") return <Debt />;
   if (v.name === "prayer") return <Prayer />;
-  if (v.name === "learn") return <LearnPath key={v.track} track={v.track} />;
   if (v.name === "lesson") return <Lesson key={v.track + v.g} track={v.track} g={v.g} />;
   if (v.name === "review") return <Review offer={!!v.offer} />;
   if (v.name === "library") return <Library key={v.track} track={v.track} />;

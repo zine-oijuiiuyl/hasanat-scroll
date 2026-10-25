@@ -8,7 +8,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BY_ID, PALETTES } from "./web-data";
 import { G, on, repeatCard, setCurrent } from "./game";
 import { t, meaning, kindLabel, sourceText } from "./i18n";
-import { C, F, GOLD } from "./theme";
+import { C, F, GOLD, TAB_H } from "./theme";
 import { hapTick } from "./fx";
 
 function SwipeHint() {
@@ -82,7 +82,7 @@ export default function Feed({ version, lang }) {
   }, [height]);
   useEffect(() => { if (height && G.current < 0) setCurrent(0); }, [height, tab]);
   const renderItem = useCallback(({ item }) => (
-    <Card card={item} height={height} lang={lang} rep={item.rep} insetTop={insets.top} insetBottom={insets.bottom} />
+    <Card card={item} height={height} lang={lang} rep={item.rep} insetTop={insets.top} insetBottom={insets.bottom + TAB_H} />
   ), [height, lang, insets.top, insets.bottom]);
   return (
     <View style={StyleSheet.absoluteFill} onLayout={e => setHeight(e.nativeEvent.layout.height)}>

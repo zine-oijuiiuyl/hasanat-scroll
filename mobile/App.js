@@ -16,6 +16,8 @@ import Sheets from "./src/Sheets";
 import { Tour, Picker } from "./src/Tour";
 import { BuddyLayer, Floaters, Confetti } from "./src/Overlays";
 import Cinematic from "./src/Cinematic";
+import { Pager } from "./src/Tabs";
+import { LearnPath } from "./src/LearnScreens";
 import { C } from "./src/theme";
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
@@ -46,10 +48,15 @@ export default function App() {
     <SafeAreaProvider>
       <View style={s.root} testID="app">
         <StatusBar style="light" />
-        <Feed version={version} lang={lang} />
-        <Hud />
-        <BuddyLayer />
-        <Floaters />
+        <Pager>
+          <View style={StyleSheet.absoluteFill}>
+            <Feed version={version} lang={lang} />
+            <Hud />
+            <BuddyLayer />
+            <Floaters />
+          </View>
+          <LearnPath />
+        </Pager>
         <Sheets key={G.view ? G.view.name : "none"} />
         {!G.life.gender ? <Picker key={lang} /> : null}
         <Cinematic />
