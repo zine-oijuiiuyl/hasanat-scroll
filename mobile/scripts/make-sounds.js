@@ -44,23 +44,21 @@ function glass(buf, freq, vol) {
     }
   });
 }
-// A chewing-gum pop: a soft, wet "pap". A short sine that drops quickly in pitch (the bubble collapsing),
-// a band-passed puff of noise around it, and a tiny low smack. The pitch rises with the combo.
+// The pop, matched to Zine's reference recording (a ~30 ms event, onset in about 2 ms, energy centred around
+// 1 kHz, decay time of roughly 8 ms): a resonant puff, band-passed noise plus a ringing tone at the same pitch.
+// The pitch rises with the combo.
 function pop(buf, j, vol) {
-  const e = Math.min(buf.length, Math.round(.09 * RATE));
-  const f0 = 900 * j, w0 = 2 * Math.PI * (1100 * j) / RATE, Q = 2.2, alpha = Math.sin(w0) / (2 * Q);
+  const e = Math.min(buf.length, Math.round(.07 * RATE));
+  const fc = 985 * j, w0 = 2 * Math.PI * fc / RATE, Q = 5, alpha = Math.sin(w0) / (2 * Q);
   const b0 = alpha, b2 = -alpha, a0 = 1 + alpha, a1 = -2 * Math.cos(w0), a2 = 1 - alpha;
-  let ph = 0, x1 = 0, x2 = 0, y1 = 0, y2 = 0;
+  let x1 = 0, x2 = 0, y1 = 0, y2 = 0;
   for (let i = 0; i < e; i++) {
     const t = i / RATE;
-    ph += 2 * Math.PI * (f0 * (.3 + .7 * Math.exp(-t / .008))) / RATE;
-    const tone = Math.sin(ph) * Math.exp(-t / .014);
     const x = Math.random() * 2 - 1;
     const y = (b0 * x + b2 * x2 - a1 * y1 - a2 * y2) / a0;
     x2 = x1; x1 = x; y2 = y1; y1 = y;
-    const puff = y * Math.exp(-t / .009) * 2.4;
-    const smack = Math.sin(2 * Math.PI * 140 * j * t) * Math.exp(-t / .012) * .3;
-    buf[i] += (tone * .8 + puff + smack) * vol * Math.min(1, t / .0005);
+    const ring = Math.sin(2 * Math.PI * fc * t) * (Math.exp(-t / .008) * .9 + Math.exp(-t / .02) * .15);
+    buf[i] += (y * 3 * Math.exp(-t / .009) + ring) * vol * Math.min(1, t / .002);
   }
 }
 function wav(name, buf) {
@@ -79,7 +77,7 @@ for (let k = 0; k <= 24; k++) {
   const c = k, j = 1 + c * .035;
   wav("dial" + k, render(.12, b => { click(b, 0, 3400 * j, .5); click(b, .055, 2500 * j, .32); }));
   wav("glass" + k, render(.3, b => glass(b, 1568 * j, .3)));
-  wav("pop" + k, render(.1, b => pop(b, j, .5)));
+  wav("pop" + k, render(.08, b => pop(b, j, .5)));
   wav("chime" + k, render(.13, b => tone(b, 520 + c * 22, .09, "triangle", .1 * 2.5, 0)));
 }
 const seq = (fs_, dur, type, step) => render(dur + fs_.length * step + .05, b => fs_.forEach((f, i) => tone(b, f, dur, type, .25, i * step)));
