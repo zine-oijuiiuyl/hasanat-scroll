@@ -68,4 +68,27 @@ wav("up", render(.3, b => { tone(b, 660, .1, "triangle", .3, 0); tone(b, 990, .1
 wav("golden", seq([784, 988, 1175, 1568], .25, "sine", .07));
 wav("party", seq([523, 659, 784, 1047], .3, "triangle", .08));
 wav("evolve", seq([392, 523, 659, 784, 1047, 1319], .35, "sine", .09));
+// Transformation cinematic: a rising charge-up, then a deep boom with a bright shimmer on top.
+wav("charge", render(1.6, b => {
+  let ph = 0, ph2 = 0;
+  for (let i = 0; i < b.length; i++) {
+    const t = i / RATE, u = t / 1.6;
+    const f = 180 * Math.pow(1400 / 180, u * u);
+    ph += 2 * Math.PI * f / RATE; ph2 += 2 * Math.PI * f * 1.5 / RATE;
+    const trem = 1 - .35 * (.5 + .5 * Math.sin(2 * Math.PI * (6 + 18 * u) * t));
+    const env = Math.pow(u, 1.4) * Math.min(1, (1.6 - t) / .03);
+    b[i] += (Math.sin(ph) * .6 + Math.sin(ph2) * .25 + (Math.random() * 2 - 1) * .08 * u) * env * trem * .45;
+  }
+}));
+wav("boom", render(1.4, b => {
+  let lp = 0;
+  for (let i = 0; i < b.length; i++) {
+    const t = i / RATE;
+    lp += .08 * ((Math.random() * 2 - 1) - lp);
+    const thump = Math.sin(2 * Math.PI * (48 + 40 * Math.exp(-t / .05)) * t) * Math.exp(-t / .32) * .75;
+    const crack = lp * Math.exp(-t / .09) * 2.2;
+    b[i] += (thump + crack) * .7;
+  }
+  [1047, 1319, 1568, 2093, 2637].forEach((f, k) => tone(b, f, .9, "sine", .07, .04 + k * .05));
+}));
 console.log("Wrote", fs.readdirSync(out).length, "sounds");

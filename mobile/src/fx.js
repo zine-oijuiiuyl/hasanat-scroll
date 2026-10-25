@@ -82,6 +82,7 @@ const FILES = {
   seen: require("../assets/sounds/seen.wav"), up: require("../assets/sounds/up.wav"),
   golden: require("../assets/sounds/golden.wav"), party: require("../assets/sounds/party.wav"),
   evolve: require("../assets/sounds/evolve.wav"),
+  charge: require("../assets/sounds/charge.wav"), boom: require("../assets/sounds/boom.wav"),
 };
 
 let settings = { sound: true, haptics: true, scrollSound: "dial" };
@@ -146,3 +147,21 @@ export const fx = {
   party: () => { play("party"); h(success); },
   evolve: () => { play("evolve"); h(success); later(180, medium); later(380, () => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy)); },
 };
+
+// The transformation cinematic: a charge-up with haptic ticks that speed up and grow stronger,
+// a heavy hit on the flash, then the reveal fanfare. Returns a function that stops it.
+export function cinematicFx() {
+  const timers = [];
+  const at = (ms, fn) => timers.push(setTimeout(fn, ms));
+  poolFor("boom"); poolFor("evolve");
+  at(450, () => play("charge"));
+  for (let i = 0; i < 16; i++) {
+    const ms = 500 + 1500 * Math.pow(i / 16, .6);
+    at(ms, () => h(i < 9 ? light : medium));
+  }
+  at(2060, () => { play("boom"); h(() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy)); });
+  at(2140, () => h(() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy)));
+  at(2300, () => play("evolve"));
+  at(3100, () => h(success));
+  return () => timers.forEach(clearTimeout);
+}

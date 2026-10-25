@@ -3,7 +3,9 @@ import { T, LANGS, NEW_T } from "./web-data";
 
 // "Glass" scroll sound label, added for the native app.
 const GLASS = { en: "Glass", ar: "زجاج", fr: "Verre", es: "Cristal", tr: "Cam", ur: "شیشہ", id: "Kaca", bn: "কাচ", ru: "Стекло", de: "Glas" };
-for (const k of Object.keys(GLASS)) if (T[k]) { T[k].ui.sndGlass = GLASS[k]; }
+// "Continue" on the growth scene.
+const CONT = { en: "Continue", ar: "متابعة", fr: "Continuer", es: "Continuar", tr: "Devam", ur: "جاری رکھیں", id: "Lanjut", bn: "চালিয়ে যাও", ru: "Продолжить", de: "Weiter" };
+for (const k of Object.keys(GLASS)) if (T[k]) { T[k].ui.sndGlass = GLASS[k]; T[k].ui.cont = CONT[k]; }
 
 let lang = "en";
 export const getLang = () => lang;

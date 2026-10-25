@@ -15,6 +15,7 @@ import Hud from "./src/Hud";
 import Sheets from "./src/Sheets";
 import { Tour, Picker } from "./src/Tour";
 import { BuddyLayer, Floaters, Confetti } from "./src/Overlays";
+import Cinematic from "./src/Cinematic";
 import { C } from "./src/theme";
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
@@ -51,6 +52,7 @@ export default function App() {
         <Floaters />
         <Sheets key={G.view ? G.view.name : "none"} />
         {!G.life.gender ? <Picker key={lang} /> : null}
+        <Cinematic />
         <Confetti />
         <Tour />
       </View>

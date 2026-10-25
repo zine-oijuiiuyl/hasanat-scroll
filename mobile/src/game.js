@@ -37,6 +37,7 @@ export const G = {
   tourStep: -1,
   toast: null,
   cheer: null,
+  cinematic: null,  // { from, to, id } while the growth scene plays
 };
 
 let saveTimer = 0;
@@ -187,7 +188,7 @@ function afterChange(before) {
   checkBadges(false).forEach(b => { celebrate({ key: "badge" + b.id, icon: b.icon, title: t("badgeT", { t: badgeText(b)[0] }), sub: badgeText(b)[1], confetti: "color", sound: fx.party }); n++; });
   const st = stageNow();
   if (st > before.st) {
-    celebrate({ key: "stage" + st, icon: st >= 3 ? "🪽" : "✨", title: t("growT"), sub: stageName(st) + ": " + stageLine(st), confetti: "gold", sound: fx.evolve, evolve: true }); n++;
+    openCinematic(before.st, st); n++;
   }
   return n;
 }
@@ -237,6 +238,19 @@ function nextCheer() {
   if (c.confetti) emit("confetti", c.confetti === "gold", "buddy");
   c.sound();
   cheerTimer = setTimeout(nextCheer, c.evolve ? 4800 : 3600);
+}
+// ---------- The growth scene, played for every new form (Cinematic.js) ----------
+export function openCinematic(from, to) {
+  G.cinematic = { from, to, id: Date.now() };
+  changed();
+  setTimeout(() => emit("confetti", true), 2100);
+  setTimeout(() => emit("confetti", false), 2700);
+}
+export function dismissCinematic() {
+  if (!G.cinematic) return;
+  G.cinematic = null;
+  changed();
+  setTimeout(() => emit("cheerBuddy", true), 250);
 }
 function clearCheers() { cheers.length = 0; nextCheer(); }
 

@@ -8,14 +8,14 @@ import * as DocumentPicker from "expo-document-picker";
 import { File, Paths } from "expo-file-system";
 import { BY_ID, STAGES, BADGES, levelFor, levelProgress, stageProgress, threshold, PR_NAMES, PR_METHODS, prayerDay } from "./web-data";
 import {
-  G, closeView, keepScrolling, openView, tabOf, lifeTaps, stageNow, sTaps, askToRate, rate, rateLater,
+  G, closeView, keepScrolling, openView, openCinematic, tabOf, lifeTaps, stageNow, sTaps, askToRate, rate, rateLater,
   setSetting, swapBuddy, startTour, wipeEverything, backupText, restoreText, digits, startDebt, removeDebt,
 } from "./game";
 import { t, levelTitle, stageName, badgeText, num, isRTL } from "./i18n";
 import { BuddyArt } from "./Buddy";
 import { Panel, Label, Cap, Bar, Tile, Tiles, Btn, Toggle, Choice, LangPicker, s as u } from "./ui";
 import { C, F, GOLD, SHEET_BG } from "./theme";
-import { fx } from "./fx";
+import { fx, hapTick } from "./fx";
 import { target } from "./targets";
 import { askLocation, hhmm, nextPrayer, pName, setPrayerOn, setReminders, updatePrayer } from "./prayer";
 
@@ -194,10 +194,10 @@ export function Progress() {
           {STAGES.map((_, i) => {
             const got = i <= st;
             return (
-              <View key={i} style={[s.stage, i === st && s.stageNow]}>
+              <Pressable key={i} disabled={!got || i === 0} onPress={() => { hapTick(); openCinematic(i - 1, i); }} style={[s.stage, i === st && s.stageNow]}>
                 <View style={!got && { opacity: 0.25 }}><BuddyArt gender={L.gender || "m"} stage={i} width={90} height={78} /></View>
                 <Text style={s.stageB}>{got ? stageName(i) : "???"}</Text>
-              </View>
+              </Pressable>
             );
           })}
         </View>
