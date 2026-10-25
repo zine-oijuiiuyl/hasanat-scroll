@@ -240,17 +240,15 @@ export function Progress() {
 }
 
 const DEBT_PRESETS = [1000, 10000, 100000, 1000000, 10000000];
-const DEBT_STEPS = [1, 5, 10, 50, 100];
 
 export function Debt() {
   const d = G.life.debt;
   const [value, setValue] = useState(d && !d.done ? num(d.start) : "");
-  const [step, setStep] = useState(d && !d.done ? d.step : 1);
   const input = useRef(null);
   const go = () => {
     const n = Math.min(1e12, +digits(value) || 0);
     if (n < 1) { input.current && input.current.focus(); return; }
-    closeView(); startDebt(n, step);
+    closeView(); startDebt(n, 1);
   };
   return (
     <Sheet actions={<><Btn title={t("back")} onPress={closeView} /><Btn title={t("debtStart")} primary style={{ flex: 1 }} onPress={go} /></>}>
@@ -272,8 +270,6 @@ export function Debt() {
           placeholderTextColor={C.inkFaint}
         />
         <View style={u.chips}>{DEBT_PRESETS.map(n => <Pressable key={n} style={u.chip} onPress={() => setValue(num(n))}><Text style={u.chipT}>{num(n)}</Text></Pressable>)}</View>
-        <Label style={{ marginTop: 6 }}>{t("debtStep")}</Label>
-        <View style={u.chips}>{DEBT_STEPS.map(n => <Pressable key={n} style={[u.chip, n === step && u.chipOn]} onPress={() => setStep(n)}><Text style={u.chipT}>{n}</Text></Pressable>)}</View>
       </Panel>
       <Text style={u.note}>{t("debtNote")}</Text>
       {d ? <Btn title={t("debtRemove")} onPress={() => { removeDebt(); closeView(); }} /> : null}

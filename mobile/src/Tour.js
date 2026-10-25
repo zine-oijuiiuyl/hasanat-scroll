@@ -24,14 +24,17 @@ export function Tour() {
     return () => { live = false; timers.forEach(clearTimeout); };
   }, [i, step]);
   const { height: H } = Dimensions.get("window");
+  const insets = useSafeAreaInsets();
   if (!step) return null;
   // Steps that wait for you to do something leave the screen touchable; the others block it.
   const block = !!step.next;
-  const top = spot ? (spot.y + spot.h / 2 < H / 2 ? { top: spot.y + spot.h + 14 } : { bottom: H - spot.y + 14 }) : (step.last ? { top: H * 0.34 } : { top: H * 0.16 });
+  // The button bar at the bottom of a sheet is easy to find without a box, so the tip just sits above it.
+  const aboveBar = step.target === "close";
+  const top = aboveBar ? { bottom: insets.bottom + 92 } : spot ? (spot.y + spot.h / 2 < H / 2 ? { top: spot.y + spot.h + 14 } : { bottom: H - spot.y + 14 }) : (step.last ? { top: H * 0.34 } : { top: H * 0.16 });
   return (
     <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
       {block ? <View style={StyleSheet.absoluteFill} /> : null}
-      {spot ? <View pointerEvents="none" style={[s.spot, { left: spot.x, top: spot.y, width: spot.w, height: spot.h }]} /> : null}
+      {spot && !aboveBar ? <View pointerEvents="none" style={[s.spot, { left: spot.x, top: spot.y, width: spot.w, height: spot.h }]} /> : null}
       {step.hand ? <Text pointerEvents="none" style={[s.hand, { top: "62%" }]}>👆</Text> : null}
       {step.tapHand ? <Text pointerEvents="none" style={[s.hand, { top: "57%" }]}>👆</Text> : null}
       <View style={[s.tip, top]}>
