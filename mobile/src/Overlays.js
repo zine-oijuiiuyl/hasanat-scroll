@@ -4,7 +4,7 @@ import { Animated, Dimensions, Easing, StyleSheet, Text, View } from "react-nati
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { G, on, stageNow } from "./game";
 import { BuddyArt, useBuddyMotion } from "./Buddy";
-import { C, F, GOLD, TAB_H } from "./theme";
+import { C, F, GOLD, tabSpace } from "./theme";
 import { target } from "./targets";
 
 export function BuddyLayer() {
@@ -23,11 +23,11 @@ export function BuddyLayer() {
   if (!G.life.gender) return null;
   return (
     <View pointerEvents="none" style={StyleSheet.absoluteFill}>
-      <Animated.View ref={target("buddy")} style={[s.buddy, { bottom: insets.bottom + TAB_H + 14 }, style]}>
+      <Animated.View ref={target("buddy")} style={[s.buddy, { bottom: tabSpace(insets) + 14 }, style]}>
         <BuddyArt gender={G.life.gender} stage={stageNow()} mood={G.buddyMood} width={128} height={110} />
       </Animated.View>
       {cheer ? (
-        <Animated.View style={[s.cheer, { bottom: insets.bottom + TAB_H + 136, opacity: pop, transform: [{ translateY: pop.interpolate({ inputRange: [0, 1], outputRange: [40, 0] }) }, { scale: pop.interpolate({ inputRange: [0, 1], outputRange: [0.8, 1] }) }] }]}>
+        <Animated.View style={[s.cheer, { bottom: tabSpace(insets) + 136, opacity: pop, transform: [{ translateY: pop.interpolate({ inputRange: [0, 1], outputRange: [40, 0] }) }, { scale: pop.interpolate({ inputRange: [0, 1], outputRange: [0.8, 1] }) }] }]}>
           <View style={s.bubble}>
             <Text style={{ fontSize: 30 }}>{cheer.icon}</Text>
             <View style={{ flexShrink: 1 }}>

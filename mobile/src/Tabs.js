@@ -6,7 +6,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { G, on, setPage } from "./game";
 import { dueKeys } from "./learn";
 import { t } from "./i18n";
-import { C, F, GOLD, TAB_H } from "./theme";
+import { C, F, GOLD, TAB_H, tabSpace } from "./theme";
 import { hapTick } from "./fx";
 
 const PAGES = ["scroll", "learn"];
@@ -72,7 +72,7 @@ function TabBar({ x, width }) {
   const half = width / 2;
   const items = [["scroll", t("scrollTab"), ScrollIcon], ["learn", t("learn"), LearnIcon]];
   return (
-    <View style={[s.bar, { height: TAB_H + insets.bottom, paddingBottom: insets.bottom }]}>
+    <View style={[s.bar, { height: tabSpace(insets), paddingBottom: tabSpace(insets) - TAB_H }]}>
       {/* The gold line slides under the active tab as the pages move. */}
       <Animated.View pointerEvents="none" style={[s.line, { width: 44, left: half / 2 - 22, transform: [{ translateX: x.interpolate({ inputRange: [0, width], outputRange: [0, half], extrapolate: "clamp" }) }] }]} />
       {items.map(([k, label, Icon], i) => {
@@ -94,7 +94,7 @@ function TabBar({ x, width }) {
 
 const s = StyleSheet.create({
   bar: { position: "absolute", left: 0, right: 0, bottom: 0, flexDirection: "row", backgroundColor: "rgba(4,20,18,0.94)", borderTopWidth: 1, borderTopColor: C.line },
-  item: { flex: 1, alignItems: "center", justifyContent: "center", gap: 2, paddingTop: 4 },
+  item: { flex: 1, alignItems: "center", justifyContent: "center", gap: 1, paddingTop: 2 },
   label: { fontFamily: F.bold, fontSize: 11 },
   line: { position: "absolute", top: 0, height: 3, borderRadius: 2, backgroundColor: GOLD[1] },
   dot: { position: "absolute", top: -4, right: -12, minWidth: 18, height: 18, paddingHorizontal: 4, borderRadius: 9, backgroundColor: "#ff6b5b", alignItems: "center", justifyContent: "center" },

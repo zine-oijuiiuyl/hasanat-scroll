@@ -11,8 +11,9 @@ export const C = {
   panel: "rgba(244,239,226,0.07)",
 };
 export const GOLD = [C.gold1, C.gold2, C.gold3];
-// Height of the bottom bar (Scroll | Learn), above the safe-area inset.
-export const TAB_H = 58;
+// Height of the bottom bar (Scroll | Learn). It tucks into most of the home-indicator area, as on Instagram.
+export const TAB_H = 46;
+export const tabSpace = insets => TAB_H + Math.max(insets.bottom - 18, 6);
 export const SHEET_BG = ["#0b2b26", "#163832", "#051f20"];
 export const F = {
   ar: "Amiri_700Bold",

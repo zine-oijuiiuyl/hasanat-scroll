@@ -13,7 +13,7 @@ import { BuddyArt } from "./Buddy";
 import { Pattern70 } from "./Pattern";
 import { Btn, Tile, Tiles, Label, Panel } from "./ui";
 import { t, num, isRTL } from "./i18n";
-import { C, F, GOLD, SHEET_BG, TAB_H } from "./theme";
+import { C, F, GOLD, SHEET_BG, tabSpace } from "./theme";
 import { fx, hapTick, buzz } from "./fx";
 
 const TRACK_ICON = { q: "📖", h: "📜", d: "📿" };
@@ -181,7 +181,7 @@ function Path({ track }) {
         windowSize={5}
         initialNumToRender={2}
         maxToRenderPerBatch={3}
-        contentContainerStyle={{ paddingBottom: insets.bottom + TAB_H + 60 }}
+        contentContainerStyle={{ paddingBottom: tabSpace(insets) + 60 }}
         ListHeaderComponent={<Text style={s.hint}>{t("learnHint")}</Text>}
         ListFooterComponent={progress >= T.total ? <Text style={[s.hint, { color: C.gold1 }]}>{t("pathDone")}</Text> : null}
       />
