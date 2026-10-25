@@ -61,6 +61,20 @@ function pop(buf, j, vol) {
     buf[i] += (y * 3 * Math.exp(-t / .009) + ring) * vol * Math.min(1, t / .002);
   }
 }
+// A soft gust of wind: noise through a band-pass filter whose centre sweeps up while it swells and fades.
+// The centre pitch rises with the combo.
+function wind(buf, j, vol) {
+  const e = Math.min(buf.length, Math.round(.28 * RATE));
+  let lp = 0, bp = 0;
+  for (let i = 0; i < e; i++) {
+    const t = i / RATE, u = t / .28;
+    const fc = (500 + 900 * u) * j, f = 2 * Math.sin(Math.PI * Math.min(.45 * RATE, fc) / RATE), q = .35;
+    const x = Math.random() * 2 - 1;
+    lp += f * bp; const hp = x - lp - q * bp; bp += f * hp;    // state-variable filter
+    const env = Math.sin(Math.PI * Math.pow(u, .6)) ** 2;       // quick swell, long soft fade
+    buf[i] += bp * env * vol * 2.2;
+  }
+}
 function wav(name, buf) {
   const data = Buffer.alloc(buf.length * 2);
   for (let i = 0; i < buf.length; i++) data.writeInt16LE(Math.max(-1, Math.min(1, buf[i])) * 32767 | 0, i * 2);
@@ -72,12 +86,13 @@ function wav(name, buf) {
 }
 
 // The scroll sounds climb in pitch with every combo step, like the web app (combo 0 to 24).
-for (const f of fs.readdirSync(out)) if (/^(dial|chime|glass|pop)\d+\.wav$/.test(f)) fs.unlinkSync(path.join(out, f));
+for (const f of fs.readdirSync(out)) if (/^(dial|chime|glass|pop|wind)\d+\.wav$/.test(f)) fs.unlinkSync(path.join(out, f));
 for (let k = 0; k <= 24; k++) {
   const c = k, j = 1 + c * .035;
   wav("dial" + k, render(.12, b => { click(b, 0, 3400 * j, .5); click(b, .055, 2500 * j, .32); }));
   wav("glass" + k, render(.3, b => glass(b, 1568 * j, .3)));
   wav("pop" + k, render(.08, b => pop(b, j, .5)));
+  wav("wind" + k, render(.3, b => wind(b, j, .14)));
   wav("chime" + k, render(.13, b => tone(b, 520 + c * 22, .09, "triangle", .1 * 2.5, 0)));
 }
 const seq = (fs_, dur, type, step) => render(dur + fs_.length * step + .05, b => fs_.forEach((f, i) => tone(b, f, dur, type, .25, i * step)));

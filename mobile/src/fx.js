@@ -104,6 +104,31 @@ const FILES = {
   pop22: require("../assets/sounds/pop22.wav"),
   pop23: require("../assets/sounds/pop23.wav"),
   pop24: require("../assets/sounds/pop24.wav"),
+  wind0: require("../assets/sounds/wind0.wav"),
+  wind1: require("../assets/sounds/wind1.wav"),
+  wind2: require("../assets/sounds/wind2.wav"),
+  wind3: require("../assets/sounds/wind3.wav"),
+  wind4: require("../assets/sounds/wind4.wav"),
+  wind5: require("../assets/sounds/wind5.wav"),
+  wind6: require("../assets/sounds/wind6.wav"),
+  wind7: require("../assets/sounds/wind7.wav"),
+  wind8: require("../assets/sounds/wind8.wav"),
+  wind9: require("../assets/sounds/wind9.wav"),
+  wind10: require("../assets/sounds/wind10.wav"),
+  wind11: require("../assets/sounds/wind11.wav"),
+  wind12: require("../assets/sounds/wind12.wav"),
+  wind13: require("../assets/sounds/wind13.wav"),
+  wind14: require("../assets/sounds/wind14.wav"),
+  wind15: require("../assets/sounds/wind15.wav"),
+  wind16: require("../assets/sounds/wind16.wav"),
+  wind17: require("../assets/sounds/wind17.wav"),
+  wind18: require("../assets/sounds/wind18.wav"),
+  wind19: require("../assets/sounds/wind19.wav"),
+  wind20: require("../assets/sounds/wind20.wav"),
+  wind21: require("../assets/sounds/wind21.wav"),
+  wind22: require("../assets/sounds/wind22.wav"),
+  wind23: require("../assets/sounds/wind23.wav"),
+  wind24: require("../assets/sounds/wind24.wav"),
   seen: require("../assets/sounds/seen.wav"), up: require("../assets/sounds/up.wav"),
   golden: require("../assets/sounds/golden.wav"), party: require("../assets/sounds/party.wav"),
   evolve: require("../assets/sounds/evolve.wav"),
@@ -156,7 +181,7 @@ const success = () => Haptics.notificationAsync(Haptics.NotificationFeedbackType
 const step = c => Math.max(0, Math.min(24, c | 0));
 export const scrollSound = c => {
   h(Haptics.selectionAsync);
-  const kind = ["chime", "glass", "pop"].includes(settings.scrollSound) ? settings.scrollSound : "dial";
+  const kind = ["chime", "glass", "pop", "wind"].includes(settings.scrollSound) ? settings.scrollSound : "dial";
   play(kind + step(c));
   poolFor(kind + step(c + 1));   // load the next pitch up before it is needed
 };
