@@ -34,6 +34,27 @@ function click(buf, at, freq, vol) {
   }
   tone(buf, freq * .62, .05, "triangle", vol * .18, at);
 }
+// A small glass being tapped: a few inharmonic partials that ring and fade quickly.
+function glass(buf, freq, vol) {
+  [[1, 1, .28], [2.76, .55, .16], [5.4, .3, .09], [8.93, .15, .05]].forEach(([m, a, d]) => {
+    const f = freq * m, e = Math.min(buf.length, Math.round((d + .02) * RATE));
+    for (let i = 0; i < e; i++) {
+      const t = i / RATE;
+      buf[i] += Math.sin(2 * Math.PI * f * t) * vol * a * Math.min(1, t / .002) * Math.exp(-t / (d * .3));
+    }
+  });
+}
+// A bubble pop: a quick sine blip that sweeps up in pitch, with a tiny click at the start.
+function pop(buf, freq, vol) {
+  let ph = 0;
+  const e = Math.min(buf.length, Math.round(.09 * RATE));
+  for (let i = 0; i < e; i++) {
+    const t = i / RATE;
+    ph += 2 * Math.PI * (freq * (0.55 + 1.6 * Math.exp(-t / .012))) / RATE;
+    buf[i] += Math.sin(ph) * vol * Math.min(1, t / .001) * Math.exp(-t / .028);
+  }
+  for (let i = 0; i < Math.round(.004 * RATE) && i < buf.length; i++) buf[i] += (Math.random() * 2 - 1) * vol * .25 * (1 - i / (.004 * RATE));
+}
 function wav(name, buf) {
   const data = Buffer.alloc(buf.length * 2);
   for (let i = 0; i < buf.length; i++) data.writeInt16LE(Math.max(-1, Math.min(1, buf[i])) * 32767 | 0, i * 2);
@@ -45,10 +66,12 @@ function wav(name, buf) {
 }
 
 // The scroll sounds climb in pitch with every combo step, like the web app (combo 0 to 24).
-for (const f of fs.readdirSync(out)) if (/^(dial|chime)\d+\.wav$/.test(f)) fs.unlinkSync(path.join(out, f));
+for (const f of fs.readdirSync(out)) if (/^(dial|chime|glass|pop)\d+\.wav$/.test(f)) fs.unlinkSync(path.join(out, f));
 for (let k = 0; k <= 24; k++) {
   const c = k, j = 1 + c * .035;
   wav("dial" + k, render(.12, b => { click(b, 0, 3400 * j, .5); click(b, .055, 2500 * j, .32); }));
+  wav("glass" + k, render(.3, b => glass(b, 1568 * j, .3)));
+  wav("pop" + k, render(.12, b => pop(b, 420 * j, .45)));
   wav("chime" + k, render(.13, b => tone(b, 520 + c * 22, .09, "triangle", .1 * 2.5, 0)));
 }
 const seq = (fs_, dur, type, step) => render(dur + fs_.length * step + .05, b => fs_.forEach((f, i) => tone(b, f, dur, type, .25, i * step)));

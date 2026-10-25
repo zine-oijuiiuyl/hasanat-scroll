@@ -225,7 +225,7 @@ export function Progress() {
         <Btn title={"⚖️ " + (L.debt ? t("debtNew") : t("debtTitle"))} onPress={() => openView("debt")} />
         <LangPicker />
         <Toggle label={t("sounds")} value={L.sound} onChange={v => setSetting("sound", v)} />
-        <Choice label={"🔊 " + t("scrollSnd")} value={L.scrollSound || "dial"} options={[["dial", t("sndDial")], ["chime", t("sndChime")], ["off", t("sndOff")]]}
+        <Choice label={"🔊 " + t("scrollSnd")} value={L.scrollSound || "dial"} options={[["dial", t("sndDial")], ["chime", t("sndChime")], ["glass", t("sndGlass")], ["pop", t("sndPop")]]}
           onChange={v => { setSetting("scrollSound", v); }} />
         <Toggle label={t("haptics")} value={L.haptics} onChange={v => setSetting("haptics", v)} />
         <Btn title={"💾 " + t("backup")} onPress={backupProgress} />

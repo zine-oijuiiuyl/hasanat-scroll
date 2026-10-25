@@ -427,6 +427,7 @@ export async function load() {
   } catch (e) {}
   const l = G.life;
   setLangRaw(LANGS[l.lang] ? l.lang : pickLang());
+  if (l.scrollSound === "off") l.scrollSound = "dial";   // the silent choice was removed: the Sounds switch does that
   if (l.gender && l.tourDone === undefined) { l.tourDone = true; save(); }   // people who were here before the tutorial existed
   G.tab = ["dhikr", "dua", "muh", "quran"].includes(l.tab) ? l.tab : "dhikr";
   G.buddyMood = l.lastSeen ? moodFor((Date.now() - l.lastSeen) / 36e5) : "happy";
