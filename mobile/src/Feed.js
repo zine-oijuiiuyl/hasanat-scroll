@@ -2,30 +2,14 @@
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { Animated, Easing, FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import Svg, { Defs, G as SvgG, Path, Pattern, Rect } from "react-native-svg";
+import Svg, { Path } from "react-native-svg";
+import { Pattern70 } from "./Pattern";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BY_ID, PALETTES } from "./web-data";
 import { G, on, repeatCard, setCurrent } from "./game";
 import { t, meaning, kindLabel, sourceText } from "./i18n";
 import { C, F, GOLD } from "./theme";
 import { hapTick } from "./fx";
-
-// The faint tiled pattern behind every card: a square and the same square turned 45 degrees (as on the web app).
-const Pattern70 = memo(function Pattern70() {
-  return (
-    <Svg style={StyleSheet.absoluteFill} pointerEvents="none">
-      <Defs>
-        <Pattern id="geo" width="70" height="70" patternUnits="userSpaceOnUse">
-          <SvgG fill="none" stroke="#fff" strokeOpacity={0.09}>
-            <Rect x="19" y="19" width="32" height="32" />
-            <Rect x="19" y="19" width="32" height="32" rotation="45" origin="35, 35" />
-          </SvgG>
-        </Pattern>
-      </Defs>
-      <Rect x="0" y="0" width="100%" height="100%" fill="url(#geo)" />
-    </Svg>
-  );
-});
 
 function SwipeHint() {
   const a = useRef(new Animated.Value(0)).current;

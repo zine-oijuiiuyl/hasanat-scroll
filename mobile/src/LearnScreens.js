@@ -10,6 +10,7 @@ import {
   finishLesson, finishReview, dueKeys, boxOf, MASTER, masteredCount, learnedCount, MEDALS, medalName, REVIEW_SIZE, setTrack,
 } from "./learn";
 import { BuddyArt } from "./Buddy";
+import { Pattern70 } from "./Pattern";
 import { Btn, Tile, Tiles, Label, Panel } from "./ui";
 import { t, num, isRTL } from "./i18n";
 import { C, F, GOLD, SHEET_BG } from "./theme";
@@ -30,6 +31,7 @@ function Screen({ children, onBack, back = "✕", title, right, scroll = true })
   return (
     <Animated.View style={[StyleSheet.absoluteFill, { opacity: a, transform: [{ translateY: a.interpolate({ inputRange: [0, 1], outputRange: [30, 0] }) }] }]}>
       <LinearGradient colors={SHEET_BG} locations={[0, 0.45, 1]} style={StyleSheet.absoluteFill} />
+      <Pattern70 />
       <View style={[s.head, { paddingTop: insets.top + 8 }]}>
         <Pressable hitSlop={12} onPress={() => { hapTick(); onBack(); }} style={s.x}><Text style={s.xT}>{back}</Text></Pressable>
         <View style={{ flex: 1 }}>{typeof title === "string" ? <Text style={s.headT} numberOfLines={1}>{title}</Text> : title}</View>
