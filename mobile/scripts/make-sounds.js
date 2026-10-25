@@ -44,9 +44,10 @@ function wav(name, buf) {
   fs.writeFileSync(path.join(out, name + ".wav"), Buffer.concat([h, data]));
 }
 
-// The scroll sounds climb in pitch with the combo, so there are five steps of each (combo 0, 6, 12, 18, 24).
-for (let k = 0; k < 5; k++) {
-  const c = k * 6, j = 1 + c * .035;
+// The scroll sounds climb in pitch with every combo step, like the web app (combo 0 to 24).
+for (const f of fs.readdirSync(out)) if (/^(dial|chime)\d+\.wav$/.test(f)) fs.unlinkSync(path.join(out, f));
+for (let k = 0; k <= 24; k++) {
+  const c = k, j = 1 + c * .035;
   wav("dial" + k, render(.12, b => { click(b, 0, 3400 * j, .5); click(b, .055, 2500 * j, .32); }));
   wav("chime" + k, render(.13, b => tone(b, 520 + c * 22, .09, "triangle", .1 * 2.5, 0)));
 }
