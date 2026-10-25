@@ -380,7 +380,7 @@ export const TOUR = [
   { k: "tutRepeat", wait: "repeat", tapHand: true },
   { k: "tutBuddy", target: "buddy", next: true },
   { k: "tutLevel", target: "lvl", wait: "open" },
-  { k: "tutBack", target: "close", wait: "close", vars: () => ({ b: t("back") }), delay: 450 },
+  { k: "tutBack", target: "close", wait: "close", vars: () => ({ b: t("back") }), delay: 700 },
   { k: "tutSins", target: "debt", next: true },
   { k: "tutDone", target: "done", next: true, vars: () => ({ b: t("done") }) },
   { k: "tutEnd", next: true, last: true },

@@ -17,8 +17,11 @@ export function Tour() {
   useEffect(() => {
     let live = true;
     setSpot(null);
-    if (step && step.target) measure(step.target).then(r => { if (live && r) setSpot({ x: r.x - 8, y: r.y - 8, w: r.w + 16, h: r.h + 16 }); });
-    return () => { live = false; };
+    // Measured again after a moment: a sheet that is still sliding in reports a position that is a bit off.
+    const place = () => measure(step.target).then(r => { if (live && r) setSpot({ x: r.x - 8, y: r.y - 8, w: r.w + 16, h: r.h + 16 }); });
+    let timers = [];
+    if (step && step.target) { place(); timers = [setTimeout(place, 500), setTimeout(place, 1000)]; }
+    return () => { live = false; timers.forEach(clearTimeout); };
   }, [i, step]);
   const { height: H } = Dimensions.get("window");
   if (!step) return null;
