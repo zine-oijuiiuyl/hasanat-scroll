@@ -239,7 +239,7 @@ export function Progress() {
   );
 }
 
-const DEBT_PRESETS = [1000, 10000, 100000, 1000000, 10000000];
+const DEBT_PRESETS = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000];
 
 export function Debt() {
   const d = G.life.debt;
