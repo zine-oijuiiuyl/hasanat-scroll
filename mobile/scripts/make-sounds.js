@@ -44,16 +44,20 @@ function glass(buf, freq, vol) {
     }
   });
 }
-// A bubble pop: a quick sine blip that sweeps up in pitch, with a tiny click at the start.
-function pop(buf, freq, vol) {
-  let ph = 0;
-  const e = Math.min(buf.length, Math.round(.09 * RATE));
+// A balloon pop: a sharp burst of noise that dies in a few milliseconds, a short low thump under it,
+// and a faint rubbery rattle. The pitch of all three rises with the combo.
+function pop(buf, j, vol) {
+  const e = Math.min(buf.length, Math.round(.14 * RATE));
+  let lp = 0;
+  const k = Math.min(.95, .35 * j);          // brighter burst as the combo grows
   for (let i = 0; i < e; i++) {
     const t = i / RATE;
-    ph += 2 * Math.PI * (freq * (0.55 + 1.6 * Math.exp(-t / .012))) / RATE;
-    buf[i] += Math.sin(ph) * vol * Math.min(1, t / .001) * Math.exp(-t / .028);
+    lp += k * ((Math.random() * 2 - 1) - lp);
+    const burst = lp * Math.exp(-t / .006) * 1.6;
+    const thump = Math.sin(2 * Math.PI * 150 * j * t) * Math.exp(-t / .02) * .55;
+    const rattle = (Math.random() * 2 - 1) * Math.exp(-t / .035) * Math.max(0, Math.sin(2 * Math.PI * 320 * j * t)) * .22;
+    buf[i] += (burst + thump + rattle) * vol * Math.min(1, t / .0004);
   }
-  for (let i = 0; i < Math.round(.004 * RATE) && i < buf.length; i++) buf[i] += (Math.random() * 2 - 1) * vol * .25 * (1 - i / (.004 * RATE));
 }
 function wav(name, buf) {
   const data = Buffer.alloc(buf.length * 2);
@@ -71,7 +75,7 @@ for (let k = 0; k <= 24; k++) {
   const c = k, j = 1 + c * .035;
   wav("dial" + k, render(.12, b => { click(b, 0, 3400 * j, .5); click(b, .055, 2500 * j, .32); }));
   wav("glass" + k, render(.3, b => glass(b, 1568 * j, .3)));
-  wav("pop" + k, render(.12, b => pop(b, 420 * j, .45)));
+  wav("pop" + k, render(.14, b => pop(b, j, .5)));
   wav("chime" + k, render(.13, b => tone(b, 520 + c * 22, .09, "triangle", .1 * 2.5, 0)));
 }
 const seq = (fs_, dur, type, step) => render(dur + fs_.length * step + .05, b => fs_.forEach((f, i) => tone(b, f, dur, type, .25, i * step)));
