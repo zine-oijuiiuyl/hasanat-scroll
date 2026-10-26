@@ -670,7 +670,7 @@ const s = StyleSheet.create({
   tl: { fontFamily: F.bold, fontStyle: "italic", fontSize: 16, color: C.ink, textAlign: "center" },
   mean: { fontFamily: F.ui, fontSize: 16, lineHeight: 24, color: C.inkSoft, textAlign: "center" },
   ref: { fontFamily: F.bold, fontSize: 12, color: C.inkFaint, textAlign: "center" },
-  refGold: { color: "rgba(245,184,61,0.85)" },
+  refGold: { color: C.gold2, fontFamily: F.heavy, fontSize: 15, letterSpacing: 0.3, marginTop: 2 },
   center: { flex: 1, alignItems: "center", justifyContent: "center", gap: 16, padding: 24 },
   centerT: { fontFamily: F.bold, fontSize: 16, color: C.inkSoft, textAlign: "center", lineHeight: 23 },
   q: { fontFamily: F.heavy, fontSize: 21, color: C.ink },
