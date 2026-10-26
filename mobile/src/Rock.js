@@ -10,6 +10,7 @@ import { G, on, dismissFreed, stageNow } from "./game";
 import { BuddyArt } from "./Buddy";
 import { PAL } from "./web-data";
 import { sideBody, sideArms, SHOULDER, ARM, SWING } from "./SideArt";
+import { NameTag } from "./Name";
 import { t, num } from "./i18n";
 import { freedFx } from "./fx";
 import { Btn } from "./ui";
@@ -138,7 +139,7 @@ const rockLeftFor = (u, rockSize) => 96 * u - Math.max(0, rockSize - 78 * u) * 0
 
 // The buddy and the rock, with one strike played each time `strike` is called.
 // 12u of room on the left leaves space for the wind-up behind the head.
-function Miner({ u, rockSize, p, left, gender, stage, strike: s }) {
+function Miner({ u, rockSize, p, left, gender, stage, strike: s, named }) {
   const rl = rockLeftFor(u, rockSize);
   return (
     <View style={{ width: rl + rockSize, height: Math.max(130 * u, rockSize) }}>
@@ -154,6 +155,7 @@ function Miner({ u, rockSize, p, left, gender, stage, strike: s }) {
         <SideMiner u={u} gender={gender} stage={stage} swing={s.swing} />
       </View>
       <View pointerEvents="none" style={{ position: "absolute", left: rl + rockSize * 0.1, bottom: rockSize * 0.55 }}><Chips hit={s.hit} size={rockSize} /></View>
+      {named ? <View style={{ position: "absolute", left: 12 * u, width: 100 * u, bottom: 130 * u + 2, alignItems: "center" }}><NameTag /></View> : null}
     </View>
   );
 }
@@ -180,8 +182,8 @@ export function SheetMiner({ start, left }) {
   }, [s]);
   const p = start ? 1 - left / start : 0;
   return (
-    <View style={{ alignItems: "center", paddingTop: 10 }}>
-      <Miner u={1.1} rockSize={120} p={p} left={left || null} gender={G.life.gender || "m"} stage={stageNow()} strike={s} />
+    <View style={{ alignItems: "center", paddingTop: G.life.name ? 32 : 10 }}>
+      <Miner u={1.1} rockSize={120} named p={p} left={left || null} gender={G.life.gender || "m"} stage={stageNow()} strike={s} />
     </View>
   );
 }
@@ -317,6 +319,7 @@ function Freed({ n }) {
       {/* The buddy: strikes from the side, then turns to face you and steps into the light, free */}
       <Animated.View pointerEvents="none" style={{ position: "absolute", left: sideX, top: sideY, opacity: out }}>
         <SideMiner u={u} gender={gender} stage={stage} swing={v.swing} />
+        <View style={{ position: "absolute", left: 0, width: 100 * u, bottom: 130 * u + 4, alignItems: "center" }}><NameTag size={15} /></View>
       </Animated.View>
       <Animated.View pointerEvents="none" style={[box(bw, bh), {
         opacity: v.free.interpolate({ inputRange: [0, 0.25], outputRange: [0, 1], extrapolate: "clamp" }),
@@ -327,6 +330,7 @@ function Freed({ n }) {
         ],
       }]}>
         <BuddyArt gender={gender} stage={stage} mood="happy" width={bw} height={bh} />
+        <View style={{ position: "absolute", left: 0, right: 0, top: -14, alignItems: "center" }}><NameTag size={16} /></View>
       </Animated.View>
 
       <View pointerEvents="box-none" style={[st.words, { top: cy + R * 0.62, paddingBottom: insets.bottom + 24 }]}>

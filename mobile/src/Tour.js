@@ -9,6 +9,7 @@ import { measure } from "./targets";
 import { BuddyArt } from "./Buddy";
 import { LangPicker, s as u } from "./ui";
 import { C, F, GOLD } from "./theme";
+import { NameField } from "./Name";
 
 export function Tour() {
   const i = G.tourStep;
@@ -61,11 +62,12 @@ export function Picker() {
   return (
     <View style={StyleSheet.absoluteFill}>
       <LinearGradient colors={["#0b2b26", "#163832", "#051f20"]} locations={[0, 0.55, 1]} style={StyleSheet.absoluteFill} />
-      <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: "center", alignItems: "center", gap: 14, padding: 20, paddingTop: insets.top + 24, paddingBottom: insets.bottom + 24 }}>
+      <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ flexGrow: 1, justifyContent: "center", alignItems: "center", gap: 14, padding: 20, paddingTop: insets.top + 24, paddingBottom: insets.bottom + 24 }}>
         <View style={{ width: "100%", maxWidth: 420 }}><LangPicker /></View>
         <Text style={u.arh}>بِسْمِ ٱللَّٰهِ</Text>
         <Text style={s.h1}>{t("pickTitle")}</Text>
         <Text style={s.p}>{t("pickText")}</Text>
+        <NameField />
         <View style={s.choices}>
           {[["m", "boy"], ["f", "girl"]].map(([g, k]) => (
             <Pressable key={g} testID={"pick-" + g} onPress={() => pickBuddy(g)} style={({ pressed }) => [s.choice, pressed && { transform: [{ scale: 0.96 }], borderColor: C.gold2 }]}>
