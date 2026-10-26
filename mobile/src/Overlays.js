@@ -6,6 +6,7 @@ import { G, on, stageNow } from "./game";
 import { BuddyArt, useBuddyMotion } from "./Buddy";
 import { C, F, GOLD, tabSpace } from "./theme";
 import { target } from "./targets";
+import { FeedMiner } from "./Rock";
 
 export function BuddyLayer() {
   const insets = useSafeAreaInsets();
@@ -26,6 +27,8 @@ export function BuddyLayer() {
       <Animated.View ref={target("buddy")} style={[s.buddy, { bottom: tabSpace(insets) + 14 }, style]}>
         <BuddyArt gender={G.life.gender} stage={stageNow()} mood={G.buddyMood} width={128} height={110} />
       </Animated.View>
+      {/* While a "Lighten the load" number is set, the buddy strikes its rock on every card. */}
+      <View style={[s.miner, { bottom: tabSpace(insets) + 14 }]}><FeedMiner /></View>
       {cheer ? (
         <Animated.View style={[s.cheer, { bottom: tabSpace(insets) + 136, opacity: pop, transform: [{ translateY: pop.interpolate({ inputRange: [0, 1], outputRange: [40, 0] }) }, { scale: pop.interpolate({ inputRange: [0, 1], outputRange: [0.8, 1] }) }] }]}>
           <View style={s.bubble}>
@@ -109,6 +112,7 @@ export function Confetti() {
 
 const s = StyleSheet.create({
   buddy: { position: "absolute", left: 6, width: 128, height: 110 },
+  miner: { position: "absolute", left: 6 },
   cheer: { position: "absolute", left: 12, width: "78%", maxWidth: 320 },
   bubble: { flexDirection: "row", alignItems: "center", gap: 12, paddingVertical: 12, paddingHorizontal: 16, borderRadius: 22, backgroundColor: "rgba(10,30,26,0.94)", borderWidth: 1.5, borderColor: C.gold2 },
   tail: { position: "absolute", left: 36, bottom: -8, width: 16, height: 16, backgroundColor: "rgba(10,30,26,0.97)", borderRightWidth: 1.5, borderBottomWidth: 1.5, borderColor: C.gold2, transform: [{ rotate: "45deg" }] },

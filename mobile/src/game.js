@@ -38,6 +38,7 @@ export const G = {
   toast: null,
   cheer: null,
   cinematic: null,  // { from, to, id } while the growth scene plays
+  freed: null,      // { n, id } while the rock of the "Lighten the load" number bursts
   page: "scroll",   // "scroll" (the feed) or "learn" (the learning path), side by side like Instagram's tabs
 };
 
@@ -173,7 +174,7 @@ function scoreCard(el, quiet, repeat) {
   if (!quiet && grew && RULES.comboMarks.includes(S.combo)) { fx.up(); emit("cheerBuddy"); toast("📿", t("comboT", { n: S.combo }), t("comboS")); big = true; }
   const pts = sTaps();
   if (!quiet && isMilestone(pts)) { fx.party(); emit("confetti", false); emit("cheerBuddy"); toast("🎉", t("mileT", { n: pts }), t("mileS")); big = true; }
-  if (cleared) { celebrate({ key: "debt" + G.life.debtsCleared, icon: "⚖️", title: t("debtDoneT"), sub: t("debtDoneS"), confetti: "gold", sound: fx.evolve, evolve: true }); big = true; }
+  if (cleared) { openFreed(G.life.debt.start); big = true; }
   if (afterChange(before)) big = true;
   if (!big) scrollSound(S.combo);
   emit("bump");
@@ -252,6 +253,18 @@ export function dismissCinematic() {
   G.cinematic = null;
   changed();
   setTimeout(() => emit("cheerBuddy", true), 250);
+}
+// ---------- The rock bursting when the "Lighten the load" number reaches zero (Rock.js) ----------
+export function openFreed(n) {
+  G.freed = { n, id: Date.now() };
+  changed();
+  setTimeout(() => emit("confetti", true), 1600);
+}
+export function dismissFreed() {
+  if (!G.freed) return;
+  G.freed = null;
+  changed();
+  setTimeout(() => { emit("cheerBuddy", true); emit("confetti", true, "buddy"); }, 250);
 }
 // ---------- Points from the learning path (learn.js) ----------
 // Counted with the session like scrolled cards, under their own key so the per-dhikr list ignores them.

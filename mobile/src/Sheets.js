@@ -20,6 +20,7 @@ import { target } from "./targets";
 import { Lesson, Review, Library, Reader } from "./LearnScreens";
 import { askLocation, hhmm, nextPrayer, pName, setPrayerOn, setReminders, updatePrayer } from "./prayer";
 import { QiblaCompass } from "./Qibla";
+import { SheetMiner } from "./Rock";
 
 const TAB_ORDER = [["dhikr", "tabDhikr"], ["dua", "tabDua"], ["quran", "tabQuran"], ["muh", "tabMuh"]];
 const fmtTime = ms => { const x = Math.round(ms / 1000); return x >= 60 ? `${Math.floor(x / 60)}m ${x % 60}s` : `${x}s`; };
@@ -257,7 +258,7 @@ export function Debt() {
     <Sheet actions={<><Btn title={t("back")} onPress={closeView} /><Btn title={t("debtStart")} primary style={{ flex: 1 }} onPress={go} /></>}>
       <Hero>
         <Label>{t("debtTitle")}</Label>
-        <Text style={{ fontSize: 54 }}>⚖️</Text>
+        {d && !d.done ? <SheetMiner start={d.start} left={d.left} /> : <SheetMiner start={+digits(value) || 0} left={+digits(value) || 0} />}
         <Text style={[u.note, { fontSize: 15, color: C.inkSoft }]}>{t("debtIntro")}</Text>
       </Hero>
       {d && !d.done ? <Panel><Label>{t("debtLeft", { n: num(d.left) })}</Label><Bar value={1 - d.left / d.start} /></Panel> : null}

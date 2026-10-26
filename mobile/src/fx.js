@@ -149,6 +149,21 @@ export const fx = {
   evolve: () => { play("evolve"); h(success); later(180, medium); later(380, () => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy)); },
 };
 
+// The rock bursting at zero (Rock.js): three strikes with knocks, a charge, the break, then the fanfare.
+export function freedFx() {
+  const timers = [];
+  const at = (ms, fn) => timers.push(setTimeout(fn, ms));
+  poolFor("boom"); poolFor("evolve");
+  at(250, () => play("charge"));
+  [500, 1000].forEach(ms => at(ms, () => h(medium)));
+  for (let i = 0; i < 10; i++) at(1150 + i * 30, () => h(light));
+  at(1530, () => { play("boom"); h(() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy)); });
+  at(1610, () => h(() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy)));
+  at(1850, () => play("evolve"));
+  at(2300, () => h(success));
+  return () => timers.forEach(clearTimeout);
+}
+
 // The transformation cinematic: a charge-up with haptic ticks that speed up and grow stronger,
 // a heavy hit on the flash, then the reveal fanfare. Returns a function that stops it.
 export function cinematicFx() {

@@ -16,6 +16,7 @@ import Sheets from "./src/Sheets";
 import { Tour, Picker } from "./src/Tour";
 import { BuddyLayer, Floaters, Confetti } from "./src/Overlays";
 import Cinematic from "./src/Cinematic";
+import RockFree from "./src/Rock";
 import { Pager } from "./src/Tabs";
 import { LearnPath } from "./src/LearnScreens";
 import { C } from "./src/theme";
@@ -60,6 +61,7 @@ export default function App() {
         <Sheets key={G.view ? G.view.name : "none"} />
         {!G.life.gender ? <Picker key={lang} /> : null}
         <Cinematic />
+        <RockFree />
         <Confetti />
         <Tour />
       </View>
