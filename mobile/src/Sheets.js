@@ -323,7 +323,7 @@ export default function Sheets() {
   if (v.name === "prayer") return <Prayer />;
   if (v.name === "lesson") return <Lesson key={v.track + v.g} track={v.track} g={v.g} />;
   if (v.name === "review") return <Review offer={!!v.offer} />;
-  if (v.name === "library") return <Library key={v.track} track={v.track} />;
+  if (v.name === "library") return <Library track={v.track} />;
   if (v.name === "reader") return <Reader key={v.track + v.g} track={v.track} g={v.g} />;
   return null;
 }

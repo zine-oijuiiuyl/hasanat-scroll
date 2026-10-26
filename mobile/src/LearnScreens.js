@@ -24,10 +24,19 @@ const strip = s => s.replace(/[ؐ-ًؚ-ٰٟۖ-ۭـ]/g, "");
 const arSize = (s, base = 32) => { const n = s.length; return Math.max(18, n < 40 ? base : n < 120 ? base - 5 : n < 300 ? base - 9 : n < 700 ? base - 12 : base - 14); };
 
 // ---------- Shared pieces ----------
+// When one learning screen replaces another (library and reader, lesson and result), the new one
+// appears at once; fading it in would let the path underneath show through.
+let openScreens = 0;
 function Screen({ children, onBack, back = "✕", title, right, scroll = true, page }) {
   const insets = useSafeAreaInsets();
-  const a = useRef(new Animated.Value(page ? 1 : 0)).current;
-  useEffect(() => { if (!page) Animated.timing(a, { toValue: 1, duration: 320, easing: Easing.out(Easing.cubic), useNativeDriver: true }).start(); }, [a, page]);
+  // The screen being replaced is still mounted while its successor first renders.
+  const a = useRef(new Animated.Value(page || openScreens > 0 ? 1 : 0)).current;
+  useEffect(() => {
+    if (page) return;
+    openScreens++;
+    Animated.timing(a, { toValue: 1, duration: 320, easing: Easing.out(Easing.cubic), useNativeDriver: true }).start();
+    return () => { openScreens--; };
+  }, [a, page]);
   return (
     <Animated.View style={[StyleSheet.absoluteFill, { opacity: a, transform: [{ translateY: a.interpolate({ inputRange: [0, 1], outputRange: [30, 0] }) }] }]}>
       <LinearGradient colors={SHEET_BG} locations={[0, 0.45, 1]} style={StyleSheet.absoluteFill} />
@@ -147,7 +156,7 @@ export const LearnPath = memo(function LearnPath() {
   }, [shown]);
   if (!shown) return <Screen page title={t("learn")} scroll={false} />;
   const track = G.life.learnTrack || "q";
-  return <Path key={track} track={track} />;
+  return <Path track={track} />;
 });
 
 function Path({ track }) {
@@ -186,6 +195,7 @@ function Path({ track }) {
         </View>
       </View>
       <FlatList
+        key={track}
         ref={list}
         data={T.units}
         keyExtractor={(u, i) => String(i)}
