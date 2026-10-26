@@ -1,4 +1,4 @@
-// Full-screen sheets: session summary, progress and settings, the sins counter and prayer times.
+// Full-screen sheets: session summary, progress and settings, the sins counter, prayer times and the Qibla.
 import { useEffect, useRef, useState } from "react";
 import { Animated, Easing, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
@@ -19,6 +19,7 @@ import { fx, hapTick } from "./fx";
 import { target } from "./targets";
 import { Lesson, Review, Library, Reader } from "./LearnScreens";
 import { askLocation, hhmm, nextPrayer, pName, setPrayerOn, setReminders, updatePrayer } from "./prayer";
+import { QiblaCompass } from "./Qibla";
 
 const TAB_ORDER = [["dhikr", "tabDhikr"], ["dua", "tabDua"], ["quran", "tabQuran"], ["muh", "tabMuh"]];
 const fmtTime = ms => { const x = Math.round(ms / 1000); return x >= 60 ? `${Math.floor(x / 60)}m ${x % 60}s` : `${x}s`; };
@@ -223,6 +224,7 @@ export function Progress() {
       <Rate />
       <Panel>
         <Btn title={"🕌 " + t("prTitle")} onPress={() => openView("prayer")} testID="prayerOpen" />
+        <Btn title={"🧭 " + t("qbTitle")} onPress={() => openView("qibla")} testID="qiblaOpen" />
         <Btn title={"⚖️ " + (L.debt ? t("debtNew") : t("debtTitle"))} onPress={() => openView("debt")} />
         <LangPicker />
         <Toggle label={t("sounds")} value={L.sound} onChange={v => setSetting("sound", v)} />
@@ -314,6 +316,26 @@ export function Prayer() {
   );
 }
 
+// The Qibla compass. It uses the location saved for prayer times, or asks for it.
+export function Qibla() {
+  const pr = G.life.prayer;
+  const [msg, setMsg] = useState("");
+  const [busy, setBusy] = useState(false);
+  const locate = async () => { if (busy) return; setBusy(true); setMsg(await askLocation()); setBusy(false); };
+  return (
+    <Sheet actions={<View style={{ flex: 1, maxWidth: 420 }}><Btn title={t("back")} primary onPress={() => openView("progress")} /></View>}>
+      <Hero><Label>🧭 {t("qbTitle")}</Label>{pr ? null : <Cap>{t("qbIntro")}</Cap>}</Hero>
+      {msg ? <Panel gold><Text style={[s.strong, { flex: 1 }]}>{msg}</Text></Panel> : null}
+      {pr ? <QiblaCompass lat={pr.lat} lng={pr.lng} /> : null}
+      <Panel>
+        <Btn primary={!pr} title={"📍 " + (busy ? t("prLocating") : pr ? t("prUpdate") : t("prLoc"))} onPress={locate} />
+        {pr ? <Text style={s.faint}>{t("prAt", { c: pr.lat.toFixed(2) + ", " + pr.lng.toFixed(2) })}</Text> : null}
+      </Panel>
+      <Text style={u.note}>{t("qbFlat")}</Text>
+    </Sheet>
+  );
+}
+
 export default function Sheets() {
   const v = G.view;
   if (!v) return null;
@@ -321,6 +343,7 @@ export default function Sheets() {
   if (v.name === "progress") return <Progress />;
   if (v.name === "debt") return <Debt />;
   if (v.name === "prayer") return <Prayer />;
+  if (v.name === "qibla") return <Qibla />;
   if (v.name === "lesson") return <Lesson key={v.track + v.g} track={v.track} g={v.g} />;
   if (v.name === "review") return <Review offer={!!v.offer} />;
   if (v.name === "library") return <Library track={v.track} />;

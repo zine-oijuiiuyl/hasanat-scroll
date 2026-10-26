@@ -138,6 +138,7 @@ export const scrollSound = c => {
 };
 export const hapTick = () => h(Haptics.selectionAsync);
 export const buzz = () => h(light);
+export const hapOk = () => h(success);
 
 export const fx = {
   seen: () => { play("seen"); h(Haptics.selectionAsync); },
