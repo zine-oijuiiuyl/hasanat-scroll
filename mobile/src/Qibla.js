@@ -1,7 +1,7 @@
 // The Qibla compass: the direction of the Kaaba worked out from the phone's location, and a dial
 // that turns with the phone's compass so the Kaaba mark shows which way to face.
 import { memo, useEffect, useRef, useState } from "react";
-import { Animated, Easing, StyleSheet, Text, View } from "react-native";
+import { Animated, Easing, Pressable, StyleSheet, Text, View } from "react-native";
 import Svg, { Circle, G as SvgG, Line, Path, Rect, Text as SvgText } from "react-native-svg";
 import * as Location from "expo-location";
 import { T } from "./web-data";
@@ -83,7 +83,11 @@ export function QiblaCompass({ lat, lng }) {
   const [turn, setTurn] = useState(null);
   const [noCompass, setNoCompass] = useState(false);
   const rot = useRef(new Animated.Value(0)).current;
-  const last = useRef(0), was = useRef(false);
+  // Made once: a new interpolation on each render would rebuild the native animation every time the text changed.
+  const spinStyle = useRef({ transform: [{ rotate: rot.interpolate({ inputRange: [-36000, 36000], outputRange: ["-36000deg", "36000deg"] }) }] }).current;
+  const last = useRef(0), was = useRef(false), lastAt = useRef(0), events = useRef(0);
+  // A hidden meter (long-press the dial) that shows how smooth the screen is and how often the compass reports.
+  const [meter, setMeter] = useState(null);
 
   useEffect(() => {
     let sub = null, alive = true, got = false;
@@ -96,8 +100,10 @@ export function QiblaCompass({ lat, lng }) {
       // Turn the short way round, so 359° to 1° doesn't spin the dial backwards.
       const next = last.current + (((-v - last.current) % 360 + 540) % 360 - 180);
       last.current = next;
-      // Readings come several times a second; a short linear glide between them keeps the dial moving evenly.
-      Animated.timing(rot, { toValue: next, duration: 90, easing: Easing.linear, useNativeDriver: true }).start();
+      // Glide to each reading over about the time until the next one, so the dial never stops and starts.
+      const now = Date.now(), gap = now - lastAt.current;
+      lastAt.current = now; events.current++;
+      Animated.timing(rot, { toValue: next, duration: Math.max(30, Math.min(160, gap)), easing: Easing.linear, useNativeDriver: true }).start();
       setTurn(Math.round(turnTo(qibla, v)));
     }).then(s => { if (alive) sub = s; else s.remove(); }, () => alive && setNoCompass(true));
     return () => { alive = false; clearTimeout(wait); if (sub) sub.remove(); };
@@ -109,13 +115,25 @@ export function QiblaCompass({ lat, lng }) {
     if (turn != null && Math.abs(turn) > 10) was.current = false; else if (facing) was.current = true;
   }, [facing, turn]);
 
-  const spin = rot.interpolate({ inputRange: [-36000, 36000], outputRange: ["-36000deg", "36000deg"] });
+  useEffect(() => {
+    if (!meter) return;
+    let frames = 0, raf = 0, alive = true;
+    const tick = () => { frames++; if (alive) raf = requestAnimationFrame(tick); };
+    raf = requestAnimationFrame(tick);
+    events.current = 0;
+    const id = setInterval(() => { setMeter({ fps: frames, per: events.current }); frames = 0; events.current = 0; }, 1000);
+    return () => { alive = false; cancelAnimationFrame(raf); clearInterval(id); };
+  }, [!!meter]);
+
   return (
     <View style={s.wrap}>
       <View style={[s.pointer, facing && { borderBottomColor: "#4fd1a5" }]} />
-      <Animated.View style={{ transform: [{ rotate: spin }] }} shouldRasterizeIOS renderToHardwareTextureAndroid>
-        <Dial qibla={qibla} facing={facing} />
-      </Animated.View>
+      <Pressable onLongPress={() => setMeter(m => m ? null : { fps: 0, per: 0 })} delayLongPress={600}>
+        <Animated.View style={spinStyle} shouldRasterizeIOS renderToHardwareTextureAndroid>
+          <Dial qibla={qibla} facing={facing} />
+        </Animated.View>
+      </Pressable>
+      {meter ? <Text style={s.meter}>JS {meter.fps} fps · compass {meter.per}/s</Text> : null}
       <Text style={[s.status, facing && { color: "#9ff0c4" }]}>
         {noCompass ? t("qbNoCompass", { d: Math.round(qibla) })
           : turn == null ? "…"
@@ -132,4 +150,5 @@ const s = StyleSheet.create({
   pointer: { width: 0, height: 0, borderLeftWidth: 13, borderRightWidth: 13, borderBottomWidth: 20, borderLeftColor: "transparent", borderRightColor: "transparent", borderBottomColor: C.gold1, marginBottom: -6 },
   status: { fontFamily: F.heavy, fontSize: 22, color: C.ink, textAlign: "center" },
   info: { fontFamily: F.bold, fontSize: 14, color: C.gold2, textAlign: "center" },
+  meter: { fontFamily: F.bold, fontSize: 12, color: C.inkFaint },
 });
