@@ -8,7 +8,7 @@ import * as DocumentPicker from "expo-document-picker";
 import { File, Paths } from "expo-file-system";
 import { BY_ID, STAGES, BADGES, levelFor, levelProgress, stageProgress, threshold, PR_NAMES, PR_METHODS, prayerDay } from "./web-data";
 import {
-  G, closeView, keepScrolling, openView, openCinematic, tabOf, lifeTaps, stageNow, sTaps, askToRate, rate, rateLater,
+  G, closeView, keepScrolling, resetSession, openView, openCinematic, tabOf, lifeTaps, stageNow, sTaps, askToRate, rate, rateLater,
   setSetting, swapBuddy, startTour, wipeEverything, backupText, restoreText, digits, startDebt, removeDebt,
 } from "./game";
 import { t, levelTitle, stageName, badgeText, num, isRTL } from "./i18n";
@@ -104,7 +104,7 @@ export function Summary({ sm }) {
   const evolved = sm.stageEnd > sm.stageStart;
   return (
     <Sheet actions={<>
-      <Btn title={t("reset")} onPress={() => { G.undo = null; closeView(); }} />
+      <Btn title={t("reset")} onPress={resetSession} testID="reset" />
       <Btn title={t("again")} primary style={{ flex: 1 }} onPress={() => keepScrolling(sm)} testID="again" />
     </>}>
       <Hero>

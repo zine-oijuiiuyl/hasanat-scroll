@@ -106,6 +106,7 @@ export function addCards(n) {
 }
 function resetFeed() {
   bag = []; lastId = null; nextIdx = 0; lastIdx = -1; G.current = -1; G.cards = [];
+  G.feedRun = (G.feedRun || 0) + 1;   // tells the feed to jump back to the first card
   addCards(30);
 }
 
@@ -335,6 +336,16 @@ export function finish() {
   return summary;
 }
 export const hasSession = () => sTaps() + sSeen() > 0;
+
+// "Reset" on the summary: drop the chance to resume and start the feed again from a fresh first card.
+export function resetSession() {
+  G.undo = null;
+  G.S = newSession();
+  resetFeed();
+  clearCheers();
+  G.view = null;
+  changed();
+}
 
 // "Keep scrolling" on the summary brings the session and its score back.
 export function keepScrolling(sm) {

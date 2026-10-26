@@ -65,7 +65,7 @@ const Card = memo(function Card({ card, height, lang, rep, hearted, insetTop, in
           <Text style={s.hint}>{t("swipe")}</Text>
           <Text style={s.tapHint}>{t("tapHint")}</Text>
         </View>
-        <HeartButton id={card.id} on={hearted} style={{ bottom: insetBottom + 150 }} />
+        <HeartButton id={card.id} on={hearted} style={{ bottom: insetBottom + 44, right: 40 }} />
       </LinearGradient>
     </Pressable>
   );
@@ -76,13 +76,13 @@ export default function Feed({ version, lang }) {
   const insets = useSafeAreaInsets();
   const list = useRef(null);
   const tab = G.tab;
-  useEffect(() => { list.current && list.current.scrollToOffset({ offset: 0, animated: false }); }, [tab]);
+  useEffect(() => { list.current && list.current.scrollToOffset({ offset: 0, animated: false }); }, [tab, G.feedRun]);
   const onScroll = useCallback(e => {
     if (!height) return;
     const idx = Math.round(e.nativeEvent.contentOffset.y / height);
     if (idx >= 0 && idx !== G.current) setCurrent(idx);
   }, [height]);
-  useEffect(() => { if (height && G.current < 0) setCurrent(0); }, [height, tab]);
+  useEffect(() => { if (height && G.current < 0) setCurrent(0); }, [height, tab, G.feedRun]);
   const renderItem = useCallback(({ item }) => (
     <Card card={item} height={height} lang={lang} rep={item.rep} hearted={isHearted(item.id)} insetTop={insets.top} insetBottom={tabSpace(insets)} />
   ), [height, lang, insets.top, insets.bottom]);
