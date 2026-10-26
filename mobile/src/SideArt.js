@@ -44,8 +44,8 @@ export function sideBody(gender, st, P) {
       <path d="M36,68 Q50,60 64,68 L72,123 Q51,129 29,123Z" fill="${tier.robe}" stroke="#0000001f" stroke-width="1.2"/>
       <path d="M58,64 L63,78" stroke="${tier.trim}" stroke-width="2.4" stroke-linecap="round"/>
       <path d="M31,117 Q51,124 70,117" fill="none" stroke="${tier.trim}" stroke-width="2.6" stroke-linecap="round"/>
-      <circle cx="53" cy="44" r="21" fill="${SKIN}"/>
-      <path d="M33,46 Q30,24 50,21 Q64,20 72,28 Q60,27 51,32 Q43,38 45,52 Q37,53 33,46Z" fill="${INK}"/>
+      <circle cx="53" cy="44" r="21" fill="${INK}"/>
+      <ellipse cx="59.5" cy="46.5" rx="15" ry="18.5" fill="${SKIN}"/>
       <ellipse cx="47" cy="46" rx="4.4" ry="5.2" fill="${SKIN}" stroke="#d9a47e" stroke-width="1.2"/>
       <path d="M32,35 Q35,16 54,16 Q72,17 75,32 Q55,25 32,35Z" fill="${tier.cap}" stroke="#cfc8b4" stroke-width="1.3"/>
       <path d="M32.5,33.5 Q55,24 74.5,30.5" fill="none" stroke="${tier.trim}" stroke-width="2.4"/>
