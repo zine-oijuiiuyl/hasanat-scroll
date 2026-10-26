@@ -1,7 +1,8 @@
 // The Qibla compass: the direction of the Kaaba worked out from the phone's location, and a dial
 // that turns with the phone's compass so the Kaaba mark shows which way to face.
 import { memo, useEffect, useRef, useState } from "react";
-import { Animated, Easing, Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
+import Animated, { useAnimatedStyle, useFrameCallback, useSharedValue } from "react-native-reanimated";
 import Svg, { Circle, G as SvgG, Line, Path, Rect, Text as SvgText } from "react-native-svg";
 import * as Location from "expo-location";
 import { T } from "./web-data";
@@ -82,10 +83,16 @@ export function QiblaCompass({ lat, lng }) {
   // Whole degrees left to turn, so the text only re-renders when the number changes.
   const [turn, setTurn] = useState(null);
   const [noCompass, setNoCompass] = useState(false);
-  const rot = useRef(new Animated.Value(0)).current;
-  // Made once: a new interpolation on each render would rebuild the native animation every time the text changed.
-  const spinStyle = useRef({ transform: [{ rotate: rot.interpolate({ inputRange: [-36000, 36000], outputRange: ["-36000deg", "36000deg"] }) }] }).current;
-  const last = useRef(0), was = useRef(false), lastAt = useRef(0), events = useRef(0);
+  // The compass reports a few dozen times a second, unevenly. JS only sets where the dial should be;
+  // on the UI thread the dial eases toward it every frame, so it moves at the screen's full rate.
+  const target = useSharedValue(0), angle = useSharedValue(0);
+  useFrameCallback(f => {
+    "worklet";
+    const dt = f.timeSincePreviousFrame || 16;
+    angle.value += (target.value - angle.value) * (1 - Math.exp(-dt / 70));
+  });
+  const spinStyle = useAnimatedStyle(() => ({ transform: [{ rotate: `${angle.value}deg` }] }));
+  const last = useRef(0), was = useRef(false), events = useRef(0);
   // A hidden meter (long-press the dial) that shows how smooth the screen is and how often the compass reports.
   const [meter, setMeter] = useState(null);
 
@@ -96,18 +103,16 @@ export function QiblaCompass({ lat, lng }) {
     Location.watchHeadingAsync(h => {
       const v = h.trueHeading >= 0 ? h.trueHeading : h.magHeading;
       if (!(v >= 0)) return;
-      if (!got) { got = true; setNoCompass(false); }
       // Turn the short way round, so 359° to 1° doesn't spin the dial backwards.
       const next = last.current + (((-v - last.current) % 360 + 540) % 360 - 180);
       last.current = next;
-      // Glide to each reading over about the time until the next one, so the dial never stops and starts.
-      const now = Date.now(), gap = now - lastAt.current;
-      lastAt.current = now; events.current++;
-      Animated.timing(rot, { toValue: next, duration: Math.max(30, Math.min(160, gap)), easing: Easing.linear, useNativeDriver: true }).start();
+      target.value = next;
+      if (!got) { got = true; angle.value = next; setNoCompass(false); }
+      events.current++;
       setTurn(Math.round(turnTo(qibla, v)));
     }).then(s => { if (alive) sub = s; else s.remove(); }, () => alive && setNoCompass(true));
     return () => { alive = false; clearTimeout(wait); if (sub) sub.remove(); };
-  }, [rot, qibla]);
+  }, [qibla]);
 
   const facing = turn != null && Math.abs(turn) <= 4;
   useEffect(() => {
