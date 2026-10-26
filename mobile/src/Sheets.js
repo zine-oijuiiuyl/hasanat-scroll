@@ -21,6 +21,7 @@ import { Lesson, Review, Library, Reader } from "./LearnScreens";
 import { askLocation, hhmm, nextPrayer, pName, setPrayerOn, setReminders, updatePrayer } from "./prayer";
 import { QiblaCompass } from "./Qibla";
 import { SheetMiner } from "./Rock";
+import { HeartedPanel } from "./Hearts";
 
 const TAB_ORDER = [["dhikr", "tabDhikr"], ["dua", "tabDua"], ["quran", "tabQuran"], ["muh", "tabMuh"]];
 const fmtTime = ms => { const x = Math.round(ms / 1000); return x >= 60 ? `${Math.floor(x / 60)}m ${x % 60}s` : `${x}s`; };
@@ -129,6 +130,7 @@ export function Summary({ sm }) {
           <Bar value={1 - L.debt.left / L.debt.start} />
         </Panel>
       ) : null}
+      <HeartedPanel />
       {sm.badges.length ? <Panel><Label>{t("newBadges")}</Label><BadgeGrid list={sm.badges} have={() => true} /></Panel> : null}
       {rows.length ? TAB_ORDER.map(([tb, key]) => {
         const rs = rows.filter(r => tabOf(r.d) === tb);

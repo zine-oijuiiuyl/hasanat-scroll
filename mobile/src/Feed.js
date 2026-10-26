@@ -6,10 +6,11 @@ import Svg, { Path } from "react-native-svg";
 import { Pattern70 } from "./Pattern";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BY_ID, PALETTES } from "./web-data";
-import { G, on, repeatCard, setCurrent } from "./game";
+import { G, on, repeatCard, setCurrent, isHearted } from "./game";
 import { t, meaning, kindLabel, sourceText } from "./i18n";
 import { C, F, GOLD, tabSpace } from "./theme";
 import { hapTick } from "./fx";
+import { HeartButton } from "./Hearts";
 
 function SwipeHint() {
   const a = useRef(new Animated.Value(0)).current;
@@ -31,7 +32,7 @@ function SwipeHint() {
   );
 }
 
-const Card = memo(function Card({ card, height, lang, rep, insetTop, insetBottom }) {
+const Card = memo(function Card({ card, height, lang, rep, hearted, insetTop, insetBottom }) {
   const d = BY_ID[card.id];
   const pulse = useRef(new Animated.Value(0)).current;
   useEffect(() => on("repeat", key => {
@@ -64,6 +65,7 @@ const Card = memo(function Card({ card, height, lang, rep, insetTop, insetBottom
           <Text style={s.hint}>{t("swipe")}</Text>
           <Text style={s.tapHint}>{t("tapHint")}</Text>
         </View>
+        <HeartButton id={card.id} on={hearted} style={{ bottom: insetBottom + 150 }} />
       </LinearGradient>
     </Pressable>
   );
@@ -82,7 +84,7 @@ export default function Feed({ version, lang }) {
   }, [height]);
   useEffect(() => { if (height && G.current < 0) setCurrent(0); }, [height, tab]);
   const renderItem = useCallback(({ item }) => (
-    <Card card={item} height={height} lang={lang} rep={item.rep} insetTop={insets.top} insetBottom={tabSpace(insets)} />
+    <Card card={item} height={height} lang={lang} rep={item.rep} hearted={isHearted(item.id)} insetTop={insets.top} insetBottom={tabSpace(insets)} />
   ), [height, lang, insets.top, insets.bottom]);
   return (
     <View style={StyleSheet.absoluteFill} onLayout={e => setHeight(e.nativeEvent.layout.height)}>

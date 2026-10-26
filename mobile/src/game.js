@@ -9,7 +9,7 @@ import { fx, scrollSound, setFxSettings } from "./fx";
 RULES.minDwellMs = 500;
 
 export const KEY = "hasanat.lifetime.v2";
-export const fresh = () => ({ seen: 0, said: 0, sessions: 0, best: 0, per: {}, streak: 0, bestStreak: 0, lastDay: null, badges: [], golden: 0, sound: true, gender: null, lang: null, debt: null, debtsCleared: 0, haptics: true, scrollSound: "dial", lastSeen: 0, tourDone: undefined, rating: 0, rateLater: 0 });
+export const fresh = () => ({ seen: 0, said: 0, sessions: 0, best: 0, per: {}, streak: 0, bestStreak: 0, lastDay: null, badges: [], golden: 0, sound: true, gender: null, lang: null, debt: null, debtsCleared: 0, haptics: true, scrollSound: "dial", lastSeen: 0, tourDone: undefined, rating: 0, rateLater: 0, hearts: [] });
 
 // ---------- Change notification ----------
 const listeners = new Set();
@@ -341,7 +341,7 @@ export function keepScrolling(sm) {
   const { undo } = G;
   if (undo && sm && undo.S.start === sm.start) {
     const l = G.life;
-    const keep = { rating: l.rating, rateLater: l.rateLater, lang: l.lang, sound: l.sound, haptics: l.haptics, scrollSound: l.scrollSound };
+    const keep = { rating: l.rating, rateLater: l.rateLater, hearts: l.hearts, lang: l.lang, sound: l.sound, haptics: l.haptics, scrollSound: l.scrollSound };
     G.life = Object.assign(undo.life, keep);
     G.S = undo.S; G.S.last = 0; save();
   }
@@ -385,10 +385,19 @@ export function rate(n) { G.life.rating = n; save(); fx.up(); if (n >= 4) { fx.p
 export function rateLater() { G.life.rateLater = Date.now(); save(); changed(); }
 export const askToRate = () => !G.life.rating && G.life.sessions >= 3 && Date.now() - (G.life.rateLater || 0) > 7 * 864e5;
 
-// Back to zero. The buddy, language and sound choices stay, since those are settings, not progress.
+// Hearted cards, newest first. They are the person's favourites, not progress, so they survive a reset.
+export const isHearted = id => (G.life.hearts || []).includes(id);
+export function toggleHeart(id) {
+  const h = (G.life.hearts || []).filter(x => x !== id);
+  G.life.hearts = h.length === (G.life.hearts || []).length ? [id, ...h] : h;
+  save(); changed();
+  return G.life.hearts[0] === id;
+}
+
+// Back to zero. The buddy, language, sound choices and hearted cards stay, since those are settings, not progress.
 export function wipeEverything() {
   const l = G.life;
-  const keep = { gender: l.gender, lang: l.lang, sound: l.sound, haptics: l.haptics, scrollSound: l.scrollSound, tourDone: l.tourDone, rating: l.rating, prayer: l.prayer, tab: l.tab };
+  const keep = { gender: l.gender, lang: l.lang, sound: l.sound, haptics: l.haptics, scrollSound: l.scrollSound, tourDone: l.tourDone, rating: l.rating, prayer: l.prayer, tab: l.tab, hearts: l.hearts };
   G.life = Object.assign(fresh(), keep);
   G.buddyMood = "happy";
   G.S = newSession(); G.undo = null; clearCheers();
