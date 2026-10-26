@@ -1,13 +1,15 @@
-// "Lighten the load" as a picture: the buddy swings a pickaxe at a rock that stands for the number set.
+// "Lighten the load" as a picture: the buddy, seen from the side, swings a pickaxe at a rock that stands for the number set.
 // Every scrolled card is a strike, cracks of light spread as the number falls, and at zero the rock
 // bursts apart and the buddy is free.
 import { memo, useEffect, useMemo, useRef, useState } from "react";
 import { Animated, Easing, Pressable, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import Svg, { Circle, Defs, G as SvgG, Line, LinearGradient as SvgLinear, Path, Polygon, RadialGradient, Stop } from "react-native-svg";
+import Svg, { Circle, Defs, G as SvgG, Line, LinearGradient as SvgLinear, Path, Polygon, RadialGradient, Stop, SvgXml } from "react-native-svg";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { G, on, dismissFreed, stageNow } from "./game";
 import { BuddyArt } from "./Buddy";
+import { PAL } from "./web-data";
+import { sideBody, sideArms, SHOULDER, ARM, SWING } from "./SideArt";
 import { t, num } from "./i18n";
 import { freedFx } from "./fx";
 import { Btn } from "./ui";
@@ -75,20 +77,6 @@ function Shard({ i, size }) {
   );
 }
 
-// ---------- The pickaxe, swung from the buddy's hand ----------
-// Drawn in a square twice the handle's length, with the hand at the centre, so turning the square swings it.
-function Pickaxe({ len }) {
-  const L = len;
-  return (
-    <Svg width={L * 2} height={L * 2}>
-      <Line x1={L} y1={L + L * 0.12} x2={L} y2={L * 0.12} stroke="#8a5a2b" strokeWidth={L * 0.11} strokeLinecap="round" />
-      <Line x1={L} y1={L + L * 0.12} x2={L} y2={L * 0.12} stroke="#b77c43" strokeWidth={L * 0.05} strokeLinecap="round" />
-      <Path d={`M${L - L * 0.62} ${L * 0.34} Q${L} ${-L * 0.06} ${L + L * 0.62} ${L * 0.34} L${L + L * 0.5} ${L * 0.2} Q${L} ${L * 0.02} ${L - L * 0.5} ${L * 0.2} Z`}
-        fill="#c9d1d9" stroke="#59626b" strokeWidth={L * 0.04} strokeLinejoin="round" />
-    </Svg>
-  );
-}
-
 // Grey chips thrown off the rock by a strike.
 function Chips({ hit, size }) {
   const parts = useMemo(() => Array.from({ length: 7 }, () => ({ x: rand(-0.1, 0.55) * size, y: rand(-0.75, -0.2) * size, r: rand(-260, 260), s: rand(0.05, 0.1) * size })), [size]);
@@ -128,46 +116,58 @@ function useStrike() {
   return { swing, shake, hit, strike };
 }
 
-// noBuddy: in the feed the corner buddy is already there, so only the pickaxe and the rock are drawn.
-function Miner({ w, rockSize, p, left, gender, stage, strike: s, noBuddy }) {
-  const bh = w * 110 / 128;
-  const len = w * 0.36;
-  // The hand sits right of the buddy's middle; the rock stands just beyond the swing.
-  const hand = { x: w * 0.72, y: bh * 0.6 };
+// The buddy from the side, holding the pickaxe in both hands; the arms turn around the shoulder with `swing`.
+// Drawn in units of u: the body is 100u × 130u.
+function SideMiner({ u, gender, stage, swing }) {
+  const g = gender === "f" ? "f" : "m";
+  const body = useMemo(() => sideBody(g, stage, PAL[g]), [g, stage]);
+  const arms = useMemo(() => sideArms(g, stage, PAL[g]), [g, stage]);
+  const [sx, sy] = SHOULDER[g];
   return (
-    <View style={{ width: w + rockSize * 0.92, height: Math.max(bh, rockSize) }}>
-      <View style={{ position: "absolute", left: w * 0.86, bottom: 0, width: rockSize, height: rockSize }}>
+    <View style={{ width: 100 * u, height: 130 * u }}>
+      <SvgXml xml={body} width={100 * u} height={130 * u} />
+      <Animated.View style={{ position: "absolute", left: (sx - ARM) * u, top: (sy - ARM) * u, width: 2 * ARM * u, height: 2 * ARM * u, transform: [{ rotate: swing.interpolate(SWING) }] }}>
+        <SvgXml xml={arms} width="100%" height="100%" />
+      </Animated.View>
+    </View>
+  );
+}
+
+// Where the rock stands so the pickaxe lands on its side: a bigger rock moves a little closer.
+const rockLeftFor = (u, rockSize) => 96 * u - Math.max(0, rockSize - 78 * u) * 0.12;
+
+// The buddy and the rock, with one strike played each time `strike` is called.
+// 12u of room on the left leaves space for the wind-up behind the head.
+function Miner({ u, rockSize, p, left, gender, stage, strike: s }) {
+  const rl = rockLeftFor(u, rockSize);
+  return (
+    <View style={{ width: rl + rockSize, height: Math.max(130 * u, rockSize) }}>
+      <View style={{ position: "absolute", left: rl, bottom: 0, width: rockSize, height: rockSize }}>
         <Animated.View style={{ transform: [{ translateX: s.shake.interpolate({ inputRange: [-1, 1], outputRange: [-rockSize * 0.05, rockSize * 0.05] }) }] }}>
           <SinRock p={p} size={rockSize} />
           {left != null ? <View style={[StyleSheet.absoluteFill, { alignItems: "center", justifyContent: "center", paddingTop: rockSize * 0.08 }]}>
             <Text style={[st.count, { fontSize: Math.max(11, rockSize * 0.19) }]} numberOfLines={1} adjustsFontSizeToFit>{short(left)}</Text>
           </View> : null}
         </Animated.View>
-        <View style={{ position: "absolute", left: rockSize * 0.1, top: rockSize * 0.45 }}><Chips hit={s.hit} size={rockSize} /></View>
       </View>
-      {noBuddy ? null : <View style={{ position: "absolute", left: 0, bottom: 0 }}>
-        <BuddyArt gender={gender} stage={stage} mood="happy" width={w} height={bh} />
-      </View>}
-      <Animated.View pointerEvents="none" style={{
-        position: "absolute", left: hand.x - len, bottom: bh - hand.y - len, width: len * 2, height: len * 2,
-        transform: [{ rotate: s.swing.interpolate({ inputRange: [-0.25, 0, 1], outputRange: ["-62deg", "-40deg", "68deg"] }) }],
-      }}>
-        <Pickaxe len={len} />
-      </Animated.View>
+      <View style={{ position: "absolute", left: 12 * u, bottom: 0 }}>
+        <SideMiner u={u} gender={gender} stage={stage} swing={s.swing} />
+      </View>
+      <View pointerEvents="none" style={{ position: "absolute", left: rl + rockSize * 0.1, bottom: rockSize * 0.55 }}><Chips hit={s.hit} size={rockSize} /></View>
     </View>
   );
 }
 
 const progress = d => d && d.start ? 1 - d.left / d.start : 0;
 
-// In the feed, beside the corner buddy: one strike per scrolled card while a number is set.
+// In the feed, in place of the corner buddy: one strike per scrolled card while a number is set.
 export function FeedMiner() {
   const s = useStrike();
   const [, bump] = useState(0);
   useEffect(() => on("debtTick", () => { bump(x => x + 1); s.strike(); }), [s]);
   const d = G.life.debt;
   if (!d || d.done || !G.life.gender) return null;
-  return <Miner w={128} rockSize={62} p={progress(d)} left={d.left} gender={G.life.gender} stage={stageNow()} strike={s} noBuddy />;
+  return <Miner u={0.8} rockSize={62} p={progress(d)} left={d.left} gender={G.life.gender} stage={stageNow()} strike={s} />;
 }
 
 // In the "Lighten the load" sheet: the buddy keeps striking the rock for the number being set.
@@ -181,7 +181,7 @@ export function SheetMiner({ start, left }) {
   const p = start ? 1 - left / start : 0;
   return (
     <View style={{ alignItems: "center", paddingTop: 10 }}>
-      <Miner w={150} rockSize={120} p={p} left={left || null} gender={G.life.gender || "m"} stage={stageNow()} strike={s} />
+      <Miner u={1.1} rockSize={120} p={p} left={left || null} gender={G.life.gender || "m"} stage={stageNow()} strike={s} />
     </View>
   );
 }
@@ -199,7 +199,7 @@ function Freed({ n }) {
   const { width: W, height: H } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const R = Math.min(W * 0.5, 210);
-  const cy = H * 0.36, rockX = W / 2 + R * 0.25;
+  const cy = H * 0.36, rockX = W / 2 + R * 0.4;
   const v = useRef({
     bg: new Animated.Value(0), charge: new Animated.Value(0), shake: new Animated.Value(0), flash: new Animated.Value(0),
     gone: new Animated.Value(0), burst: new Animated.Value(0), ring: new Animated.Value(0), free: new Animated.Value(0),
@@ -251,13 +251,14 @@ function Freed({ n }) {
   }, [v]);
 
   const gender = G.life.gender || "m", stage = stageNow();
-  const bw = Math.min(W * 0.5, 210), bh = bw * 110 / 128, small = 0.62;
+  const bw = Math.min(W * 0.5, 210), bh = bw * 110 / 128;
   const box = (w, h, x = W / 2, y = cy) => ({ position: "absolute", left: x - w / 2, top: y - h / 2, width: w, height: h });
   const rise = (val, d = 22) => ({ opacity: val, transform: [{ translateY: val.interpolate({ inputRange: [0, 1], outputRange: [d, 0] }) }] });
-  // Where the buddy stands to strike: on the ground, just left of the rock.
-  const startX = rockX - R * 0.4 - (bw * small) / 2, startY = cy + R / 2 - (bh * small) / 2;
-  const hx = startX - (bw * small) / 2 + 0.72 * bw * small, hy = startY - (bh * small) / 2 + 0.6 * bh * small;
-  const len = Math.max(R * 0.3, Math.min(R * 0.5, rockX - R * 0.4 - hx + R * 0.08));
+  // Where the buddy stands to strike: on the ground, just left of the rock, laid out as in Miner.
+  const u = R / 120;
+  const sideX = rockX - R / 2 - rockLeftFor(u, R) + 12 * u, sideY = cy + R / 2 - 130 * u;
+  const startX = sideX + 50 * u, startY = sideY + 65 * u, small = (100 * u) / bw;
+  const out = v.free.interpolate({ inputRange: [0, 0.25], outputRange: [1, 0], extrapolate: "clamp" });
 
   return (
     <Pressable style={StyleSheet.absoluteFill} onPress={() => { if (ready) dismissFreed(); }} testID="freed">
@@ -313,8 +314,12 @@ function Freed({ n }) {
         </Animated.View>
       ))}
 
-      {/* The buddy: strikes from the left, then steps into the light, free */}
+      {/* The buddy: strikes from the side, then turns to face you and steps into the light, free */}
+      <Animated.View pointerEvents="none" style={{ position: "absolute", left: sideX, top: sideY, opacity: out }}>
+        <SideMiner u={u} gender={gender} stage={stage} swing={v.swing} />
+      </Animated.View>
       <Animated.View pointerEvents="none" style={[box(bw, bh), {
+        opacity: v.free.interpolate({ inputRange: [0, 0.25], outputRange: [0, 1], extrapolate: "clamp" }),
         transform: [
           { translateX: v.free.interpolate({ inputRange: [0, 1], outputRange: [startX - W / 2, 0] }) },
           { translateY: Animated.add(v.free.interpolate({ inputRange: [0, 1], outputRange: [startY - cy, 0] }), v.bob.interpolate({ inputRange: [0, 1], outputRange: [0, -10] })) },
@@ -322,12 +327,6 @@ function Freed({ n }) {
         ],
       }]}>
         <BuddyArt gender={gender} stage={stage} mood="happy" width={bw} height={bh} />
-      </Animated.View>
-      <Animated.View pointerEvents="none" style={[box(len * 2, len * 2, hx, hy), {
-        opacity: v.free.interpolate({ inputRange: [0, 0.3], outputRange: [1, 0], extrapolate: "clamp" }),
-        transform: [{ rotate: v.swing.interpolate({ inputRange: [-0.25, 0, 1], outputRange: ["-62deg", "-40deg", "68deg"] }) }],
-      }]}>
-        <Pickaxe len={len} />
       </Animated.View>
 
       <View pointerEvents="box-none" style={[st.words, { top: cy + R * 0.62, paddingBottom: insets.bottom + 24 }]}>

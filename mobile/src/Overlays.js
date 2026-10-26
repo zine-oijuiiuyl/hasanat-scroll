@@ -22,12 +22,13 @@ export function BuddyLayer() {
     return () => { a(); b(); c(); };
   }, [api, pop]);
   if (!G.life.gender) return null;
+  const mining = G.life.debt && !G.life.debt.done;
   return (
     <View pointerEvents="none" style={StyleSheet.absoluteFill}>
-      <Animated.View ref={target("buddy")} style={[s.buddy, { bottom: tabSpace(insets) + 14 }, style]}>
+      <Animated.View ref={target("buddy")} style={[s.buddy, { bottom: tabSpace(insets) + 14 }, style, mining && { opacity: 0 }]}>
         <BuddyArt gender={G.life.gender} stage={stageNow()} mood={G.buddyMood} width={128} height={110} />
       </Animated.View>
-      {/* While a "Lighten the load" number is set, the buddy strikes its rock on every card. */}
+      {/* While a "Lighten the load" number is set, the buddy turns sideways and strikes its rock on every card. */}
       <View style={[s.miner, { bottom: tabSpace(insets) + 14 }]}><FeedMiner /></View>
       {cheer ? (
         <Animated.View style={[s.cheer, { bottom: tabSpace(insets) + 136, opacity: pop, transform: [{ translateY: pop.interpolate({ inputRange: [0, 1], outputRange: [40, 0] }) }, { scale: pop.interpolate({ inputRange: [0, 1], outputRange: [0.8, 1] }) }] }]}>
