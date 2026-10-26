@@ -1,6 +1,6 @@
 // The Qibla compass: the direction of the Kaaba worked out from the phone's location, and a dial
 // that turns with the phone's compass so the Kaaba mark shows which way to face.
-import { useEffect, useRef, useState } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 import { Animated, Easing, StyleSheet, Text, View } from "react-native";
 import Svg, { Circle, G as SvgG, Line, Path, Rect, Text as SvgText } from "react-native-svg";
 import * as Location from "expo-location";
@@ -47,7 +47,8 @@ const turnTo = (qibla, heading) => ((qibla - heading + 540) % 360) - 180;
 const SIZE = 290, R = SIZE / 2;
 const pt = (a, r) => [R + r * Math.sin(rad(a)), R - r * Math.cos(rad(a))];
 
-function Dial({ qibla, facing }) {
+// Drawn once and only redrawn when it turns green; turning it is done by the native transform.
+const Dial = memo(function Dial({ qibla, facing }) {
   const ticks = [];
   for (let a = 0; a < 360; a += 5) {
     const long = a % 30 === 0, [x1, y1] = pt(a, R - 8), [x2, y2] = pt(a, R - (long ? 22 : 15));
@@ -73,12 +74,13 @@ function Dial({ qibla, facing }) {
       </SvgG>
     </Svg>
   );
-}
+});
 
 // The arrow at the top shows where the phone points; the dial turns underneath it.
 export function QiblaCompass({ lat, lng }) {
   const qibla = qiblaBearing(lat, lng), km = kaabaKm(lat, lng);
-  const [heading, setHeading] = useState(null);
+  // Whole degrees left to turn, so the text only re-renders when the number changes.
+  const [turn, setTurn] = useState(null);
   const [noCompass, setNoCompass] = useState(false);
   const rot = useRef(new Animated.Value(0)).current;
   const last = useRef(0), was = useRef(false);
@@ -94,13 +96,13 @@ export function QiblaCompass({ lat, lng }) {
       // Turn the short way round, so 359° to 1° doesn't spin the dial backwards.
       const next = last.current + (((-v - last.current) % 360 + 540) % 360 - 180);
       last.current = next;
-      Animated.timing(rot, { toValue: next, duration: 140, easing: Easing.out(Easing.quad), useNativeDriver: true }).start();
-      setHeading(v);
+      // Readings come several times a second; a short linear glide between them keeps the dial moving evenly.
+      Animated.timing(rot, { toValue: next, duration: 90, easing: Easing.linear, useNativeDriver: true }).start();
+      setTurn(Math.round(turnTo(qibla, v)));
     }).then(s => { if (alive) sub = s; else s.remove(); }, () => alive && setNoCompass(true));
     return () => { alive = false; clearTimeout(wait); if (sub) sub.remove(); };
-  }, [rot]);
+  }, [rot, qibla]);
 
-  const turn = heading == null ? null : turnTo(qibla, heading);
   const facing = turn != null && Math.abs(turn) <= 4;
   useEffect(() => {
     if (facing && !was.current) hapOk();
@@ -111,14 +113,14 @@ export function QiblaCompass({ lat, lng }) {
   return (
     <View style={s.wrap}>
       <View style={[s.pointer, facing && { borderBottomColor: "#4fd1a5" }]} />
-      <Animated.View style={{ transform: [{ rotate: spin }] }}>
+      <Animated.View style={{ transform: [{ rotate: spin }] }} shouldRasterizeIOS renderToHardwareTextureAndroid>
         <Dial qibla={qibla} facing={facing} />
       </Animated.View>
       <Text style={[s.status, facing && { color: "#9ff0c4" }]}>
         {noCompass ? t("qbNoCompass", { d: Math.round(qibla) })
           : turn == null ? "…"
           : facing ? "✓ " + t("qbFacing")
-          : t(turn > 0 ? "qbRight" : "qbLeft", { d: Math.round(Math.abs(turn)) })}
+          : t(turn > 0 ? "qbRight" : "qbLeft", { d: Math.abs(turn) })}
       </Text>
       <Text style={s.info}>{t("qbInfo", { d: Math.round(qibla), k: num(Math.round(km)) })}</Text>
     </View>
