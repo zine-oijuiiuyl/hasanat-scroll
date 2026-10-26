@@ -321,14 +321,14 @@ function Exercise({ ex, answer, done, onAnswer }) {
     <View style={{ gap: 18 }}>
       <Text style={s.q}>{t(QUESTION[ex.type])}</Text>
       {ex.type === "meaning" || ex.type === "next" ? (
-        <View style={s.item}>
+        <View style={[s.item, s.ask]}>
           {/* An ayah that recurs in its surah comes with the one before it, so the next one is clear. */}
           {ex.before ? <Text style={[s.ar, s.before, { fontSize: arSize(ex.before, 22), lineHeight: arSize(ex.before, 22) * 1.8 }]} numberOfLines={3}>{ex.before}</Text> : null}
           <Text style={[s.ar, { fontSize: arSize(ex.prompt, 32), lineHeight: arSize(ex.prompt, 32) * 1.9 }]}>{ex.prompt}</Text>
           {ex.type === "next" ? <Text style={[s.ref, s.refGold]}>{ex.ref}</Text> : null}
         </View>
       ) : null}
-      {ex.type === "end" ? <View style={s.item}><Text style={[s.mean, { color: C.ink }]}>{ex.prompt} …</Text></View> : null}
+      {ex.type === "end" ? <View style={[s.item, s.ask]}><Text style={[s.mean, { color: C.ink }]}>{ex.prompt} …</Text></View> : null}
       {ex.type === "order" ? <Text style={s.hintSmall}>{t("tapWords")}</Text> : null}
       {ex.type === "missing" ? <Missing ex={ex} chosen={answer} done={done} onPick={onAnswer} />
         : ex.type === "order" ? <Order ex={ex} chosen={answer} done={done} onPick={onAnswer} />
@@ -667,6 +667,8 @@ const s = StyleSheet.create({
   newTag: { alignSelf: "center", fontFamily: F.heavy, fontSize: 11, letterSpacing: 1.5, color: "#16714f", backgroundColor: "#7ee2b8", paddingHorizontal: 10, paddingVertical: 3, borderRadius: 999, overflow: "hidden", textTransform: "uppercase" },
   ar: { fontFamily: F.ar, color: C.ink, textAlign: "center", writingDirection: "rtl" },
   before: { opacity: 0.45 },
+  // The card a question asks about, tinted teal so it stands apart from the answers below it.
+  ask: { backgroundColor: "rgba(64,186,166,0.17)", borderColor: "rgba(126,226,200,0.30)" },
   tl: { fontFamily: F.bold, fontStyle: "italic", fontSize: 16, color: C.ink, textAlign: "center" },
   mean: { fontFamily: F.ui, fontSize: 16, lineHeight: 24, color: C.inkSoft, textAlign: "center" },
   ref: { fontFamily: F.bold, fontSize: 12, color: C.inkFaint, textAlign: "center" },
