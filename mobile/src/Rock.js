@@ -182,7 +182,7 @@ export function SheetMiner({ start, left }) {
   }, [s]);
   const p = start ? 1 - left / start : 0;
   return (
-    <View style={{ alignItems: "center", paddingTop: G.life.name ? 32 : 10 }}>
+    <View style={{ alignItems: "center", paddingTop: G.life.gender ? 32 : 10 }}>
       <Miner u={1.1} rockSize={120} named p={p} left={left || null} gender={G.life.gender || "m"} stage={stageNow()} strike={s} />
     </View>
   );

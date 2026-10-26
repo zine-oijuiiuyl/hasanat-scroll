@@ -21,7 +21,6 @@ import { Lesson, Review, Library, Reader } from "./LearnScreens";
 import { askLocation, hhmm, nextPrayer, pName, setPrayerOn, setReminders, updatePrayer } from "./prayer";
 import { QiblaCompass } from "./Qibla";
 import { SheetMiner } from "./Rock";
-import { NameField } from "./Name";
 
 const TAB_ORDER = [["dhikr", "tabDhikr"], ["dua", "tabDua"], ["quran", "tabQuran"], ["muh", "tabMuh"]];
 const fmtTime = ms => { const x = Math.round(ms / 1000); return x >= 60 ? `${Math.floor(x / 60)}m ${x % 60}s` : `${x}s`; };
@@ -186,7 +185,6 @@ export function Progress() {
       <Hero>
         <Label>{t("progress")}</Label>
         <BuddyArt gender={L.gender || "m"} stage={st} width={210} height={180} />
-        <NameField />
         <Cap>{stageName(st)}</Cap>
         <Text style={u.big}>{lv}</Text>
         <Cap>{t("levelCap", { t: levelTitle(lv) })}</Cap>
