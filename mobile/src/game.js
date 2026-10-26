@@ -337,14 +337,15 @@ export function finish() {
 }
 export const hasSession = () => sTaps() + sSeen() > 0;
 
-// "Reset" on the summary: drop the chance to resume and start the feed again from a fresh first card.
+// "Reset" on the summary: clear the hearted cards, drop the chance to resume and rebuild the feed from a
+// fresh first card. The summary stays open (Zine, 2026-10-26).
 export function resetSession() {
   G.undo = null;
   G.S = newSession();
+  G.life.hearts = [];
   resetFeed();
   clearCheers();
-  G.view = null;
-  changed();
+  save(); changed();
 }
 
 // "Keep scrolling" on the summary brings the session and its score back.
@@ -396,7 +397,7 @@ export function rate(n) { G.life.rating = n; save(); fx.up(); if (n >= 4) { fx.p
 export function rateLater() { G.life.rateLater = Date.now(); save(); changed(); }
 export const askToRate = () => !G.life.rating && G.life.sessions >= 3 && Date.now() - (G.life.rateLater || 0) > 7 * 864e5;
 
-// Hearted cards, newest first. They are the person's favourites, not progress, so they survive a reset.
+// Hearted cards, newest first. Reset on the summary clears them; wiping progress keeps them.
 export const isHearted = id => (G.life.hearts || []).includes(id);
 export function toggleHeart(id) {
   const h = (G.life.hearts || []).filter(x => x !== id);

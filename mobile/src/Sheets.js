@@ -104,7 +104,7 @@ export function Summary({ sm }) {
   const evolved = sm.stageEnd > sm.stageStart;
   return (
     <Sheet actions={<>
-      <Btn title={t("reset")} onPress={resetSession} testID="reset" />
+      <Btn title={t("reset")} onPress={() => { hapTick(); resetSession(); }} testID="reset" />
       <Btn title={t("again")} primary style={{ flex: 1 }} onPress={() => keepScrolling(sm)} testID="again" />
     </>}>
       <Hero>
