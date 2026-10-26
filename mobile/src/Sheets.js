@@ -26,10 +26,18 @@ import { HeartedPanel } from "./Hearts";
 const TAB_ORDER = [["dhikr", "tabDhikr"], ["dua", "tabDua"], ["quran", "tabQuran"], ["muh", "tabMuh"]];
 const fmtTime = ms => { const x = Math.round(ms / 1000); return x >= 60 ? `${Math.floor(x / 60)}m ${x % 60}s` : `${x}s`; };
 
+// When one sheet replaces another (progress and prayer times, say), the new one appears at once;
+// fading it in would let the feed underneath show through. The sheet being replaced is still
+// mounted while its successor first renders, so the count tells the two cases apart.
+let openSheets = 0;
 function Sheet({ children, actions }) {
   const insets = useSafeAreaInsets();
-  const a = useRef(new Animated.Value(0)).current;
-  useEffect(() => { Animated.timing(a, { toValue: 1, duration: 450, easing: Easing.out(Easing.cubic), useNativeDriver: true }).start(); }, [a]);
+  const a = useRef(new Animated.Value(openSheets > 0 ? 1 : 0)).current;
+  useEffect(() => {
+    openSheets++;
+    Animated.timing(a, { toValue: 1, duration: 450, easing: Easing.out(Easing.cubic), useNativeDriver: true }).start();
+    return () => { openSheets--; };
+  }, [a]);
   return (
     <Animated.View style={[StyleSheet.absoluteFill, { opacity: a, transform: [{ translateY: a.interpolate({ inputRange: [0, 1], outputRange: [40, 0] }) }] }]}>
       <LinearGradient colors={SHEET_BG} locations={[0, 0.45, 1]} style={StyleSheet.absoluteFill} />
