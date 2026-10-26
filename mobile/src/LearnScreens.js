@@ -325,7 +325,7 @@ function Exercise({ ex, answer, done, onAnswer }) {
           {/* An ayah that recurs in its surah comes with the one before it, so the next one is clear. */}
           {ex.before ? <Text style={[s.ar, s.before, { fontSize: arSize(ex.before, 22), lineHeight: arSize(ex.before, 22) * 1.8 }]} numberOfLines={3}>{ex.before}</Text> : null}
           <Text style={[s.ar, { fontSize: arSize(ex.prompt, 32), lineHeight: arSize(ex.prompt, 32) * 1.9 }]}>{ex.prompt}</Text>
-          {ex.type === "next" ? <Text style={s.ref}>{ex.ref}</Text> : null}
+          {ex.type === "next" ? <Text style={[s.ref, s.refGold]}>{ex.ref}</Text> : null}
         </View>
       ) : null}
       {ex.type === "end" ? <View style={s.item}><Text style={[s.mean, { color: C.ink }]}>{ex.prompt} …</Text></View> : null}
@@ -670,6 +670,7 @@ const s = StyleSheet.create({
   tl: { fontFamily: F.bold, fontStyle: "italic", fontSize: 16, color: C.ink, textAlign: "center" },
   mean: { fontFamily: F.ui, fontSize: 16, lineHeight: 24, color: C.inkSoft, textAlign: "center" },
   ref: { fontFamily: F.bold, fontSize: 12, color: C.inkFaint, textAlign: "center" },
+  refGold: { color: "rgba(245,184,61,0.85)" },
   center: { flex: 1, alignItems: "center", justifyContent: "center", gap: 16, padding: 24 },
   centerT: { fontFamily: F.bold, fontSize: 16, color: C.inkSoft, textAlign: "center", lineHeight: 23 },
   q: { fontFamily: F.heavy, fontSize: 21, color: C.ink },
