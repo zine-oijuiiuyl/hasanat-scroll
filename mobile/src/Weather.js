@@ -1,4 +1,4 @@
-// Gentle weather on the feed cards: rain, snow, wind, embers, summer heat and fireflies (Zine, 2026-10-27).
+// Gentle, peaceful weather on the feed cards: rain, snow, wind, embers, summer heat and fireflies (Zine, 2026-10-27).
 // Each card carries its own weather and scrolls with it, like a video; in "Auto" the next card brings a
 // different one. A setting picks one or turns it off. Only the cards next to the current one animate,
 // everything runs on the native driver, and the layer never takes touches.
@@ -50,20 +50,20 @@ function useLoop(duration, linear = true) {
 }
 
 const Drop = memo(function Drop({ W, H }) {
-  const p = useMemo(() => ({ x: rnd(0, W * 1.25), len: rnd(16, 30), d: rnd(650, 1050), o: rnd(0.18, 0.4) }), [W]);
+  const p = useMemo(() => ({ x: rnd(0, W * 1.25), len: rnd(12, 22), d: rnd(1500, 2200), o: rnd(0.12, 0.26) }), [W]);
   const v = useLoop(p.d);
   const fall = H + 80;
   return (
     <Animated.View style={[s.drop, { left: p.x, height: p.len, opacity: p.o, transform: [
       { translateY: v.interpolate({ inputRange: [0, 1], outputRange: [-60, fall] }) },
-      { translateX: v.interpolate({ inputRange: [0, 1], outputRange: [0, -fall * 0.2] }) },
-      { rotate: "11deg" },
+      { translateX: v.interpolate({ inputRange: [0, 1], outputRange: [0, -fall * 0.08] }) },
+      { rotate: "4.5deg" },
     ] }]} />
   );
 });
 
 const Flake = memo(function Flake({ W, H }) {
-  const p = useMemo(() => ({ x: rnd(0, W), r: rnd(2.5, 6.5), d: rnd(7000, 13000), sway: rnd(12, 30), o: rnd(0.45, 0.85) }), [W]);
+  const p = useMemo(() => ({ x: rnd(0, W), r: rnd(2, 5), d: rnd(12000, 20000), sway: rnd(10, 22), o: rnd(0.35, 0.7) }), [W]);
   const v = useLoop(p.d);
   return (
     <Animated.View style={[s.dot, { left: p.x, width: p.r * 2, height: p.r * 2, borderRadius: p.r, backgroundColor: "#ffffff", opacity: p.o, transform: [
@@ -74,7 +74,7 @@ const Flake = memo(function Flake({ W, H }) {
 });
 
 const Gust = memo(function Gust({ W, H }) {
-  const p = useMemo(() => ({ y: rnd(H * 0.08, H * 0.92), len: rnd(60, 150), d: rnd(1300, 2400), o: rnd(0.1, 0.24) }), [H]);
+  const p = useMemo(() => ({ y: rnd(H * 0.08, H * 0.92), len: rnd(60, 130), d: rnd(3500, 5500), o: rnd(0.06, 0.14) }), [H]);
   const v = useLoop(p.d);
   return (
     <Animated.View style={[s.gust, { top: p.y, width: p.len, opacity: v.interpolate({ inputRange: [0, 0.2, 0.8, 1], outputRange: [0, p.o, p.o, 0] }), transform: [
@@ -84,7 +84,7 @@ const Gust = memo(function Gust({ W, H }) {
 });
 
 const Leaf = memo(function Leaf({ W, H }) {
-  const p = useMemo(() => ({ y: rnd(H * 0.1, H * 0.85), d: rnd(3200, 5200), wave: rnd(25, 60), c: ["#7fcf8f", "#f5b83d", "#c9e27a"][Math.floor(rnd(0, 3))] }), [H]);
+  const p = useMemo(() => ({ y: rnd(H * 0.1, H * 0.85), d: rnd(7000, 10000), wave: rnd(18, 40), c: ["#7fcf8f", "#f5b83d", "#c9e27a"][Math.floor(rnd(0, 3))] }), [H]);
   const v = useLoop(p.d);
   return (
     <Animated.View style={[s.leaf, { top: p.y, backgroundColor: p.c, transform: [
@@ -96,7 +96,7 @@ const Leaf = memo(function Leaf({ W, H }) {
 });
 
 const Ember = memo(function Ember({ W, H }) {
-  const p = useMemo(() => ({ x: rnd(0, W), r: rnd(1.5, 3.8), d: rnd(3500, 6500), rise: rnd(H * 0.35, H * 0.7), sway: rnd(10, 26), c: ["#ffcf6b", "#ff9a3c", "#ff6a2a"][Math.floor(rnd(0, 3))] }), [W, H]);
+  const p = useMemo(() => ({ x: rnd(0, W), r: rnd(1.5, 3), d: rnd(7000, 11000), rise: rnd(H * 0.35, H * 0.7), sway: rnd(10, 26), c: ["#ffcf6b", "#ff9a3c", "#ff6a2a"][Math.floor(rnd(0, 3))] }), [W, H]);
   const v = useLoop(p.d);
   return (
     <Animated.View style={[s.dot, s.glow, { left: p.x, top: H, width: p.r * 2, height: p.r * 2, borderRadius: p.r, backgroundColor: p.c, shadowColor: p.c,
@@ -108,11 +108,11 @@ const Ember = memo(function Ember({ W, H }) {
 });
 
 const Firefly = memo(function Firefly({ W, H }) {
-  const p = useMemo(() => ({ x: rnd(0, W), y: rnd(H * 0.15, H * 0.9), d: rnd(5000, 9000), dx: rnd(-40, 40), dy: rnd(-50, 50), r: rnd(2, 3.5) }), [W, H]);
+  const p = useMemo(() => ({ x: rnd(0, W), y: rnd(H * 0.15, H * 0.9), d: rnd(9000, 15000), dx: rnd(-30, 30), dy: rnd(-35, 35), r: rnd(2, 3.5) }), [W, H]);
   const v = useLoop(p.d, false);
   return (
     <Animated.View style={[s.dot, s.glow, { left: p.x, top: p.y, width: p.r * 2, height: p.r * 2, borderRadius: p.r, backgroundColor: "#fff1a8", shadowColor: "#ffd35a",
-      opacity: v.interpolate({ inputRange: [0, 0.2, 0.4, 0.6, 0.8, 1], outputRange: [0.1, 0.9, 0.2, 1, 0.3, 0.1] }), transform: [
+      opacity: v.interpolate({ inputRange: [0, 0.2, 0.4, 0.6, 0.8, 1], outputRange: [0.1, 0.7, 0.3, 0.8, 0.35, 0.1] }), transform: [
         { translateX: v.interpolate({ inputRange: [0, 0.5, 1], outputRange: [0, p.dx, 0] }) },
         { translateY: v.interpolate({ inputRange: [0, 0.5, 1], outputRange: [0, p.dy, 0] }) },
       ] }]} />
@@ -132,12 +132,12 @@ const Haze = memo(function Haze({ W, H }) {
 });
 
 function Sun({ W, H }) {
-  const v = useLoop(4200, false);
+  const v = useLoop(8000, false);
   const R = W * 0.75;
   return (
     <Animated.View style={{ position: "absolute", left: W - R, top: -R * 0.75, width: R * 2, height: R * 2,
       opacity: v.interpolate({ inputRange: [0, 0.5, 1], outputRange: [0.75, 1, 0.75] }),
-      transform: [{ scale: v.interpolate({ inputRange: [0, 0.5, 1], outputRange: [1, 1.07, 1] }) }] }}>
+      transform: [{ scale: v.interpolate({ inputRange: [0, 0.5, 1], outputRange: [1, 1.04, 1] }) }] }}>
       <Svg width={R * 2} height={R * 2}>
         <Defs>
           <RadialGradient id="sun" cx="50%" cy="50%" r="50%">
@@ -156,12 +156,12 @@ const many = (n, El, W, H) => Array.from({ length: n }, (_, i) => <El key={i} W=
 
 function Scene({ kind, W, H }) {
   switch (kind) {
-    case "rain": return <><View style={[StyleSheet.absoluteFill, { backgroundColor: "rgba(10,30,60,0.16)" }]} />{many(42, Drop, W, H)}</>;
-    case "snow": return <><LinearGradient colors={["rgba(220,235,255,0.10)", "rgba(220,235,255,0)"]} style={StyleSheet.absoluteFill} />{many(40, Flake, W, H)}</>;
-    case "wind": return <>{many(14, Gust, W, H)}{many(7, Leaf, W, H)}</>;
-    case "embers": return <><LinearGradient colors={["rgba(255,110,40,0)", "rgba(255,110,40,0.2)"]} start={{ x: 0, y: 0.55 }} end={{ x: 0, y: 1 }} style={StyleSheet.absoluteFill} />{many(28, Ember, W, H)}</>;
+    case "rain": return <><View style={[StyleSheet.absoluteFill, { backgroundColor: "rgba(10,30,60,0.08)" }]} />{many(26, Drop, W, H)}</>;
+    case "snow": return <><LinearGradient colors={["rgba(220,235,255,0.10)", "rgba(220,235,255,0)"]} style={StyleSheet.absoluteFill} />{many(28, Flake, W, H)}</>;
+    case "wind": return <>{many(7, Gust, W, H)}{many(5, Leaf, W, H)}</>;
+    case "embers": return <><LinearGradient colors={["rgba(255,110,40,0)", "rgba(255,110,40,0.12)"]} start={{ x: 0, y: 0.55 }} end={{ x: 0, y: 1 }} style={StyleSheet.absoluteFill} />{many(16, Ember, W, H)}</>;
     case "heat": return <><LinearGradient colors={["rgba(255,170,60,0.16)", "rgba(255,170,60,0)"]} end={{ x: 0, y: 0.6 }} style={StyleSheet.absoluteFill} /><Sun W={W} H={H} />{many(10, Haze, W, H)}</>;
-    case "fireflies": return many(20, Firefly, W, H);
+    case "fireflies": return many(14, Firefly, W, H);
     default: return null;
   }
 }
