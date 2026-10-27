@@ -11,22 +11,22 @@ import { hapTick, hapOk } from "./fx";
 
 // Translations are mine, like the rest of the app's strings.
 const HT = {
-  en: ["Hearted cards", "Tap ✷ on any card to keep it here."],
-  ar: ["البطاقات المفضلة", "اضغط ✷ على أي بطاقة لحفظها هنا."],
-  fr: ["Cartes aimées", "Touche ✷ sur une carte pour la garder ici."],
-  es: ["Tarjetas favoritas", "Toca ✷ en cualquier tarjeta para guardarla aquí."],
-  tr: ["Beğenilen kartlar", "Burada tutmak için bir kartta ✷'ye dokun."],
-  ur: ["پسندیدہ کارڈز", "کسی بھی کارڈ پر ✷ دبائیں تاکہ وہ یہاں محفوظ ہو جائے۔"],
-  id: ["Kartu yang disukai", "Ketuk ✷ pada kartu mana pun untuk menyimpannya di sini."],
-  bn: ["পছন্দের কার্ড", "যেকোনো কার্ডে ✷ চাপো, সেটি এখানে থাকবে।"],
-  ru: ["Любимые карточки", "Нажми ✷ на любой карточке, чтобы сохранить её здесь."],
-  de: ["Gemerkte Karten", "Tippe auf ✷ bei einer Karte, um sie hier zu behalten."],
+  en: ["Hearted cards", "Tap ♥ on any card to keep it here."],
+  ar: ["البطاقات المفضلة", "اضغط ♥ على أي بطاقة لحفظها هنا."],
+  fr: ["Cartes aimées", "Touche ♥ sur une carte pour la garder ici."],
+  es: ["Tarjetas favoritas", "Toca ♥ en cualquier tarjeta para guardarla aquí."],
+  tr: ["Beğenilen kartlar", "Burada tutmak için bir kartta ♥'ye dokun."],
+  ur: ["پسندیدہ کارڈز", "کسی بھی کارڈ پر ♥ دبائیں تاکہ وہ یہاں محفوظ ہو جائے۔"],
+  id: ["Kartu yang disukai", "Ketuk ♥ pada kartu mana pun untuk menyimpannya di sini."],
+  bn: ["পছন্দের কার্ড", "যেকোনো কার্ডে ♥ চাপো, সেটি এখানে থাকবে।"],
+  ru: ["Любимые карточки", "Нажми ♥ на любой карточке, чтобы сохранить её здесь."],
+  de: ["Gemerkte Karten", "Tippe auf ♥ bei einer Karte, um sie hier zu behalten."],
 };
 for (const [l, v] of Object.entries(HT)) if (T[l]) { T[l].ui.hrtTitle = v[0]; T[l].ui.hrtEmpty = v[1]; }
 
-// The "heart" is drawn as a gold eight-point star, the shape in the background pattern, so it fits the
-// app instead of looking like Instagram's heart (Zine, 2026-10-27). The names stay "heart" in the code.
-const STAR = "M12.00 1.50 L14.37 6.27 L19.42 4.58 L17.73 9.63 L22.50 12.00 L17.73 14.37 L19.42 19.42 L14.37 17.73 L12.00 22.50 L9.63 17.73 L4.58 19.42 L6.27 14.37 L1.50 12.00 L6.27 9.63 L4.58 4.58 L9.63 6.27Z";
+// A gold heart with a dark outline and a shine, like the app's other gold pieces, instead of Instagram's
+// red heart (Zine, 2026-10-27).
+const HEART = "M12 20.6 C11.6 20.6 11.3 20.4 11 20.2 C6.4 16.6 2.6 13.2 2.6 9 C2.6 6.1 4.9 3.8 7.7 3.8 C9.5 3.8 11 4.7 12 6.2 C13 4.7 14.5 3.8 16.3 3.8 C19.1 3.8 21.4 6.1 21.4 9 C21.4 13.2 17.6 16.6 13 20.2 C12.7 20.4 12.4 20.6 12 20.6Z";
 
 export function HeartIcon({ on, size = 30 }) {
   return (
@@ -36,8 +36,8 @@ export function HeartIcon({ on, size = 30 }) {
           <Stop offset="0" stopColor="#ffeaa6" /><Stop offset="0.55" stopColor="#f5b83d" /><Stop offset="1" stopColor="#c98a1b" />
         </LinearGradient>
       </Defs>
-      <Path d={STAR} fill={on ? "url(#hg)" : "rgba(0,0,0,0.18)"} stroke={on ? "#7a4a0a" : "#f4efe2"} strokeWidth={1.5} strokeLinejoin="round" />
-      {on ? <Path d="M9.6 8.4 L11.2 7.4" stroke="#fff6cc" strokeWidth={1.3} strokeLinecap="round" /> : null}
+      <Path d={HEART} fill={on ? "url(#hg)" : "rgba(0,0,0,0.18)"} stroke={on ? "#7a4a0a" : "#f4efe2"} strokeWidth={1.5} strokeLinejoin="round" />
+      {on ? <Path d="M5.6 8.2 C5.9 7 6.8 6.2 8 6" stroke="#fff6cc" strokeWidth={1.3} strokeLinecap="round" fill="none" /> : null}
     </Svg>
   );
 }
@@ -66,7 +66,7 @@ export function HeartedPanel() {
   const list = (G.life.hearts || []).map(id => BY_ID[id]).filter(Boolean);
   return (
     <Panel>
-      <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}><HeartIcon on size={16} /><Label>{t("hrtTitle")} · {list.length}</Label></View>
+      <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}><HeartIcon on size={18} /><Label>{t("hrtTitle")} · {list.length}</Label></View>
       {list.length ? list.map(d => (
         <View key={d.id} style={s.row}>
           <View style={{ flex: 1, gap: 2 }}>
