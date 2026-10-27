@@ -86,7 +86,49 @@ const FILES = {
 };
 
 let settings = { sound: true, haptics: true, scrollSound: "dial" };
-export const setFxSettings = s => { settings = { ...settings, ...s }; };
+let ambWant = null;
+export const setFxSettings = s => { settings = { ...settings, ...s }; ambient(ambWant); };
+
+// Weather ambience (scripts/make-ambient.js): one looping player per weather, faded in and out as the
+// cards go by. Quiet on purpose, and silent when sound is off.
+const AMB = {
+  rain: require("../assets/sounds/amb-rain.wav"), snow: require("../assets/sounds/amb-snow.wav"),
+  wind: require("../assets/sounds/amb-wind.wav"), embers: require("../assets/sounds/amb-embers.wav"),
+  fireflies: require("../assets/sounds/amb-fireflies.wav"), birds: require("../assets/sounds/amb-birds.wav"),
+  butterflies: require("../assets/sounds/amb-butterflies.wav"),
+};
+const AMB_VOL = { rain: 0.3, snow: 0.45, wind: 0.38, embers: 0.8, fireflies: 0.45, birds: 0.45, butterflies: 0.45 };
+const amb = {}, fades = {};
+let ambNow = null;
+function fadeTo(k, to, ms, done) {
+  const p = amb[k];
+  if (!p) return;
+  clearInterval(fades[k]);
+  const from = p.volume || 0, steps = Math.max(1, Math.round(ms / 50));
+  let n = 0;
+  fades[k] = setInterval(() => {
+    n++;
+    try { p.volume = from + (to - from) * (n / steps); } catch (e) {}
+    if (n >= steps) { clearInterval(fades[k]); if (done) try { done(p); } catch (e) {} }
+  }, 50);
+}
+export function ambient(kind) {
+  ambWant = kind;
+  const k = settings.sound && AMB[kind] ? kind : null;
+  if (k === ambNow) return;
+  if (ambNow) fadeTo(ambNow, 0, 900, p => p.pause());
+  ambNow = k;
+  if (!k) return;
+  try {
+    if (!amb[k]) { amb[k] = createAudioPlayer(AMB[k]); amb[k].loop = true; amb[k].volume = 0; }
+    amb[k].play();
+    fadeTo(k, AMB_VOL[k], 1400);
+  } catch (e) {}
+}
+// iOS stops the players in the background; this starts the current one again on return.
+export function resumeAmbient() {
+  if (ambNow && amb[ambNow]) try { amb[ambNow].play(); } catch (e) {}
+}
 
 // Two players per sound, used in turn, so a quick run of cards never cuts off or blocks the next click.
 const POOL = 2;

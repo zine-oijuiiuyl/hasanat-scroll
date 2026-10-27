@@ -176,7 +176,6 @@ function scoreCard(el, quiet, repeat) {
   let big = false;
   if (quiet) big = true;   // skipped cards still count, but only the card you land on gets the show
   else if (golden) { fx.golden(); emit("confetti", true); emit("cheerBuddy"); toast("⭐", t("goldenT"), t("goldenS")); big = true; }
-  if (!quiet && grew && RULES.comboMarks.includes(S.combo)) { fx.up(); emit("cheerBuddy"); toast("📿", t("comboT", { n: S.combo }), t("comboS")); big = true; }
   const pts = sTaps();
   if (!quiet && isMilestone(pts)) { fx.party(); emit("confetti", false); emit("cheerBuddy"); toast("🎉", t("mileT", { n: pts }), t("mileS")); big = true; }
   if (cleared) { openFreed(G.life.debt.start); big = true; }

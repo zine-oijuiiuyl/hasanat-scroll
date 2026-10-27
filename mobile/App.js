@@ -8,7 +8,7 @@ import { Amiri_700Bold } from "@expo-google-fonts/amiri";
 import { BricolageGrotesque_500Medium, BricolageGrotesque_700Bold, BricolageGrotesque_800ExtraBold } from "@expo-google-fonts/bricolage-grotesque";
 import { G, subscribe, getVersion, load, onBackground, onForeground } from "./src/game";
 import { getLang, isRTL } from "./src/i18n";
-import { initSounds } from "./src/fx";
+import { initSounds, resumeAmbient } from "./src/fx";
 import { schedulePrayer } from "./src/prayer";
 import Feed from "./src/Feed";
 import Hud from "./src/Hud";
@@ -34,7 +34,7 @@ export default function App() {
     load().then(schedulePrayer);
     const sub = AppState.addEventListener("change", st => {
       // "inactive" also fires for the location and notification permission pop-ups, which must not end the session.
-      if (st === "active") { onForeground(); schedulePrayer(); }
+      if (st === "active") { onForeground(); schedulePrayer(); resumeAmbient(); }
       else if (st === "background") onBackground();
     });
     return () => sub.remove();

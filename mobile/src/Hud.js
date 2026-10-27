@@ -23,22 +23,6 @@ function useBump(event) {
   return v.interpolate({ inputRange: [0, 0.4, 1], outputRange: [1, 1.14, 1] });
 }
 
-function Combo() {
-  const [, force] = useState(0);
-  useEffect(() => { const iv = setInterval(() => force(x => x + 1), 100); return () => clearInterval(iv); }, []);
-  const S = G.S;
-  const left = Math.max(0, 1 - (Date.now() - S.last) / S.window);
-  if (left === 0 && S.combo) S.combo = 0;
-  if (S.combo < 2) return <View style={{ height: 34 }} />;
-  return (
-    <View style={s.combo}>
-      <Ico e="📿" size={19} />
-      <Text style={s.comboT}>{t("combo", { n: S.combo })}</Text>
-      <View style={s.drain}><View style={[s.drainB, { width: `${left * 100}%` }]} /></View>
-    </View>
-  );
-}
-
 function Toast() {
   const [tt, setT] = useState(G.toast);
   const a = useRef(new Animated.Value(0)).current;
@@ -116,7 +100,6 @@ export default function Hud() {
         </View>
       </View>
       <Debt />
-      <Combo />
       <Toast />
     </View>
   );
@@ -139,10 +122,6 @@ const s = StyleSheet.create({
   sub: { fontSize: 12, fontFamily: F.bold, color: C.inkSoft, marginTop: 3 },
   done: { paddingVertical: 9, paddingHorizontal: 13, borderRadius: 999, backgroundColor: "rgba(244,239,226,0.16)" },
   doneT: { fontSize: 14, fontFamily: F.heavy, color: C.ink },
-  combo: { flexDirection: "row", alignItems: "center", gap: 8, paddingVertical: 7, paddingHorizontal: 14, borderRadius: 999, backgroundColor: C.glass, height: 34 },
-  comboT: { fontSize: 14, fontFamily: F.heavy, color: C.ink },
-  drain: { width: 70, height: 6, borderRadius: 999, backgroundColor: C.line, overflow: "hidden" },
-  drainB: { height: "100%", backgroundColor: C.gold2, borderRadius: 999 },
   toast: { flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 10, paddingHorizontal: 18, borderRadius: 999, backgroundColor: "rgba(10,30,26,0.9)", borderWidth: 1.5, borderColor: C.gold2, maxWidth: "100%" },
   toastB: { fontSize: 15, fontFamily: F.heavy, color: C.ink },
   toastS: { fontSize: 12, fontFamily: F.ui, color: C.inkSoft },

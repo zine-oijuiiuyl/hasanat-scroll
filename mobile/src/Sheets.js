@@ -127,7 +127,7 @@ export function Summary({ sm }) {
       {evolved ? <Panel gold><Ico e={sm.stageEnd >= 3 ? "🪽" : "✨"} size={44} /><View style={{ flex: 1 }}><Text style={s.goldB}>{t("grew")}</Text><Text style={s.goldS}>{stageName(sm.stageStart)} → {stageName(sm.stageEnd)}</Text></View></Panel> : null}
       {sm.levelAfter > sm.levelBefore ? <Panel gold><Text style={{ fontSize: 36 }}>⬆️</Text><View style={{ flex: 1 }}><Text style={s.goldB}>{t("lvUp")}</Text><Text style={s.goldS}>{t("lvLine", { n: sm.levelAfter, t: levelTitle(sm.levelAfter) })}</Text></View></Panel> : null}
       <Tiles>
-        <Tile icon="✦" v={num(L.said)} k={t("allPts")} /><Tile icon="🔥" v={sm.bestCombo} k={t("bestCombo")} /><Tile icon="⏱" v={fmtTime(sm.end - sm.start)} k={t("time")} />
+        <Tile icon="✦" v={num(L.said)} k={t("allPts")} /><Tile icon="⏱" v={fmtTime(sm.end - sm.start)} k={t("time")} />
         <Tile icon="⭐" v={sm.golden} k={t("goldenTile")} /><Tile icon="📅" v={L.streak} k={t("streak")} /><Tile icon="📿" v={rows.length} k={t("types")} />
       </Tiles>
       {L.debt ? (
@@ -224,7 +224,7 @@ export function Progress() {
         <Tile icon="✦" v={num(p)} k={t("pointsTile")} /><Tile icon="⬆️" v={t("lv", { n: lv })} k={t("levelTile")} /><Tile icon="📅" v={L.streak} k={t("streak")} />
         <Tile icon="🗂" v={L.sessions} k={t("sessions")} /><Tile icon="🏆" v={num(Math.max(L.best, sTaps()))} k={t("bestSession")} /><Tile icon="⭐" v={L.golden + G.S.golden} k={t("goldenTile")} />
       </Tiles>
-      <Panel><Label>{t("badgesH", { a: L.badges.length, b: BADGES.length })}</Label><BadgeGrid list={BADGES} have={b => L.badges.includes(b.id)} /></Panel>
+      <Panel><Label>{t("badgesH", { a: BADGES.filter(b => L.badges.includes(b.id)).length, b: BADGES.length })}</Label><BadgeGrid list={BADGES} have={b => L.badges.includes(b.id)} /></Panel>
       {TAB_ORDER.map(([tb, key]) => {
         const tp = Object.entries(L.per).filter(([id]) => BY_ID[id] && tabOf(BY_ID[id]) === tb).sort((x, y) => y[1] - x[1]).slice(0, 5);
         return tp.length ? (

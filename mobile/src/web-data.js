@@ -580,7 +580,8 @@ const RULES = { comboMs: 12000, comboPerChar: 50, comboMaxMs: 24000, minDwellMs:
     ["wings", "🪽", "First Wings", "Your buddy grows wings", c => c.stage >= 3],
     ["halo", "😇", "Halo", "Your buddy becomes an angel", c => c.stage >= 5],
     ["light", "⚖️", "Light as a Feather", "Bring a burden down to zero", c => c.cleared >= 1],
-  ].map(([id, icon, title, detail, test], i) => ({ id, icon, title, detail, test, i }));
+  ].map(([id, icon, title, detail, test], i) => ({ id, icon, title, detail, test, i }))
+    .filter(b => !b.id.startsWith("combo"));   // combos were removed (Zine, 2026-10-27); i keeps the translations lined up
 
   
 const PAL = {

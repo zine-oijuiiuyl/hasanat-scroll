@@ -1,31 +1,33 @@
-// Gentle, peaceful weather on the feed cards: rain, snow, wind, embers and fireflies (Zine, 2026-10-27).
+// Gentle, peaceful weather on the feed cards: rain, snow, wind, embers, fireflies, birds and butterflies (Zine, 2026-10-27).
 // Each card carries its own weather and scrolls with it, like a video; in "Auto" the next card brings a
 // different one. A setting picks one or turns it off. Only the cards next to the current one animate,
 // everything runs on the native driver, and the layer never takes touches.
 import { memo, useEffect, useMemo, useRef, useState } from "react";
 import { Animated, Dimensions, Easing, StyleSheet, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
+import Svg, { Path } from "react-native-svg";
 import { T } from "./web-data";
-import { G, on } from "./game";
+import { G, on, subscribe } from "./game";
+import { ambient } from "./fx";
 
 // "heat" (a sun glow) was removed at Zine's request; its translations stay in WT by position.
-const ALL = ["rain", "snow", "wind", "embers", "heat", "fireflies"];
+const ALL = ["rain", "snow", "wind", "embers", "heat", "fireflies", "birds", "butterflies"];
 export const WEATHERS = ALL.filter(k => k !== "heat");
 // In Auto the weathers come round in a shuffled order, so two cards in a row never share one.
 const ORDER = [...WEATHERS].sort(() => Math.random() - 0.5);
 
-// Translations are mine, like the rest of the app's strings: [Weather, Auto, Off, rain, snow, wind, embers, heat, fireflies].
+// Translations are mine, like the rest of the app's strings: [Weather, Auto, Off, rain, snow, wind, embers, heat, fireflies, birds, butterflies].
 const WT = {
-  en: ["Weather", "Auto", "Off", "Rain", "Snow", "Wind", "Embers", "Summer heat", "Fireflies"],
-  ar: ["الطقس", "تلقائي", "إيقاف", "مطر", "ثلج", "رياح", "جمر", "حر الصيف", "يراعات"],
-  fr: ["Météo", "Auto", "Désactivée", "Pluie", "Neige", "Vent", "Braises", "Chaleur d'été", "Lucioles"],
-  es: ["Clima", "Auto", "Apagado", "Lluvia", "Nieve", "Viento", "Brasas", "Calor de verano", "Luciérnagas"],
-  tr: ["Hava", "Otomatik", "Kapalı", "Yağmur", "Kar", "Rüzgâr", "Kor", "Yaz sıcağı", "Ateş böcekleri"],
-  ur: ["موسم", "خودکار", "بند", "بارش", "برف", "ہوا", "انگارے", "گرمی", "جگنو"],
-  id: ["Cuaca", "Otomatis", "Mati", "Hujan", "Salju", "Angin", "Bara", "Panas musim panas", "Kunang-kunang"],
-  bn: ["আবহাওয়া", "স্বয়ংক্রিয়", "বন্ধ", "বৃষ্টি", "তুষার", "বাতাস", "অঙ্গার", "গ্রীষ্মের তাপ", "জোনাকি"],
-  ru: ["Погода", "Авто", "Выкл.", "Дождь", "Снег", "Ветер", "Угольки", "Летний зной", "Светлячки"],
-  de: ["Wetter", "Auto", "Aus", "Regen", "Schnee", "Wind", "Glut", "Sommerhitze", "Glühwürmchen"],
+  en: ["Weather", "Auto", "Off", "Rain", "Snow", "Wind", "Embers", "Summer heat", "Fireflies", "Birds", "Butterflies"],
+  ar: ["الطقس", "تلقائي", "إيقاف", "مطر", "ثلج", "رياح", "جمر", "حر الصيف", "يراعات", "طيور", "فراشات"],
+  fr: ["Météo", "Auto", "Désactivée", "Pluie", "Neige", "Vent", "Braises", "Chaleur d'été", "Lucioles", "Oiseaux", "Papillons"],
+  es: ["Clima", "Auto", "Apagado", "Lluvia", "Nieve", "Viento", "Brasas", "Calor de verano", "Luciérnagas", "Pájaros", "Mariposas"],
+  tr: ["Hava", "Otomatik", "Kapalı", "Yağmur", "Kar", "Rüzgâr", "Kor", "Yaz sıcağı", "Ateş böcekleri", "Kuşlar", "Kelebekler"],
+  ur: ["موسم", "خودکار", "بند", "بارش", "برف", "ہوا", "انگارے", "گرمی", "جگنو", "پرندے", "تتلیاں"],
+  id: ["Cuaca", "Otomatis", "Mati", "Hujan", "Salju", "Angin", "Bara", "Panas musim panas", "Kunang-kunang", "Burung", "Kupu-kupu"],
+  bn: ["আবহাওয়া", "স্বয়ংক্রিয়", "বন্ধ", "বৃষ্টি", "তুষার", "বাতাস", "অঙ্গার", "গ্রীষ্মের তাপ", "জোনাকি", "পাখি", "প্রজাপতি"],
+  ru: ["Погода", "Авто", "Выкл.", "Дождь", "Снег", "Ветер", "Угольки", "Летний зной", "Светлячки", "Птицы", "Бабочки"],
+  de: ["Wetter", "Auto", "Aus", "Regen", "Schnee", "Wind", "Glut", "Sommerhitze", "Glühwürmchen", "Vögel", "Schmetterlinge"],
 };
 for (const [l, v] of Object.entries(WT)) if (T[l]) {
   Object.assign(T[l].ui, { wxTitle: v[0], wxAuto: v[1], wxOff: v[2] });
@@ -120,6 +122,48 @@ const Firefly = memo(function Firefly({ W, H }) {
   );
 });
 
+const Bird = memo(function Bird({ W, H }) {
+  const p = useMemo(() => ({ y: rnd(H * 0.08, H * 0.6), d: rnd(9000, 15000), flap: rnd(520, 760), wave: rnd(12, 30), sz: rnd(0.7, 1.15), rtl: Math.random() < 0.5 }), [H]);
+  const v = useLoop(p.d);
+  const f = useLoop(p.flap, false);
+  const from = p.rtl ? W + 30 : -30, to = p.rtl ? -30 : W + 30;
+  return (
+    <Animated.View style={{ position: "absolute", left: 0, top: p.y, transform: [
+      { translateX: v.interpolate({ inputRange: [0, 1], outputRange: [from, to] }) },
+      { translateY: v.interpolate({ inputRange: [0, 0.3, 0.6, 1], outputRange: [0, -p.wave, p.wave * 0.4, -p.wave * 0.6] }) },
+      { scale: p.sz }, { scaleX: p.rtl ? -1 : 1 },
+    ] }}>
+      <Animated.View style={{ transform: [{ scaleY: f.interpolate({ inputRange: [0, 0.5, 1], outputRange: [1, 0.3, 1] }) }] }}>
+        <Svg width={22} height={12} viewBox="0 0 22 12">
+          <Path d="M1 4 Q6 0 11 7 Q16 0 21 4" fill="none" stroke="#f4efe2" strokeOpacity={0.75} strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" />
+        </Svg>
+      </Animated.View>
+    </Animated.View>
+  );
+});
+
+const WINGS = [["#ffd36b", "#f5a623"], ["#ffc2d1", "#ff8fab"], ["#9fe6d3", "#3fb69c"], ["#fff6dc", "#e8d9b0"]];
+const Butterfly = memo(function Butterfly({ W, H }) {
+  const p = useMemo(() => ({ x: rnd(W * 0.1, W * 0.9), y: rnd(H * 0.15, H * 0.85), d: rnd(14000, 22000), flap: rnd(300, 460), dx: rnd(-W * 0.35, W * 0.35), dy: rnd(-H * 0.2, H * 0.2), c: WINGS[Math.floor(rnd(0, WINGS.length))] }), [W, H]);
+  const v = useLoop(p.d, false);
+  const f = useLoop(p.flap, false);
+  return (
+    <Animated.View style={{ position: "absolute", left: p.x, top: p.y, opacity: 0.9, transform: [
+      { translateX: v.interpolate({ inputRange: [0, 0.25, 0.5, 0.75, 1], outputRange: [0, p.dx * 0.6, p.dx, p.dx * 0.3, 0] }) },
+      { translateY: v.interpolate({ inputRange: [0, 0.2, 0.45, 0.7, 1], outputRange: [0, p.dy * 0.5, -p.dy * 0.3, p.dy, 0] }) },
+      { rotate: v.interpolate({ inputRange: [0, 0.5, 1], outputRange: ["-12deg", "14deg", "-12deg"] }) },
+    ] }}>
+      <Animated.View style={{ transform: [{ scaleX: f.interpolate({ inputRange: [0, 0.5, 1], outputRange: [1, 0.2, 1] }) }] }}>
+        <Svg width={20} height={18} viewBox="0 0 20 18">
+          <Path d="M10 8 C6 1 0 1 1.4 6 C2.4 9 6 9.6 10 8Z M10 8 C14 1 20 1 18.6 6 C17.6 9 14 9.6 10 8Z" fill={p.c[0]} stroke={p.c[1]} strokeWidth={0.8} />
+          <Path d="M10 9 C7 10 3.4 12 4.6 15 C5.6 17 8.6 14 10 9Z M10 9 C13 10 16.6 12 15.4 15 C14.4 17 11.4 14 10 9Z" fill={p.c[1]} stroke={p.c[1]} strokeWidth={0.6} />
+          <Path d="M10 5 V14" stroke="#3b2a1a" strokeWidth={1.4} strokeLinecap="round" />
+        </Svg>
+      </Animated.View>
+    </Animated.View>
+  );
+});
+
 const many = (n, El, W, H) => Array.from({ length: n }, (_, i) => <El key={i} W={W} H={H} />);
 
 function Scene({ kind, W, H }) {
@@ -129,12 +173,23 @@ function Scene({ kind, W, H }) {
     case "wind": return <>{many(7, Gust, W, H)}{many(5, Leaf, W, H)}</>;
     case "embers": return <><LinearGradient colors={["rgba(255,110,40,0)", "rgba(255,110,40,0.12)"]} start={{ x: 0, y: 0.55 }} end={{ x: 0, y: 1 }} style={StyleSheet.absoluteFill} />{many(16, Ember, W, H)}</>;
     case "fireflies": return many(14, Firefly, W, H);
+    case "birds": return many(6, Bird, W, H);
+    case "butterflies": return many(6, Butterfly, W, H);
     default: return null;
   }
 }
 
+const settingNow = () => WEATHERS.includes(G.life.weather) || G.life.weather === "off" ? G.life.weather : "auto";
+const kindFor = idx => { const st = settingNow(); return st === "off" ? null : st === "auto" ? ORDER[idx % ORDER.length] : st; };
+
+// The ambience follows the card on screen, only while the feed is showing.
+const syncSound = () => ambient(G.page === "scroll" && !G.view && G.current >= 0 ? kindFor(G.current) : null);
+on("cardIdx", syncSound);
+on("page", syncSound);
+subscribe(syncSound);
+
 export function CardWeather({ idx, height }) {
-  const setting = WEATHERS.includes(G.life.weather) || G.life.weather === "off" ? G.life.weather : "auto";
+  const setting = settingNow();
   const [near, setNear] = useState(Math.abs(idx - Math.max(0, G.current)) <= 1);
   useEffect(() => on("cardIdx", i => setNear(Math.abs(idx - i) <= 1)), [idx]);
   const kind = setting === "off" ? null : setting === "auto" ? ORDER[idx % ORDER.length] : setting;
