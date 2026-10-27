@@ -1,15 +1,16 @@
-// Gentle, peaceful weather on the feed cards: rain, snow, wind, embers, summer heat and fireflies (Zine, 2026-10-27).
+// Gentle, peaceful weather on the feed cards: rain, snow, wind, embers and fireflies (Zine, 2026-10-27).
 // Each card carries its own weather and scrolls with it, like a video; in "Auto" the next card brings a
 // different one. A setting picks one or turns it off. Only the cards next to the current one animate,
 // everything runs on the native driver, and the layer never takes touches.
 import { memo, useEffect, useMemo, useRef, useState } from "react";
 import { Animated, Dimensions, Easing, StyleSheet, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import Svg, { Circle, Defs, RadialGradient, Stop } from "react-native-svg";
 import { T } from "./web-data";
 import { G, on } from "./game";
 
-export const WEATHERS = ["rain", "snow", "wind", "embers", "heat", "fireflies"];
+// "heat" (a sun glow) was removed at Zine's request; its translations stay in WT by position.
+const ALL = ["rain", "snow", "wind", "embers", "heat", "fireflies"];
+export const WEATHERS = ALL.filter(k => k !== "heat");
 // In Auto the weathers come round in a shuffled order, so two cards in a row never share one.
 const ORDER = [...WEATHERS].sort(() => Math.random() - 0.5);
 
@@ -28,7 +29,7 @@ const WT = {
 };
 for (const [l, v] of Object.entries(WT)) if (T[l]) {
   Object.assign(T[l].ui, { wxTitle: v[0], wxAuto: v[1], wxOff: v[2] });
-  WEATHERS.forEach((k, i) => { T[l].ui["wx_" + k] = v[3 + i]; });
+  ALL.forEach((k, i) => { T[l].ui["wx_" + k] = v[3 + i]; });
 }
 
 const rnd = (a, b) => a + Math.random() * (b - a);
@@ -119,39 +120,6 @@ const Firefly = memo(function Firefly({ W, H }) {
   );
 });
 
-const Haze = memo(function Haze({ W, H }) {
-  const p = useMemo(() => ({ x: rnd(0, W), r: rnd(20, 50), d: rnd(9000, 15000) }), [W]);
-  const v = useLoop(p.d);
-  return (
-    <Animated.View style={[s.dot, { left: p.x, top: H, width: p.r * 2, height: p.r * 2, borderRadius: p.r, backgroundColor: "#ffd27a",
-      opacity: v.interpolate({ inputRange: [0, 0.3, 0.7, 1], outputRange: [0, 0.07, 0.05, 0] }), transform: [
-        { translateY: v.interpolate({ inputRange: [0, 1], outputRange: [0, -H * 0.9] }) },
-        { scaleX: v.interpolate({ inputRange: [0, 0.5, 1], outputRange: [1, 1.4, 1] }) },
-      ] }]} />
-  );
-});
-
-function Sun({ W, H }) {
-  const v = useLoop(8000, false);
-  const R = W * 0.75;
-  return (
-    <Animated.View style={{ position: "absolute", left: W - R, top: -R * 0.75, width: R * 2, height: R * 2,
-      opacity: v.interpolate({ inputRange: [0, 0.5, 1], outputRange: [0.75, 1, 0.75] }),
-      transform: [{ scale: v.interpolate({ inputRange: [0, 0.5, 1], outputRange: [1, 1.04, 1] }) }] }}>
-      <Svg width={R * 2} height={R * 2}>
-        <Defs>
-          <RadialGradient id="sun" cx="50%" cy="50%" r="50%">
-            <Stop offset="0" stopColor="#fff3b0" stopOpacity="0.55" />
-            <Stop offset="0.25" stopColor="#ffc74a" stopOpacity="0.3" />
-            <Stop offset="1" stopColor="#ff9a3c" stopOpacity="0" />
-          </RadialGradient>
-        </Defs>
-        <Circle cx={R} cy={R} r={R} fill="url(#sun)" />
-      </Svg>
-    </Animated.View>
-  );
-}
-
 const many = (n, El, W, H) => Array.from({ length: n }, (_, i) => <El key={i} W={W} H={H} />);
 
 function Scene({ kind, W, H }) {
@@ -160,14 +128,13 @@ function Scene({ kind, W, H }) {
     case "snow": return <><LinearGradient colors={["rgba(220,235,255,0.10)", "rgba(220,235,255,0)"]} style={StyleSheet.absoluteFill} />{many(28, Flake, W, H)}</>;
     case "wind": return <>{many(7, Gust, W, H)}{many(5, Leaf, W, H)}</>;
     case "embers": return <><LinearGradient colors={["rgba(255,110,40,0)", "rgba(255,110,40,0.12)"]} start={{ x: 0, y: 0.55 }} end={{ x: 0, y: 1 }} style={StyleSheet.absoluteFill} />{many(16, Ember, W, H)}</>;
-    case "heat": return <><LinearGradient colors={["rgba(255,170,60,0.16)", "rgba(255,170,60,0)"]} end={{ x: 0, y: 0.6 }} style={StyleSheet.absoluteFill} /><Sun W={W} H={H} />{many(10, Haze, W, H)}</>;
     case "fireflies": return many(14, Firefly, W, H);
     default: return null;
   }
 }
 
 export function CardWeather({ idx, height }) {
-  const setting = G.life.weather || "auto";
+  const setting = WEATHERS.includes(G.life.weather) || G.life.weather === "off" ? G.life.weather : "auto";
   const [near, setNear] = useState(Math.abs(idx - Math.max(0, G.current)) <= 1);
   useEffect(() => on("cardIdx", i => setNear(Math.abs(idx - i) <= 1)), [idx]);
   const kind = setting === "off" ? null : setting === "auto" ? ORDER[idx % ORDER.length] : setting;
