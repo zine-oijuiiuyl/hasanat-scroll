@@ -279,6 +279,16 @@ function checkMedals() {
   return got;
 }
 
+// ---------- Sets of seven ----------
+// The path shows one set of seven lessons at a time, so the whole list isn't shown at once (Zine,
+// 2026-10-27). Finishing a set opens its reward chest and shows the next set.
+export const SET = 7, SET_BONUS = 30;
+export function setOf(track, g) {
+  const total = TRACKS[track].total;
+  const from = Math.floor(Math.min(g, total - 1) / SET) * SET;
+  return { n: from / SET, from, to: Math.min(total, from + SET), total };
+}
+
 // Finishing a lesson: everything it taught goes into memory, points, and the next lesson unlocks.
 export function finishLesson(track, g, keys, correct, total) {
   const s = L();
@@ -286,13 +296,15 @@ export function finishLesson(track, g, keys, correct, total) {
   learned(keys);
   if (fresh) s[track] = g + 1;
   const perfect = correct >= total;
-  const pts = correct + (fresh ? 5 : 0) + (perfect ? 5 : 0);
+  const setDone = fresh && g + 1 === setOf(track, g).to;
+  if (setDone) s.chests = (s.chests || 0) + 1;
+  const pts = correct + (fresh ? 5 : 0) + (perfect ? 5 : 0) + (setDone ? SET_BONUS : 0);
   const u = unitAt(track, g);
   const unitDone = fresh && g === u.start + u.lessons.length - 1;
   save();
   award(pts);
   checkMedals();
-  return { pts, perfect, unitDone };
+  return { pts, perfect, unitDone, setDone };
 }
 
 // Finishing a memory check.

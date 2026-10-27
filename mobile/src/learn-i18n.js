@@ -205,6 +205,21 @@ const L = {
   },
 };
 
+// Sets of seven lessons and their reward chests (2026-10-27).
+const SETS = {
+  en: { setN: "Set {n}", setProg: "{a} of {b} lessons", learnHint7: "Learn 7 lessons, then open your reward.", chestT: "Reward for these 7 lessons", bonus: "bonus points", chestLocked: "Finish the 7 lessons to open it", moreAfter: "More lessons unlock after this reward", setDone: "7 lessons done!", setDoneS: "Reward opened: +{n} bonus points" },
+  ar: { setN: "المجموعة {n}", setProg: "{a} من {b} دروس", learnHint7: "تعلّم 7 دروس، ثم افتح مكافأتك.", chestT: "مكافأة هذه الدروس السبعة", bonus: "نقاط إضافية", chestLocked: "أكمل الدروس السبعة لفتحها", moreAfter: "دروس جديدة تُفتح بعد هذه المكافأة", setDone: "أكملت 7 دروس!", setDoneS: "فُتحت المكافأة: +{n} نقطة إضافية" },
+  fr: { setN: "Série {n}", setProg: "{a} sur {b} leçons", learnHint7: "Apprends 7 leçons, puis ouvre ta récompense.", chestT: "Récompense de ces 7 leçons", bonus: "points bonus", chestLocked: "Termine les 7 leçons pour l'ouvrir", moreAfter: "D'autres leçons s'ouvrent après cette récompense", setDone: "7 leçons terminées !", setDoneS: "Récompense ouverte : +{n} points bonus" },
+  es: { setN: "Serie {n}", setProg: "{a} de {b} lecciones", learnHint7: "Aprende 7 lecciones y abre tu premio.", chestT: "Premio por estas 7 lecciones", bonus: "puntos extra", chestLocked: "Termina las 7 lecciones para abrirlo", moreAfter: "Más lecciones se abren tras este premio", setDone: "¡7 lecciones hechas!", setDoneS: "Premio abierto: +{n} puntos extra" },
+  tr: { setN: "Set {n}", setProg: "{b} dersten {a}", learnHint7: "7 ders öğren, sonra ödülünü aç.", chestT: "Bu 7 dersin ödülü", bonus: "bonus puan", chestLocked: "Açmak için 7 dersi bitir", moreAfter: "Bu ödülden sonra yeni dersler açılır", setDone: "7 ders tamam!", setDoneS: "Ödül açıldı: +{n} bonus puan" },
+  ur: { setN: "سیٹ {n}", setProg: "{b} میں سے {a} سبق", learnHint7: "7 سبق سیکھیں، پھر اپنا انعام کھولیں۔", chestT: "ان 7 اسباق کا انعام", bonus: "اضافی پوائنٹس", chestLocked: "اسے کھولنے کے لیے 7 سبق مکمل کریں", moreAfter: "اس انعام کے بعد نئے سبق کھلیں گے", setDone: "7 سبق مکمل!", setDoneS: "انعام کھل گیا: +{n} اضافی پوائنٹس" },
+  id: { setN: "Set {n}", setProg: "{a} dari {b} pelajaran", learnHint7: "Pelajari 7 pelajaran, lalu buka hadiahmu.", chestT: "Hadiah untuk 7 pelajaran ini", bonus: "poin bonus", chestLocked: "Selesaikan 7 pelajaran untuk membukanya", moreAfter: "Pelajaran baru terbuka setelah hadiah ini", setDone: "7 pelajaran selesai!", setDoneS: "Hadiah dibuka: +{n} poin bonus" },
+  bn: { setN: "সেট {n}", setProg: "{b}টির মধ্যে {a}টি পাঠ", learnHint7: "৭টি পাঠ শেখো, তারপর তোমার পুরস্কার খোলো।", chestT: "এই ৭টি পাঠের পুরস্কার", bonus: "বোনাস পয়েন্ট", chestLocked: "খুলতে ৭টি পাঠ শেষ করো", moreAfter: "এই পুরস্কারের পর নতুন পাঠ খুলবে", setDone: "৭টি পাঠ শেষ!", setDoneS: "পুরস্কার খোলা হলো: +{n} বোনাস পয়েন্ট" },
+  ru: { setN: "Набор {n}", setProg: "{a} из {b} уроков", learnHint7: "Пройди 7 уроков и открой награду.", chestT: "Награда за эти 7 уроков", bonus: "бонусных очков", chestLocked: "Пройди 7 уроков, чтобы открыть", moreAfter: "После этой награды откроются новые уроки", setDone: "7 уроков пройдено!", setDoneS: "Награда открыта: +{n} бонусных очков" },
+  de: { setN: "Runde {n}", setProg: "{a} von {b} Lektionen", learnHint7: "Lerne 7 Lektionen und öffne dann deine Belohnung.", chestT: "Belohnung für diese 7 Lektionen", bonus: "Bonuspunkte", chestLocked: "Schaffe die 7 Lektionen, um sie zu öffnen", moreAfter: "Nach dieser Belohnung gehen neue Lektionen auf", setDone: "7 Lektionen geschafft!", setDoneS: "Belohnung geöffnet: +{n} Bonuspunkte" },
+};
+for (const k of Object.keys(SETS)) Object.assign(L[k], SETS[k]);
+
 for (const k of Object.keys(L)) if (T[k]) Object.assign(T[k].ui, L[k]);
 // Medal names are pairs, so they are read with medalText rather than t().
 export const medalText = (lang, id) => (L[lang] || L.en)[id] || L.en[id];

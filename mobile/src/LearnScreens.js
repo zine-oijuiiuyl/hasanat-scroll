@@ -7,7 +7,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { G, closeView, openView, stageNow, emit, showToast, subscribe, on } from "./game";
 import {
   L, TRACKS, TRACK_KEYS, unitTitle, unitSub, lessonItems, lessonLabel, unitAt, loadItems, lessonExercises, reviewExercises,
-  finishLesson, finishReview, dueKeys, dueCount, boxOf, MASTER, masteredCount, learnedCount, MEDALS, medalName, REVIEW_SIZE, setTrack, backToPath,
+  finishLesson, finishReview, setOf, SET, SET_BONUS, dueKeys, dueCount, boxOf, MASTER, masteredCount, learnedCount, MEDALS, medalName, REVIEW_SIZE, setTrack, backToPath,
 } from "./learn";
 import { BuddyArt } from "./Buddy";
 import { Pattern70 } from "./Pattern";
@@ -80,7 +80,6 @@ function Pulse({ children, on }) {
 
 // ---------- The path ----------
 const BANNER_H = 112, NODE_H = 132, UNIT_PAD = 26;
-const unitHeight = u => BANNER_H + u.lessons.length * NODE_H + UNIT_PAD;
 const SWAY = [0, 46, 70, 46, 0, -46, -70, -46];
 
 const Node = memo(function Node({ g, state, label, onPress, x }) {
@@ -119,19 +118,20 @@ const Node = memo(function Node({ g, state, label, onPress, x }) {
   );
 });
 
-const Unit = memo(function Unit({ u, n, progress, onNode }) {
+// The lessons of one unit that fall in the set on show, from lesson index `a` up to `b`.
+const Unit = memo(function Unit({ u, n, a, b, progress, onNode }) {
   const [c1, c2] = BANNERS[n % BANNERS.length];
-  const locked = u.start > progress;
+  const locked = u.start + a > progress;
   const sub = unitSub(u);
   return (
-    <View style={{ height: unitHeight(u) }}>
+    <View style={{ paddingBottom: UNIT_PAD }}>
       <LinearGradient colors={locked ? ["#3a4947", "#2c3836"] : [c1, c2]} style={s.banner}>
         <Text style={s.bannerK}>{t("unit", { n: n + 1 })}</Text>
         <Text style={s.bannerT} numberOfLines={1}>{unitTitle(u)}</Text>
         {sub ? <Text style={[s.bannerS, u.track === "q" && s.bannerAr]} numberOfLines={1}>{sub}</Text> : null}
       </LinearGradient>
-      {u.lessons.map((_, i) => {
-        const g = u.start + i;
+      {u.lessons.slice(a, b).map((_, j) => {
+        const i = a + j, g = u.start + i;
         const state = g < progress ? "done" : g === progress ? "now" : "lock";
         return <Node key={g} g={g} state={state} label={lessonLabel(u, i)} x={SWAY[(n * 3 + i) % SWAY.length]} onPress={() => onNode(g, state)} />;
       })}
@@ -159,14 +159,43 @@ export const LearnPath = memo(function LearnPath() {
   return <Path track={track} />;
 });
 
+// The seven dots over the path: one per lesson of the set, filled as they are done.
+function SetBar({ set, progress }) {
+  const done = Math.max(0, Math.min(set.to, progress) - set.from), size = set.to - set.from;
+  return (
+    <View style={s.setBar}>
+      <View style={{ flex: 1, gap: 6 }}>
+        <Text style={s.setT}>{t("setN", { n: set.n + 1 })} · {t("setProg", { a: done, b: size })}</Text>
+        <View style={{ flexDirection: "row", gap: 5, direction: "ltr" }}>
+          {Array.from({ length: size }, (_, i) => <View key={i} style={[s.setDot, i < done && s.setDotOn]} />)}
+        </View>
+      </View>
+      <Text style={{ fontSize: 30 }}>🎁</Text>
+    </View>
+  );
+}
+
+// The reward chest at the end of the set.
+function Chest({ open, onPress }) {
+  return (
+    <Pressable onPress={onPress} style={s.chest} testID="chest">
+      <Pulse on={!open}><Text style={{ fontSize: 54 }}>{open ? "✨" : "🎁"}</Text></Pulse>
+      <Text style={s.chestT}>{t("chestT")}</Text>
+      <Text style={s.chestS}>+{SET_BONUS} {t("bonus")}</Text>
+    </Pressable>
+  );
+}
+
 function Path({ track }) {
   const insets = useSafeAreaInsets();
   const progress = L()[track];
   const T = TRACKS[track];
   const due = dueCount();
-  const list = useRef(null);
-  const offsets = useMemo(() => { let y = 0; return T.units.map(u => { const o = y; y += unitHeight(u); return o; }); }, [T]);
-  const cur = useMemo(() => Math.max(0, T.units.indexOf(unitAt(track, Math.min(progress, T.total - 1)))), [T, track, progress]);
+  const set = setOf(track, progress);
+  // The units the set's lessons belong to, with the part of each that falls in the set.
+  const parts = useMemo(() => T.units.map((u, n) => ({ u, n, a: Math.max(0, set.from - u.start), b: Math.min(u.lessons.length, set.to - u.start) }))
+    .filter(p => p.a < p.b), [T, set.from, set.to]);
+  const after = T.total - set.to;
   const onNode = useCallback((g, state) => {
     if (state === "lock") { buzz(); return showToast("🔒", t("locked")); }
     hapTick();
@@ -193,22 +222,15 @@ function Path({ track }) {
             </View>
           </Pressable>
         </View>
+        <SetBar set={set} progress={progress} />
       </View>
-      <FlatList
-        key={track}
-        ref={list}
-        data={T.units}
-        keyExtractor={(u, i) => String(i)}
-        renderItem={({ item, index }) => <Unit u={item} n={index} progress={progress} onNode={onNode} />}
-        getItemLayout={(_, i) => ({ length: unitHeight(T.units[i]), offset: offsets[i], index: i })}
-        initialScrollIndex={cur}
-        windowSize={5}
-        initialNumToRender={2}
-        maxToRenderPerBatch={3}
-        contentContainerStyle={{ paddingBottom: tabSpace(insets) + 60 }}
-        ListHeaderComponent={<Text style={s.hint}>{t("learnHint")}</Text>}
-        ListFooterComponent={progress >= T.total ? <Text style={[s.hint, { color: C.gold1 }]}>{t("pathDone")}</Text> : null}
-      />
+      <ScrollView key={track + set.n} contentContainerStyle={{ paddingBottom: tabSpace(insets) + 60 }}>
+        <Text style={s.hint}>{t("learnHint7")}</Text>
+        {parts.map(p => <Unit key={p.n} u={p.u} n={p.n} a={p.a} b={p.b} progress={progress} onNode={onNode} />)}
+        <Chest open={progress >= set.to} onPress={() => { if (progress < set.to) { buzz(); showToast("🎁", t("chestLocked")); } }} />
+        {after > 0 ? <Text style={s.hint}>🔒 {t("moreAfter")}</Text> : null}
+        {progress >= T.total ? <Text style={[s.hint, { color: C.gold1 }]}>{t("pathDone")}</Text> : null}
+      </ScrollView>
     </Screen>
   );
 }
@@ -484,7 +506,8 @@ export function Lesson({ track, g }) {
   const acc = res.total ? Math.round(res.right / res.total * 100) : 100;
   return (
     <Screen onBack={back} title={title} scroll={false}>
-      <Result big={res.unitDone} title={res.unitDone ? t("unitDone") : t("lessonDone")} sub={res.unitDone ? unitTitle(u) : null}
+      <Result big={res.unitDone || res.setDone} title={res.setDone ? "🎁 " + t("setDone") : res.unitDone ? t("unitDone") : t("lessonDone")}
+        sub={res.setDone ? t("setDoneS", { n: SET_BONUS }) : res.unitDone ? unitTitle(u) : null}
         stars={acc >= 100 ? 3 : acc >= 75 ? 2 : 1}
         tiles={[["✦", "+" + res.pts, t("earned")], ["🎯", acc + "%", t("accuracy")], ["📚", keys.length, t("learnedN")]]}
         onDone={back} />
@@ -657,6 +680,13 @@ const s = StyleSheet.create({
   actionHot: { borderColor: "#4fd1a5", backgroundColor: "rgba(79,209,165,0.12)" },
   actionT: { fontFamily: F.heavy, fontSize: 14, color: C.ink },
   actionS: { fontFamily: F.ui, fontSize: 12, color: C.inkSoft },
+  setBar: { flexDirection: "row", alignItems: "center", gap: 12, paddingHorizontal: 14, paddingVertical: 10, borderRadius: 16, backgroundColor: "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: "rgba(255,255,255,0.1)" },
+  setT: { fontFamily: F.heavy, fontSize: 13, color: C.ink },
+  setDot: { flex: 1, height: 8, borderRadius: 4, backgroundColor: "rgba(255,255,255,0.14)" },
+  setDotOn: { backgroundColor: C.gold1 },
+  chest: { alignItems: "center", paddingVertical: 10, gap: 2 },
+  chestT: { fontFamily: F.heavy, fontSize: 15, color: C.ink, textAlign: "center", paddingHorizontal: 30 },
+  chestS: { fontFamily: F.bold, fontSize: 13, color: C.gold1 },
   hint: { textAlign: "center", fontFamily: F.bold, fontSize: 13, color: C.inkFaint, paddingHorizontal: 30, paddingVertical: 14 },
   hintSmall: { fontFamily: F.bold, fontSize: 13, color: C.inkFaint, textAlign: "center" },
   banner: { marginHorizontal: 16, height: BANNER_H - 22, borderRadius: 20, paddingHorizontal: 18, justifyContent: "center", marginBottom: 22, borderBottomWidth: 5, borderBottomColor: "rgba(0,0,0,0.25)" },
