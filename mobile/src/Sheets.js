@@ -92,7 +92,7 @@ function Rate({ ask, later }) {
 function CountUp({ to, evolved }) {
   const [n, setN] = useState(0);
   useEffect(() => {
-    if (!to) return;
+    if (!to) { setN(0); return; }
     const steps = Math.min(30, to); let i = 0;
     const iv = setInterval(() => {
       i++; setN(Math.round(to * i / steps));

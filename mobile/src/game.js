@@ -347,7 +347,8 @@ export function resetSession() {
   G.S = newSession();
   G.life.hearts = [];
   resetFeed();
-  clearCheers();
+  // Show the summary of the new, empty session, so every number on the screen resets at once.
+  G.view = { name: "summary", sm: finish() };
   save(); changed();
 }
 
