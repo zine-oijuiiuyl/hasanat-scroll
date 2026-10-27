@@ -1,7 +1,7 @@
 // Hearting a card in the feed, and the list of hearted cards on the Done screen.
 import { useRef } from "react";
 import { Animated, Easing, Pressable, StyleSheet, Text, View } from "react-native";
-import Svg, { Path } from "react-native-svg";
+import Svg, { Defs, LinearGradient, Path, Stop } from "react-native-svg";
 import { BY_ID, T } from "./web-data";
 import { G, toggleHeart } from "./game";
 import { t, meaning } from "./i18n";
@@ -11,25 +11,33 @@ import { hapTick, hapOk } from "./fx";
 
 // Translations are mine, like the rest of the app's strings.
 const HT = {
-  en: ["Hearted cards", "Tap ♥ on any card to keep it here."],
-  ar: ["البطاقات المفضلة", "اضغط ♥ على أي بطاقة لحفظها هنا."],
-  fr: ["Cartes aimées", "Touche ♥ sur une carte pour la garder ici."],
-  es: ["Tarjetas favoritas", "Toca ♥ en cualquier tarjeta para guardarla aquí."],
-  tr: ["Beğenilen kartlar", "Burada tutmak için bir kartta ♥'ye dokun."],
-  ur: ["پسندیدہ کارڈز", "کسی بھی کارڈ پر ♥ دبائیں تاکہ وہ یہاں محفوظ ہو جائے۔"],
-  id: ["Kartu yang disukai", "Ketuk ♥ pada kartu mana pun untuk menyimpannya di sini."],
-  bn: ["পছন্দের কার্ড", "যেকোনো কার্ডে ♥ চাপো, সেটি এখানে থাকবে।"],
-  ru: ["Любимые карточки", "Нажми ♥ на любой карточке, чтобы сохранить её здесь."],
-  de: ["Gemerkte Karten", "Tippe auf ♥ bei einer Karte, um sie hier zu behalten."],
+  en: ["Hearted cards", "Tap ✷ on any card to keep it here."],
+  ar: ["البطاقات المفضلة", "اضغط ✷ على أي بطاقة لحفظها هنا."],
+  fr: ["Cartes aimées", "Touche ✷ sur une carte pour la garder ici."],
+  es: ["Tarjetas favoritas", "Toca ✷ en cualquier tarjeta para guardarla aquí."],
+  tr: ["Beğenilen kartlar", "Burada tutmak için bir kartta ✷'ye dokun."],
+  ur: ["پسندیدہ کارڈز", "کسی بھی کارڈ پر ✷ دبائیں تاکہ وہ یہاں محفوظ ہو جائے۔"],
+  id: ["Kartu yang disukai", "Ketuk ✷ pada kartu mana pun untuk menyimpannya di sini."],
+  bn: ["পছন্দের কার্ড", "যেকোনো কার্ডে ✷ চাপো, সেটি এখানে থাকবে।"],
+  ru: ["Любимые карточки", "Нажми ✷ на любой карточке, чтобы сохранить её здесь."],
+  de: ["Gemerkte Karten", "Tippe auf ✷ bei einer Karte, um sie hier zu behalten."],
 };
 for (const [l, v] of Object.entries(HT)) if (T[l]) { T[l].ui.hrtTitle = v[0]; T[l].ui.hrtEmpty = v[1]; }
 
-const HEART = "M12 21.2 C11.6 21.2 11.2 21 10.9 20.8 C6.1 16.9 2 13.3 2 8.9 C2 5.9 4.4 3.5 7.3 3.5 C9.2 3.5 10.9 4.5 12 6.1 C13.1 4.5 14.8 3.5 16.7 3.5 C19.6 3.5 22 5.9 22 8.9 C22 13.3 17.9 16.9 13.1 20.8 C12.8 21 12.4 21.2 12 21.2Z";
+// The "heart" is drawn as a gold eight-point star, the shape in the background pattern, so it fits the
+// app instead of looking like Instagram's heart (Zine, 2026-10-27). The names stay "heart" in the code.
+const STAR = "M12.00 1.50 L14.37 6.27 L19.42 4.58 L17.73 9.63 L22.50 12.00 L17.73 14.37 L19.42 19.42 L14.37 17.73 L12.00 22.50 L9.63 17.73 L4.58 19.42 L6.27 14.37 L1.50 12.00 L6.27 9.63 L4.58 4.58 L9.63 6.27Z";
 
 export function HeartIcon({ on, size = 30 }) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24">
-      <Path d={HEART} fill={on ? "#ff4d6d" : "rgba(0,0,0,0.18)"} stroke={on ? "#ff4d6d" : "#f4efe2"} strokeWidth={1.8} strokeLinejoin="round" />
+      <Defs>
+        <LinearGradient id="hg" x1="0" y1="0" x2="0" y2="1">
+          <Stop offset="0" stopColor="#ffeaa6" /><Stop offset="0.55" stopColor="#f5b83d" /><Stop offset="1" stopColor="#c98a1b" />
+        </LinearGradient>
+      </Defs>
+      <Path d={STAR} fill={on ? "url(#hg)" : "rgba(0,0,0,0.18)"} stroke={on ? "#7a4a0a" : "#f4efe2"} strokeWidth={1.5} strokeLinejoin="round" />
+      {on ? <Path d="M9.6 8.4 L11.2 7.4" stroke="#fff6cc" strokeWidth={1.3} strokeLinecap="round" /> : null}
     </Svg>
   );
 }
@@ -58,7 +66,7 @@ export function HeartedPanel() {
   const list = (G.life.hearts || []).map(id => BY_ID[id]).filter(Boolean);
   return (
     <Panel>
-      <Label>♥ {t("hrtTitle")} · {list.length}</Label>
+      <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}><HeartIcon on size={16} /><Label>{t("hrtTitle")} · {list.length}</Label></View>
       {list.length ? list.map(d => (
         <View key={d.id} style={s.row}>
           <View style={{ flex: 1, gap: 2 }}>
