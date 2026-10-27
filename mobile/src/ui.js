@@ -6,9 +6,12 @@ import { getLang, t } from "./i18n";
 import { setLang } from "./game";
 import { C, F, GOLD } from "./theme";
 import { hapTick } from "./fx";
+import { Glyph, IconText } from "./Icon";
 
 export const Panel = ({ gold, style, children }) => <View style={[s.panel, gold && s.panelGold, style]}>{children}</View>;
-export const Label = ({ children, style }) => <Text style={[s.label, style]}>{children}</Text>;
+// A label may start with an emoji ("🕌 Prayer times"); it is drawn as one of the app's icons.
+const joined = c => Array.isArray(c) && c.every(x => typeof x === "string" || typeof x === "number") ? c.join("") : c;
+export const Label = ({ children, style }) => <IconText size={14} gap={6} style={[s.label, style]}>{joined(children)}</IconText>;
 export const Cap = ({ children, style }) => <Text style={[s.cap, style]}>{children}</Text>;
 
 export const Bar = ({ value, height = 8 }) => (
@@ -19,7 +22,7 @@ export const Bar = ({ value, height = 8 }) => (
 
 export const Tile = ({ icon, v, k }) => (
   <View style={s.tile}>
-    <Text style={{ fontSize: 15 }}>{icon}</Text>
+    <Glyph e={icon} size={20} textStyle={{ color: C.gold1 }} />
     <Text style={s.tileV} numberOfLines={1} adjustsFontSizeToFit>{v}</Text>
     <Text style={s.tileK} numberOfLines={2}>{k}</Text>
   </View>
@@ -27,7 +30,7 @@ export const Tile = ({ icon, v, k }) => (
 export const Tiles = ({ children }) => <View style={s.tiles}>{children}</View>;
 
 export function Btn({ title, onPress, primary, danger, style, testID }) {
-  const inner = <Text style={[s.btnT, primary && { color: "#2a1a00" }, danger && { color: "#ffb4a8" }]}>{title}</Text>;
+  const inner = <IconText size={20} gap={8} center style={[s.btnT, primary && { color: "#2a1a00" }, danger && { color: "#ffb4a8" }]}>{title}</IconText>;
   return (
     <Pressable testID={testID} onPress={() => { hapTick(); onPress(); }} style={({ pressed }) => [s.btn, !primary && s.secondary, pressed && { opacity: 0.8, transform: [{ scale: 0.98 }] }, style]}>
       {primary ? <LinearGradient colors={GOLD} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={[StyleSheet.absoluteFill, { borderRadius: 999 }]} /> : null}
@@ -47,7 +50,7 @@ export const Toggle = ({ label, value, onChange }) => (
 export function Choice({ label, value, options, onChange }) {
   return (
     <View style={{ gap: 8 }}>
-      {label ? <Text style={s.toggleT}>{label}</Text> : null}
+      {label ? <IconText size={18} gap={8} style={s.toggleT}>{label}</IconText> : null}
       <View style={s.chips}>
         {options.map(([k, name]) => (
           <Pressable key={String(k)} onPress={() => { hapTick(); onChange(k); }} style={[s.chip, value === k && s.chipOn]}>

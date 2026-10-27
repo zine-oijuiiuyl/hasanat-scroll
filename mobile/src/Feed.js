@@ -11,6 +11,7 @@ import { t, meaning, kindLabel, sourceText } from "./i18n";
 import { C, F, GOLD, tabSpace } from "./theme";
 import { hapTick } from "./fx";
 import { HeartButton } from "./Hearts";
+import { Icon } from "./Icon";
 
 function SwipeHint() {
   const a = useRef(new Animated.Value(0)).current;
@@ -58,7 +59,7 @@ const Card = memo(function Card({ card, height, lang, rep, hearted, insetTop, in
           <Text style={s.tr}>{d.tr}</Text>
           <Text style={s.en}>{meaning(d)}</Text>
           {src ? <Text style={s.src}>{src}</Text> : null}
-          {rep > 0 ? <View style={s.rep}><Text style={s.repT}>📿 ×{rep}</Text></View> : null}
+          {rep > 0 ? <View style={[s.rep, { flexDirection: "row", alignItems: "center", gap: 4 }]}><Icon name="tasbih" size={15} /><Text style={s.repT}>×{rep}</Text></View> : null}
         </View>
         <View style={s.counter}>
           <SwipeHint />

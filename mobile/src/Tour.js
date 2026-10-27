@@ -9,6 +9,7 @@ import { measure } from "./targets";
 import { BuddyArt } from "./Buddy";
 import { LangPicker, s as u } from "./ui";
 import { C, F, GOLD } from "./theme";
+import { Icon } from "./Icon";
 
 export function Tour() {
   const i = G.tourStep;
@@ -35,8 +36,8 @@ export function Tour() {
     <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
       {block ? <View style={StyleSheet.absoluteFill} /> : null}
       {spot && !aboveBar ? <View pointerEvents="none" style={[s.spot, { left: spot.x, top: spot.y, width: spot.w, height: spot.h }]} /> : null}
-      {step.hand ? <Text pointerEvents="none" style={[s.hand, { top: "62%" }]}>👆</Text> : null}
-      {step.tapHand ? <Text pointerEvents="none" style={[s.hand, { top: "57%" }]}>👆</Text> : null}
+      {step.hand ? <View pointerEvents="none" style={[s.hand, { top: "62%" }]}><Icon name="hand" size={58} /></View> : null}
+      {step.tapHand ? <View pointerEvents="none" style={[s.hand, { top: "57%" }]}><Icon name="hand" size={58} /></View> : null}
       <View style={[s.tip, top]}>
         <Text style={s.tipT}>{t(step.k, step.vars && step.vars())}</Text>
         <View style={s.foot}>
