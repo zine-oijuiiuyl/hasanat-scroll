@@ -11,7 +11,6 @@ import { getLang, isRTL } from "./src/i18n";
 import { initSounds } from "./src/fx";
 import { schedulePrayer } from "./src/prayer";
 import Feed from "./src/Feed";
-import Weather from "./src/Weather";
 import Hud from "./src/Hud";
 import Sheets from "./src/Sheets";
 import { Tour, Picker } from "./src/Tour";
@@ -53,7 +52,6 @@ export default function App() {
         <Pager>
           <View style={StyleSheet.absoluteFill}>
             <Feed version={version} lang={lang} />
-            <Weather />
             <Hud />
             <BuddyLayer />
             <Floaters />

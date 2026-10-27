@@ -1,6 +1,7 @@
-// Gentle weather over the feed: rain, snow, wind, embers, summer heat and fireflies (Zine, 2026-10-27).
-// "Auto" changes the weather every few cards; a setting picks one or turns it off. Everything runs on the
-// native driver, and the layer never takes touches.
+// Gentle weather on the feed cards: rain, snow, wind, embers, summer heat and fireflies (Zine, 2026-10-27).
+// Each card carries its own weather and scrolls with it, like a video; in "Auto" the next card brings a
+// different one. A setting picks one or turns it off. Only the cards next to the current one animate,
+// everything runs on the native driver, and the layer never takes touches.
 import { memo, useEffect, useMemo, useRef, useState } from "react";
 import { Animated, Dimensions, Easing, StyleSheet, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
@@ -9,7 +10,8 @@ import { T } from "./web-data";
 import { G, on } from "./game";
 
 export const WEATHERS = ["rain", "snow", "wind", "embers", "heat", "fireflies"];
-const EVERY = 8;   // cards per weather in Auto
+// In Auto the weathers come round in a shuffled order, so two cards in a row never share one.
+const ORDER = [...WEATHERS].sort(() => Math.random() - 0.5);
 
 // Translations are mine, like the rest of the app's strings: [Weather, Auto, Off, rain, snow, wind, embers, heat, fireflies].
 const WT = {
@@ -164,25 +166,17 @@ function Scene({ kind, W, H }) {
   }
 }
 
-const pickAuto = (idx, start) => WEATHERS[(start + Math.floor(Math.max(0, idx) / EVERY)) % WEATHERS.length];
-
-export default function Weather() {
-  const start = useRef(Math.floor(Math.random() * WEATHERS.length)).current;
+export function CardWeather({ idx, height }) {
   const setting = G.life.weather || "auto";
-  const [idx, setIdx] = useState(Math.max(0, G.current));
-  useEffect(() => on("cardIdx", i => setIdx(i)), []);
-  const kind = setting === "off" ? null : setting === "auto" ? pickAuto(idx, start) : setting;
-  const fade = useRef(new Animated.Value(0)).current;
-  useEffect(() => {
-    fade.setValue(0);
-    Animated.timing(fade, { toValue: 1, duration: 1400, easing: Easing.out(Easing.quad), useNativeDriver: true }).start();
-  }, [kind, fade]);
-  const { width: W, height: H } = Dimensions.get("window");
-  if (!kind) return null;
+  const [near, setNear] = useState(Math.abs(idx - Math.max(0, G.current)) <= 1);
+  useEffect(() => on("cardIdx", i => setNear(Math.abs(idx - i) <= 1)), [idx]);
+  const kind = setting === "off" ? null : setting === "auto" ? ORDER[idx % ORDER.length] : setting;
+  if (!kind || !near || !height) return null;
+  const W = Dimensions.get("window").width;
   return (
-    <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, { opacity: fade, overflow: "hidden" }]}>
-      <Scene key={kind} kind={kind} W={W} H={H} />
-    </Animated.View>
+    <View pointerEvents="none" style={[StyleSheet.absoluteFill, { overflow: "hidden" }]}>
+      <Scene kind={kind} W={W} H={height} />
+    </View>
   );
 }
 

@@ -4,6 +4,7 @@ import { Animated, Easing, FlatList, Pressable, StyleSheet, Text, View } from "r
 import { LinearGradient } from "expo-linear-gradient";
 import Svg, { Path } from "react-native-svg";
 import { Pattern70 } from "./Pattern";
+import { CardWeather } from "./Weather";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BY_ID, PALETTES } from "./web-data";
 import { G, on, repeatCard, setCurrent, isHearted } from "./game";
@@ -53,6 +54,7 @@ const Card = memo(function Card({ card, height, lang, rep, hearted, insetTop, in
     >
       <LinearGradient colors={colors} start={{ x: 0.33, y: 0 }} end={{ x: 0.67, y: 1 }} style={[s.card, { paddingTop: insetTop + 130, paddingBottom: insetBottom + 40 }]}>
         <Pattern70 />
+        <CardWeather idx={card.idx} height={height} />
         <Text style={[s.kind, card.golden && { color: C.gold1 }]}>{card.golden ? t("golden") : kindLabel(d)}</Text>
         <Animated.Text style={[s.ar, { fontSize: size, lineHeight: size * 1.65 }, card.golden && s.arGold, { transform: [{ scale }] }]} adjustsFontSizeToFit>{d.ar}</Animated.Text>
         <View style={s.meta}>
