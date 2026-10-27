@@ -22,6 +22,7 @@ import { askLocation, hhmm, nextPrayer, pName, setPrayerOn, setReminders, update
 import { QiblaCompass } from "./Qibla";
 import { SheetMiner } from "./Rock";
 import { HeartedPanel } from "./Hearts";
+import { WEATHERS } from "./Weather";
 import { Ico } from "./Icons";
 
 const TAB_ORDER = [["dhikr", "tabDhikr"], ["dua", "tabDua"], ["quran", "tabQuran"], ["muh", "tabMuh"]];
@@ -242,6 +243,8 @@ export function Progress() {
         <Toggle label={t("sounds")} value={L.sound} onChange={v => setSetting("sound", v)} />
         <Choice label={"🔊 " + t("scrollSnd")} value={L.scrollSound || "dial"} options={[["dial", t("sndDial")], ["chime", t("sndChime")], ["glass", t("sndGlass")]]}
           onChange={v => { setSetting("scrollSound", v); }} />
+        <Choice label={t("wxTitle")} value={L.weather || "auto"} options={[["auto", t("wxAuto")], ...WEATHERS.map(k => [k, t("wx_" + k)]), ["off", t("wxOff")]]}
+          onChange={v => { setSetting("weather", v); }} />
         <Toggle label={t("haptics")} value={L.haptics} onChange={v => setSetting("haptics", v)} />
         <Btn title={"💾 " + t("backup")} onPress={backupProgress} />
         <Btn title={"📂 " + t("restore")} onPress={restoreProgress} />
