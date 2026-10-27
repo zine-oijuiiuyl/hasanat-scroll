@@ -22,6 +22,7 @@ import { askLocation, hhmm, nextPrayer, pName, setPrayerOn, setReminders, update
 import { QiblaCompass } from "./Qibla";
 import { SheetMiner } from "./Rock";
 import { HeartedPanel } from "./Hearts";
+import { Ico } from "./Icons";
 
 const TAB_ORDER = [["dhikr", "tabDhikr"], ["dua", "tabDua"], ["quran", "tabQuran"], ["muh", "tabMuh"]];
 const fmtTime = ms => { const x = Math.round(ms / 1000); return x >= 60 ? `${Math.floor(x / 60)}m ${x % 60}s` : `${x}s`; };
@@ -60,7 +61,7 @@ function BadgeGrid({ list, have }) {
         const on = have(b);
         return (
           <View key={b.id} style={s.badge}>
-            <View style={[s.disc, !on && { opacity: 0.45, backgroundColor: "rgba(244,239,226,0.05)" }]}><Text style={{ fontSize: 26 }}>{on ? b.icon : "🔒"}</Text></View>
+            <View style={[s.disc, !on && { opacity: 0.45, backgroundColor: "rgba(244,239,226,0.05)" }]}><Ico e={on ? b.icon : "🔒"} size={32} /></View>
             <Text style={s.badgeB}>{badgeText(b)[0]}</Text>
             <Text style={s.badgeS}>{badgeText(b)[1]}</Text>
           </View>
@@ -122,7 +123,7 @@ export function Summary({ sm }) {
         <CountUp to={sm.taps} evolved={evolved} />
         <Cap>{t("ptsSession")}</Cap>
       </Hero>
-      {evolved ? <Panel gold><Text style={{ fontSize: 36 }}>{sm.stageEnd >= 3 ? "🪽" : "✨"}</Text><View style={{ flex: 1 }}><Text style={s.goldB}>{t("grew")}</Text><Text style={s.goldS}>{stageName(sm.stageStart)} → {stageName(sm.stageEnd)}</Text></View></Panel> : null}
+      {evolved ? <Panel gold><Ico e={sm.stageEnd >= 3 ? "🪽" : "✨"} size={44} /><View style={{ flex: 1 }}><Text style={s.goldB}>{t("grew")}</Text><Text style={s.goldS}>{stageName(sm.stageStart)} → {stageName(sm.stageEnd)}</Text></View></Panel> : null}
       {sm.levelAfter > sm.levelBefore ? <Panel gold><Text style={{ fontSize: 36 }}>⬆️</Text><View style={{ flex: 1 }}><Text style={s.goldB}>{t("lvUp")}</Text><Text style={s.goldS}>{t("lvLine", { n: sm.levelAfter, t: levelTitle(sm.levelAfter) })}</Text></View></Panel> : null}
       <Tiles>
         <Tile icon="✦" v={num(L.said)} k={t("allPts")} /><Tile icon="🔥" v={sm.bestCombo} k={t("bestCombo")} /><Tile icon="⏱" v={fmtTime(sm.end - sm.start)} k={t("time")} />

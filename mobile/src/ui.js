@@ -6,9 +6,10 @@ import { getLang, t } from "./i18n";
 import { setLang } from "./game";
 import { C, F, GOLD } from "./theme";
 import { hapTick } from "./fx";
+import { Ico, IconText, splitIcon } from "./Icons";
 
 export const Panel = ({ gold, style, children }) => <View style={[s.panel, gold && s.panelGold, style]}>{children}</View>;
-export const Label = ({ children, style }) => <Text style={[s.label, style]}>{children}</Text>;
+export const Label = ({ children, style }) => <IconText style={[s.label, style]} row={{ justifyContent: "flex-start" }} size={13}>{children}</IconText>;
 export const Cap = ({ children, style }) => <Text style={[s.cap, style]}>{children}</Text>;
 
 export const Bar = ({ value, height = 8 }) => (
@@ -19,7 +20,7 @@ export const Bar = ({ value, height = 8 }) => (
 
 export const Tile = ({ icon, v, k }) => (
   <View style={s.tile}>
-    <Text style={{ fontSize: 15 }}>{icon}</Text>
+    <Ico e={icon} size={22} />
     <Text style={s.tileV} numberOfLines={1} adjustsFontSizeToFit>{v}</Text>
     <Text style={s.tileK} numberOfLines={2}>{k}</Text>
   </View>
@@ -27,7 +28,9 @@ export const Tile = ({ icon, v, k }) => (
 export const Tiles = ({ children }) => <View style={s.tiles}>{children}</View>;
 
 export function Btn({ title, onPress, primary, danger, style, testID }) {
-  const inner = <Text style={[s.btnT, primary && { color: "#2a1a00" }, danger && { color: "#ffb4a8" }]}>{title}</Text>;
+  const [icon, text] = splitIcon(title);
+  const label = <Text style={[s.btnT, primary && { color: "#2a1a00" }, danger && { color: "#ffb4a8" }]}>{text}</Text>;
+  const inner = icon ? <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}><Ico e={icon} size={22} />{label}</View> : label;
   return (
     <Pressable testID={testID} onPress={() => { hapTick(); onPress(); }} style={({ pressed }) => [s.btn, !primary && s.secondary, pressed && { opacity: 0.8, transform: [{ scale: 0.98 }] }, style]}>
       {primary ? <LinearGradient colors={GOLD} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={[StyleSheet.absoluteFill, { borderRadius: 999 }]} /> : null}
@@ -47,7 +50,7 @@ export const Toggle = ({ label, value, onChange }) => (
 export function Choice({ label, value, options, onChange }) {
   return (
     <View style={{ gap: 8 }}>
-      {label ? <Text style={s.toggleT}>{label}</Text> : null}
+      {label ? <IconText style={s.toggleT} row={{ justifyContent: "flex-start" }} size={14}>{label}</IconText> : null}
       <View style={s.chips}>
         {options.map(([k, name]) => (
           <Pressable key={String(k)} onPress={() => { hapTick(); onChange(k); }} style={[s.chip, value === k && s.chipOn]}>

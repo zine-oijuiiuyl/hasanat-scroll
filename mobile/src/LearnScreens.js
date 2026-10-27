@@ -15,6 +15,7 @@ import { Btn, Tile, Tiles, Label, Panel } from "./ui";
 import { t, num, isRTL, getLang } from "./i18n";
 import { C, F, GOLD, SHEET_BG, tabSpace } from "./theme";
 import { fx, hapTick, buzz } from "./fx";
+import { Ico, IconText } from "./Icons";
 
 const TRACK_ICON = { q: "📖", h: "📜", d: "📿" };
 const TRACK_NAME = { q: "trQ", h: "tabMuh", d: "trD" };
@@ -56,7 +57,7 @@ function TrackPills({ track, onChange }) {
     <View style={s.pills}>
       {TRACK_KEYS.map(k => (
         <Pressable key={k} onPress={() => { hapTick(); onChange(k); }} style={[s.pill, k === "h" && { flex: 1.4 }, track === k && s.pillOn]}>
-          <Text style={{ fontSize: 15 }}>{TRACK_ICON[k]}</Text>
+          <Ico e={TRACK_ICON[k]} size={20} />
           <Text style={[s.pillT, track === k && { color: C.ink }]} numberOfLines={1} adjustsFontSizeToFit>{t(TRACK_NAME[k])}</Text>
         </Pressable>
       ))}
@@ -108,7 +109,7 @@ const Node = memo(function Node({ g, state, label, onPress, x }) {
             ) : null}
             <View style={[s.lip, { backgroundColor: lip }]} />
             <LinearGradient colors={face} style={[s.node, pressed && { transform: [{ translateY: 5 }] }]}>
-              <Text style={[s.nodeI, state === "lock" && { opacity: 0.6 }]}>{state === "done" ? "★" : state === "now" ? "▶" : "🔒"}</Text>
+              {state === "lock" ? <Ico e="🔒" size={30} style={{ opacity: 0.75 }} /> : <Text style={s.nodeI}>{state === "done" ? "★" : "▶"}</Text>}
             </LinearGradient>
           </View>
         )}
@@ -170,7 +171,7 @@ function SetBar({ set, progress }) {
           {Array.from({ length: size }, (_, i) => <View key={i} style={[s.setDot, i < done && s.setDotOn]} />)}
         </View>
       </View>
-      <Text style={{ fontSize: 30 }}>🎁</Text>
+      <Ico e="🎁" size={38} />
     </View>
   );
 }
@@ -179,7 +180,7 @@ function SetBar({ set, progress }) {
 function Chest({ open, onPress }) {
   return (
     <Pressable onPress={onPress} style={s.chest} testID="chest">
-      <Pulse on={!open}><Text style={{ fontSize: 54 }}>{open ? "✨" : "🎁"}</Text></Pulse>
+      <Pulse on={!open}><Ico e={open ? "✨" : "🎁"} size={68} /></Pulse>
       <Text style={s.chestT}>{t("chestT")}</Text>
       <Text style={s.chestS}>+{SET_BONUS} {t("bonus")}</Text>
     </Pressable>
@@ -203,19 +204,19 @@ function Path({ track }) {
   }, [track]);
   return (
     <Screen page title={t("learn")} scroll={false}
-      right={<Text style={s.headStat}>👑 {num(masteredCount())}</Text>}>
+      right={<IconText style={s.headStat} size={15}>{"👑 " + num(masteredCount())}</IconText>}>
       <View style={{ paddingHorizontal: 16, gap: 12, paddingBottom: 8 }}>
         <TrackPills track={track} onChange={setTrack} />
         <View style={{ flexDirection: "row", gap: 10 }}>
           <Pressable onPress={() => { hapTick(); openView("review", {}); }} style={[s.action, due > 0 && s.actionHot]}>
-            <Text style={{ fontSize: 18 }}>🧠</Text>
+            <Ico e="🧠" size={26} />
             <View style={{ flexShrink: 1 }}>
               <Text style={s.actionT} numberOfLines={1}>{t("memCheck")}</Text>
               <Text style={s.actionS} numberOfLines={1}>{due ? t("memDue", { n: num(due) }) : "✓"}</Text>
             </View>
           </Pressable>
           <Pressable onPress={() => { hapTick(); openView("library", { track }); }} style={s.action}>
-            <Text style={{ fontSize: 18 }}>📚</Text>
+            <Ico e="📚" size={26} />
             <View style={{ flexShrink: 1 }}>
               <Text style={s.actionT} numberOfLines={1}>{t("library")}</Text>
               <Text style={s.actionS} numberOfLines={1}>{num(learnedCount())} · {t("learnedN")}</Text>
@@ -228,7 +229,7 @@ function Path({ track }) {
         <Text style={s.hint}>{t("learnHint7")}</Text>
         {parts.map(p => <Unit key={p.n} u={p.u} n={p.n} a={p.a} b={p.b} progress={progress} onNode={onNode} />)}
         <Chest open={progress >= set.to} onPress={() => { if (progress < set.to) { buzz(); showToast("🎁", t("chestLocked")); } }} />
-        {after > 0 ? <Text style={s.hint}>🔒 {t("moreAfter")}</Text> : null}
+        {after > 0 ? <IconText style={s.hint} size={13}>{"🔒 " + t("moreAfter")}</IconText> : null}
         {progress >= T.total ? <Text style={[s.hint, { color: C.gold1 }]}>{t("pathDone")}</Text> : null}
       </ScrollView>
     </Screen>
@@ -254,7 +255,7 @@ function Loading({ error, onRetry }) {
     <View style={s.center}>
       {error ? (
         <>
-          <Text style={{ fontSize: 40 }}>📡</Text>
+          <Ico e="📡" size={56} />
           <Text style={s.centerT}>{t("offline")}</Text>
           <Btn primary title={t("retry")} onPress={onRetry} style={{ alignSelf: "stretch" }} />
         </>
@@ -377,9 +378,9 @@ function Feedback({ ok, ex, streak, onNext }) {
   return (
     <Animated.View style={[s.fb, ok ? s.fbOk : s.fbBad, { paddingBottom: insets.bottom + 16, transform: [{ translateY: a.interpolate({ inputRange: [0, 1], outputRange: [260, 0] }) }] }]}>
       <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-        <Text style={{ fontSize: 26 }}>{ok ? "✅" : "💡"}</Text>
+        <Ico e={ok ? "✅" : "💡"} size={32} />
         <Text style={[s.fbT, { color: ok ? "#9ff0c4" : "#ffc2b8" }]}>{ok ? t("correct") : t("wrongT")}</Text>
-        {ok && streak >= 3 ? <Text style={s.fire}>🔥 ×{streak}</Text> : null}
+        {ok && streak >= 3 ? <IconText style={s.fire} size={16}>{"🔥 ×" + streak}</IconText> : null}
       </View>
       {!ok ? <Text style={[s.fbA, (ex.type === "next" || ex.type === "order" || (ex.type === "missing" && ex.arabic)) && s.fbAr]} numberOfLines={4}>{answer}</Text> : null}
       <Btn primary title={t("cont")} onPress={onNext} />
@@ -453,7 +454,7 @@ function Result({ title, sub, tiles, stars, onDone, big }) {
           </View>
         ) : null}
         <Text style={s.resT}>{title}</Text>
-        {sub ? <Text style={s.resS}>{sub}</Text> : null}
+        {sub ? <IconText style={s.resS}>{sub}</IconText> : null}
         <View style={{ alignSelf: "stretch" }}><Tiles>{tiles.map(([icon, v, k]) => <Tile key={k} icon={icon} v={v} k={k} />)}</Tiles></View>
       </ScrollView>
       <View style={[s.bottom, { paddingBottom: insets.bottom + 16 }]}><Btn primary title={t("cont")} onPress={onDone} /></View>
@@ -506,7 +507,7 @@ export function Lesson({ track, g }) {
   const acc = res.total ? Math.round(res.right / res.total * 100) : 100;
   return (
     <Screen onBack={back} title={title} scroll={false}>
-      <Result big={res.unitDone || res.setDone} title={res.setDone ? "🎁 " + t("setDone") : res.unitDone ? t("unitDone") : t("lessonDone")}
+      <Result big={res.unitDone || res.setDone} title={res.setDone ? t("setDone") : res.unitDone ? t("unitDone") : t("lessonDone")}
         sub={res.setDone ? t("setDoneS", { n: SET_BONUS }) : res.unitDone ? unitTitle(u) : null}
         stars={acc >= 100 ? 3 : acc >= 75 ? 2 : 1}
         tiles={[["✦", "+" + res.pts, t("earned")], ["🎯", acc + "%", t("accuracy")], ["📚", keys.length, t("learnedN")]]}
@@ -541,7 +542,7 @@ export function Review({ offer }) {
       <Screen onBack={back} title={t("memCheck")}>
         <View style={[s.center, { paddingTop: 30 }]}>
           <Pulse on><BuddyArt gender={G.life.gender || "m"} stage={stageNow()} mood={G.buddyMood} width={220} height={188} /></Pulse>
-          <Text style={s.resT}>🧠 {t("memCheck")}</Text>
+          <IconText style={s.resT}>{"🧠 " + t("memCheck")}</IconText>
           <Text style={s.centerT}>{t("reviewIntro")}</Text>
           <Text style={s.resS}>{t("memDue", { n: num(dueCount()) })}</Text>
           <Btn primary title={t("start")} onPress={() => setPhase("go")} style={{ alignSelf: "stretch" }} />
@@ -577,7 +578,7 @@ function ReviewRun({ keys, back, onDone }) {
 function Dots({ box }) {
   return (
     <View style={{ flexDirection: "row", gap: 3, direction: "ltr" }}>
-      {box >= MASTER ? <Text style={{ fontSize: 13 }}>👑</Text> : [1, 2, 3, 4].map(n => <View key={n} style={[s.dot, n <= box && s.dotOn]} />)}
+      {box >= MASTER ? <Ico e="👑" size={17} /> : [1, 2, 3, 4].map(n => <View key={n} style={[s.dot, n <= box && s.dotOn]} />)}
     </View>
   );
 }
@@ -611,7 +612,7 @@ export function Library({ track }) {
             const on = st.medals.includes(m.id), [name, how] = medalName(m.id);
             return (
               <View key={m.id} style={s.medal}>
-                <View style={[s.disc, !on && { opacity: 0.4 }]}><Text style={{ fontSize: 24 }}>{on ? m.icon : "🔒"}</Text></View>
+                <View style={[s.disc, !on && { opacity: 0.4 }]}><Ico e={on ? m.icon : "🔒"} size={30} /></View>
                 <Text style={s.medalB}>{name}</Text>
                 <Text style={s.medalS}>{how}</Text>
               </View>
@@ -632,7 +633,7 @@ export function Library({ track }) {
         initialNumToRender={20}
         renderItem={({ item: r }) => r.head ? (
           <View style={s.libHead}>
-            <Text style={s.libHeadT}>{TRACK_ICON[track]} {unitTitle(r.u)}</Text>
+            <IconText style={s.libHeadT} row={{ justifyContent: "flex-start" }}>{TRACK_ICON[track] + " " + unitTitle(r.u)}</IconText>
             {unitSub(r.u) ? <Text style={[s.libHeadS, track === "q" && s.bannerAr]}>{unitSub(r.u)}</Text> : null}
           </View>
         ) : (

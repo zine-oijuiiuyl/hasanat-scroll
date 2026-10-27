@@ -8,6 +8,7 @@ import { C, F, GOLD, tabSpace } from "./theme";
 import { target } from "./targets";
 import { FeedMiner } from "./Rock";
 import { NameTag } from "./Name";
+import { Ico } from "./Icons";
 
 export function BuddyLayer() {
   const insets = useSafeAreaInsets();
@@ -35,7 +36,7 @@ export function BuddyLayer() {
       {cheer ? (
         <Animated.View style={[s.cheer, { bottom: tabSpace(insets) + 136, opacity: pop, transform: [{ translateY: pop.interpolate({ inputRange: [0, 1], outputRange: [40, 0] }) }, { scale: pop.interpolate({ inputRange: [0, 1], outputRange: [0.8, 1] }) }] }]}>
           <View style={s.bubble}>
-            <Text style={{ fontSize: 30 }}>{cheer.icon}</Text>
+            <Ico e={cheer.icon} size={36} />
             <View style={{ flexShrink: 1 }}>
               <Text style={s.bubbleB}>{cheer.title}</Text>
               {cheer.sub ? <Text style={s.bubbleS}>{cheer.sub}</Text> : null}

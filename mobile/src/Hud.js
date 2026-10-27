@@ -10,6 +10,7 @@ import { BuddyArt } from "./Buddy";
 import { C, F, GOLD } from "./theme";
 import { hapTick } from "./fx";
 import { target } from "./targets";
+import { Ico } from "./Icons";
 
 const TABS = [["dhikr", "tabDhikr"], ["dua", "tabDua"], ["quran", "tabQuran"], ["muh", "tabMuh"]];
 
@@ -31,7 +32,7 @@ function Combo() {
   if (S.combo < 2) return <View style={{ height: 34 }} />;
   return (
     <View style={s.combo}>
-      <Text style={{ fontSize: 16 }}>📿</Text>
+      <Ico e="📿" size={19} />
       <Text style={s.comboT}>{t("combo", { n: S.combo })}</Text>
       <View style={s.drain}><View style={[s.drainB, { width: `${left * 100}%` }]} /></View>
     </View>
@@ -48,7 +49,7 @@ function Toast() {
   if (!tt) return null;
   return (
     <Animated.View style={[s.toast, { opacity: a, transform: [{ translateY: a.interpolate({ inputRange: [0, 1], outputRange: [-20, 0] }) }, { scale: a.interpolate({ inputRange: [0, 1], outputRange: [0.85, 1] }) }] }]}>
-      <Text style={{ fontSize: 22 }}>{tt.icon}</Text>
+      <Ico e={tt.icon} size={28} />
       <View style={{ flexShrink: 1 }}>
         <Text style={s.toastB}>{tt.title}</Text>
         {tt.sub ? <Text style={s.toastS}>{tt.sub}</Text> : null}
@@ -64,14 +65,14 @@ function Debt() {
   if (!d) {
     return (
       <Pressable ref={target("debt")} onPress={() => { hapTick(); openView("debt"); }} style={s.debtAdd}>
-        <Text style={{ fontSize: 15 }}>⚖️</Text><Text style={s.debtAddT}>{t("debtTitle")}</Text>
+        <Ico e="⚖️" size={18} /><Text style={s.debtAddT}>{t("debtTitle")}</Text>
       </Pressable>
     );
   }
   return (
     <Pressable ref={target("debt")} onPress={() => { hapTick(); openView("debt"); }}>
       <Animated.View style={[s.debt, d.done && { borderColor: C.gold2 }, { transform: [{ scale }] }]}>
-        <Text style={{ fontSize: 20 }}>⚖️</Text>
+        <Ico e="⚖️" size={23} />
         <Text style={s.debtNum}>{d.done ? t("debtDoneChip") : t("debtLeft", { n: num(d.left) })}</Text>
         <View style={s.dBar}><LinearGradient colors={GOLD} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ height: "100%", width: `${(1 - d.left / d.start) * 100}%` }} /></View>
       </Animated.View>
