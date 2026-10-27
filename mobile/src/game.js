@@ -7,6 +7,9 @@ import { fx, scrollSound, setFxSettings } from "./fx";
 
 // Zine chose a shorter wait for the native app (2026-10-25): normal swipes grow the combo, only flicks under 0.5s don't.
 RULES.minDwellMs = 500;
+// Zine wanted the buddy's looks to take longer to unlock (2026-10-27). Growth is still level + badges / 2;
+// without badges the stages now need about 260, 670, 1,210, 1,860 and 2,610 points (was 60 to 810).
+[0, 6, 10, 14, 18, 22].forEach((at, i) => { STAGES[i].at = at; });
 
 export const KEY = "hasanat.lifetime.v2";
 export const fresh = () => ({ seen: 0, said: 0, sessions: 0, best: 0, per: {}, streak: 0, bestStreak: 0, lastDay: null, badges: [], golden: 0, sound: true, gender: null, lang: null, debt: null, debtsCleared: 0, haptics: true, scrollSound: "dial", lastSeen: 0, tourDone: undefined, rating: 0, rateLater: 0, hearts: [] });
