@@ -47,11 +47,7 @@ const Card = memo(function Card({ card, height, lang, rep, hearted, insetTop, in
   const size = d.ar.length < 20 ? 64 : d.ar.length < 40 ? 46 : 34;
   const src = sourceText(d);
   return (
-    <Pressable
-      testID={"card-" + card.idx}
-      onPress={() => { if (G.current === card.idx) { hapTick(); repeatCard(card.idx); } }}
-      style={{ height }}
-    >
+    <View style={{ height }}>
       <LinearGradient colors={colors} start={{ x: 0.33, y: 0 }} end={{ x: 0.67, y: 1 }} style={[s.card, { paddingTop: insetTop + 130, paddingBottom: insetBottom + 40 }]}>
         <Pattern70 />
         <CardWeather idx={card.idx} height={height} />
@@ -68,9 +64,16 @@ const Card = memo(function Card({ card, height, lang, rep, hearted, insetTop, in
           <Text style={s.hint}>{t("swipe")}</Text>
           <Text style={s.tapHint}>{t("tapHint")}</Text>
         </View>
+        {/* Tapping repeats the dhikr only in the middle of the card, away from the top bar and the bottom
+            (Zine, 2026-10-28). It sits over the text and under the heart. */}
+        <Pressable
+          testID={"card-" + card.idx}
+          onPress={() => { if (G.current === card.idx) { hapTick(); repeatCard(card.idx); } }}
+          style={{ position: "absolute", left: 0, right: 0, top: insetTop + 165, bottom: insetBottom + 134 }}
+        />
         <HeartButton id={card.id} on={hearted} style={{ bottom: insetBottom + 44, right: 40 }} />
       </LinearGradient>
-    </Pressable>
+    </View>
   );
 });
 
