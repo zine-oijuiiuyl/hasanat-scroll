@@ -35,7 +35,7 @@ const CALM_MODE = { en: "Calm mode", ar: "الوضع الهادئ", fr: "Mode ca
 for (const [l, v] of Object.entries(CALM_MODE)) if (T[l]) T[l].ui.calmMode = v;
 const WX_SOUND = { en: "Weather sounds", ar: "أصوات الطقس", fr: "Sons de la météo", es: "Sonidos del clima", tr: "Hava sesleri", ur: "موسم کی آوازیں", id: "Suara cuaca", bn: "আবহাওয়ার শব্দ", ru: "Звуки погоды", de: "Wettergeräusche" };
 for (const [l, v] of Object.entries(WX_SOUND)) if (T[l]) T[l].ui.wxSound = v;
-import { Ico } from "./Icons";
+import { Ico, IconText } from "./Icons";
 
 const TAB_ORDER = [["dhikr", "tabDhikr"], ["dua", "tabDua"], ["quran", "tabQuran"], ["muh", "tabHadith"]];
 const fmtTime = ms => { const x = Math.round(ms / 1000); return x >= 60 ? `${Math.floor(x / 60)}m ${x % 60}s` : `${x}s`; };
@@ -199,6 +199,20 @@ async function restoreProgress() {
   } catch (e) { restoreText(""); }
 }
 
+// Calm or game, as one two-sided switch (Zine, 2026-10-28).
+function ModeSwitch({ calm }) {
+  return (
+    <View style={s.modeSw}>
+      {[[true, "🍃", "modeCalm"], [false, "🎉", "modeGame"]].map(([c, e, k]) => (
+        <Pressable key={k} testID={"modeSw-" + (c ? "calm" : "game")} onPress={() => { if (c !== calm) { hapTick(); setMode(c); } }} style={s.modeSide}>
+          {c === calm ? <LinearGradient colors={GOLD} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={[StyleSheet.absoluteFill, { borderRadius: 999 }]} /> : null}
+          <IconText style={[s.modeT, c === calm && { color: "#2a1a00" }]} size={15}>{e + " " + t(k)}</IconText>
+        </Pressable>
+      ))}
+    </View>
+  );
+}
+
 export function Progress() {
   const L = G.life;
   const p = lifeTaps(), lv = levelFor(p), st = stageNow();
@@ -252,7 +266,7 @@ export function Progress() {
       <Rate />
       <Panel>
         {calm ? <Label>{t("settings")}</Label> : null}
-        <Toggle label={t("calmMode")} value={calm} onChange={setMode} />
+        <ModeSwitch calm={calm} />
         <Btn title={"🕌 " + t("prTitle")} onPress={() => openView("prayer")} testID="prayerOpen" />
         <Btn title={"🧭 " + t("qbTitle")} onPress={() => openView("qibla")} testID="qiblaOpen" />
         <Btn title={"⚖️ " + (L.debt ? t("debtNew") : t("debtTitle"))} onPress={() => openView("debt")} />
@@ -393,6 +407,9 @@ export default function Sheets() {
 }
 
 const s = StyleSheet.create({
+  modeSw: { flexDirection: "row", padding: 4, borderRadius: 999, backgroundColor: "rgba(244,239,226,0.1)", borderWidth: 1.5, borderColor: C.line },
+  modeSide: { flex: 1, height: 44, borderRadius: 999, alignItems: "center", justifyContent: "center", overflow: "hidden" },
+  modeT: { fontSize: 15, fontFamily: F.heavy, color: C.ink },
   actions: { position: "absolute", left: 0, right: 0, bottom: 0, flexDirection: "row", gap: 12, justifyContent: "center", paddingTop: 16, paddingHorizontal: 16 },
   badges: { flexDirection: "row", flexWrap: "wrap", gap: 14, justifyContent: "flex-start" },
   badge: { width: 88, alignItems: "center", gap: 4 },
