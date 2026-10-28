@@ -19,7 +19,7 @@ import { fx, hapTick, buzz } from "./fx";
 import { Ico, IconText } from "./Icons";
 
 const TRACK_ICON = { q: "📖", h: "📜", d: "📿" };
-const TRACK_NAME = { q: "trQ", h: "tabMuh", d: "trD" };
+const TRACK_NAME = { q: "trQ", h: "tabHadith", d: "trD" };
 // Unit banner colours, in turn.
 const BANNERS = [["#1d7a5f", "#14574a"], ["#2b6cb0", "#1e4e86"], ["#8a5cc7", "#5f3c94"], ["#c7792b", "#93561a"], ["#c2456b", "#8e2f4e"], ["#2a8f9e", "#1c6672"]];
 const strip = s => s.replace(/[ؐ-ًؚ-ٰٟۖ-ۭـ]/g, "");
@@ -149,7 +149,7 @@ const Unit = memo(function Unit({ u, n, a, b, progress, onNode }) {
 // The Learn page, beside the feed. It stays mounted under the feed, so it re-renders only when
 // something it shows changes, and is first drawn a moment after launch or as soon as it is opened.
 const pathKey = () => {
-  const track = G.life.learnTrack || "q";
+  const track = TRACK_KEYS.includes(G.life.learnTrack) ? G.life.learnTrack : "q";
   return `${track}|${L()[track]}|${dueCount()}|${masteredCount()}|${learnedCount()}|${getLang()}`;
 };
 export const LearnPath = memo(function LearnPath() {
@@ -162,7 +162,7 @@ export const LearnPath = memo(function LearnPath() {
     return () => { clearTimeout(id); off(); };
   }, [shown]);
   if (!shown) return <Screen page title={t("learn")} scroll={false} />;
-  const track = G.life.learnTrack || "q";
+  const track = TRACK_KEYS.includes(G.life.learnTrack) ? G.life.learnTrack : "q";
   return <Path track={track} />;
 });
 

@@ -17,9 +17,15 @@ export const MASTER = 5;
 // ---------- Saved progress ----------
 export function L() {
   const l = G.life;
-  if (!l.learn) l.learn = { q: 0, h: 0, d: 0, srs: {}, checks: 0, perfect: 0, streak: 0, best: 0, medals: [], hv: 1 };
-  // The Muhammad ﷺ track gained a first unit (his life) in front of the hadith; keep earlier progress in place.
-  if (!l.learn.hv) { if (l.learn.h > 0) l.learn.h += LIFE_LESSONS; l.learn.hv = 1; }
+  if (!l.learn) l.learn = { q: 0, h: 0, d: 0, srs: {}, checks: 0, perfect: 0, streak: 0, best: 0, medals: [], hv: 2 };
+  // hv 1 put a unit on his life in front of the hadith; hv 2 (Zine, 2026-10-28) makes the track hadith only
+  // and removes the Dhikr track, so progress through the life unit and dhikr memory items are dropped.
+  if (!l.learn.hv) l.learn.hv = 2;
+  if (l.learn.hv === 1) {
+    l.learn.h = Math.max(0, l.learn.h - LIFE_LESSONS);
+    for (const k of Object.keys(l.learn.srs)) if (k.startsWith("d:")) delete l.learn.srs[k];
+    l.learn.hv = 2;
+  }
   return l.learn;
 }
 
@@ -30,7 +36,7 @@ const DHIKR_UNITS = [
   LIB.filter(d => d.kind === "dhikr" || d.kind === "salawat").map(d => d.id),
   LIB.filter(d => d.kind === "dua").map(d => d.id),
 ];
-// The Muhammad ﷺ track starts with the app's cards on his life and character, then the hadith collections.
+// The cards on his life were the Hadith track's first unit until hv 2; only their count is still needed.
 const LIFE = LIB.filter(d => d.kind === "seerah").map(d => d.id);
 const chunk = (a, n) => Array.from({ length: Math.ceil(a.length / n) }, (_, i) => a.slice(i * n, i * n + n));
 
@@ -41,11 +47,11 @@ function withStarts(units) {
 }
 export const TRACKS = {
   q: withStarts(QUNITS.map(([s, part, lessons]) => ({ track: "q", s, part, lessons }))),
-  h: withStarts([{ track: "h", life: true, lessons: chunk(LIFE, 3) }, ...HUNITS.map(([col, sec, part, lessons]) => ({ track: "h", col, sec, part, lessons }))]),
+  h: withStarts([...HUNITS.map(([col, sec, part, lessons]) => ({ track: "h", col, sec, part, lessons }))]),
   d: withStarts(DHIKR_UNITS.map((ids, i) => ({ track: "d", i, lessons: chunk(ids, 3) }))),
 };
 // Same order as the feed's tabs.
-export const TRACK_KEYS = ["d", "q", "h"];
+export const TRACK_KEYS = ["q", "h"];   // the Dhikr track was removed (Zine, 2026-10-28)
 const LIFE_LESSONS = Math.ceil(LIFE.length / 3);
 
 export const surahName = s => QNAMES[s - 1][1];
