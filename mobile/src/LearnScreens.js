@@ -3,6 +3,7 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { ActivityIndicator, Animated, Easing, FlatList, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
+import Svg, { Path as SvgPath } from "react-native-svg";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { G, closeView, openView, stageNow, emit, showToast, subscribe, on } from "./game";
 import {
@@ -109,7 +110,12 @@ const Node = memo(function Node({ g, state, label, onPress, x }) {
             ) : null}
             <View style={[s.lip, { backgroundColor: lip }]} />
             <LinearGradient colors={face} style={[s.node, pressed && { transform: [{ translateY: 5 }] }]}>
-              {state === "lock" ? <Ico e="🔒" size={30} style={{ opacity: 0.75 }} /> : <Text style={s.nodeI}>{state === "done" ? "★" : "▶"}</Text>}
+              {state === "lock" ? <Ico e="🔒" size={30} style={{ opacity: 0.75 }} /> : (state === "done" ? <Text style={s.nodeI}>★</Text> : (
+                // A cream play mark, drawn so iOS doesn't show its blue ▶ emoji (Zine, 2026-10-28).
+                <Svg width={30} height={30} viewBox="0 0 24 24">
+                  <SvgPath d="M8.2 5.6 C8.2 4.6 9.3 4 10.2 4.5 L19 10.9 C19.8 11.4 19.8 12.6 19 13.1 L10.2 19.5 C9.3 20 8.2 19.4 8.2 18.4Z" fill="#fff6dc" stroke="rgba(0,0,0,0.18)" strokeWidth={1} strokeLinejoin="round" />
+                </Svg>
+              ))}
             </LinearGradient>
           </View>
         )}
