@@ -180,7 +180,7 @@ function scoreCard(el, quiet, repeat) {
   if (!quiet && isMilestone(pts)) { fx.party(); emit("confetti", false); emit("cheerBuddy"); toast("🎉", t("mileT", { n: pts }), t("mileS")); big = true; }
   if (cleared) { openFreed(G.life.debt.start); big = true; }
   if (afterChange(before)) big = true;
-  if (!big) scrollSound(S.combo);
+  if (!big) scrollSound();
   emit("bump");
 }
 
@@ -504,7 +504,7 @@ export async function load() {
   } catch (e) {}
   const l = G.life;
   setLangRaw(LANGS[l.lang] ? l.lang : pickLang());
-  if (!["dial", "chime", "glass"].includes(l.scrollSound)) l.scrollSound = "dial";   // silent, pop and wind were removed
+  if (!["dial", "chime", "glass", "bubble"].includes(l.scrollSound)) l.scrollSound = "dial";   // silent, pop and wind were removed
   if (l.gender && l.tourDone === undefined) { l.tourDone = true; save(); }   // people who were here before the tutorial existed
   G.tab = ["dhikr", "dua", "muh", "quran"].includes(l.tab) ? l.tab : "dhikr";
   G.buddyMood = l.lastSeen ? moodFor((Date.now() - l.lastSeen) / 36e5) : "happy";

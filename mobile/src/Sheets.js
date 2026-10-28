@@ -23,6 +23,11 @@ import { QiblaCompass } from "./Qibla";
 import { SheetMiner } from "./Rock";
 import { HeartedPanel } from "./Hearts";
 import { WEATHERS } from "./Weather";
+import { T } from "./web-data";
+
+// The liquid bubble scroll sound (Zine, 2026-10-28). Translations are mine, like the rest of the app's strings.
+const BUBBLE = { en: "Bubble", ar: "فقاعة", fr: "Bulle", es: "Burbuja", tr: "Baloncuk", ur: "بلبلہ", id: "Gelembung", bn: "বুদবুদ", ru: "Пузырёк", de: "Blase" };
+for (const [l, v] of Object.entries(BUBBLE)) if (T[l]) T[l].ui.sndBubble = v;
 import { Ico } from "./Icons";
 
 const TAB_ORDER = [["dhikr", "tabDhikr"], ["dua", "tabDua"], ["quran", "tabQuran"], ["muh", "tabMuh"]];
@@ -241,7 +246,7 @@ export function Progress() {
         <Btn title={"⚖️ " + (L.debt ? t("debtNew") : t("debtTitle"))} onPress={() => openView("debt")} />
         <LangPicker />
         <Toggle label={t("sounds")} value={L.sound} onChange={v => setSetting("sound", v)} />
-        <Choice label={"🔊 " + t("scrollSnd")} value={L.scrollSound || "dial"} options={[["dial", t("sndDial")], ["chime", t("sndChime")], ["glass", t("sndGlass")]]}
+        <Choice label={"🔊 " + t("scrollSnd")} value={L.scrollSound || "dial"} options={[["dial", t("sndDial")], ["chime", t("sndChime")], ["glass", t("sndGlass")], ["bubble", t("sndBubble")]]}
           onChange={v => { setSetting("scrollSound", v); }} />
         <Choice label={t("wxTitle")} value={WEATHERS.includes(L.weather) || L.weather === "off" ? L.weather : "auto"} options={[["auto", t("wxAuto")], ...WEATHERS.map(k => [k, t("wx_" + k)]), ["off", t("wxOff")]]}
           onChange={v => { setSetting("weather", v); }} />

@@ -11,23 +11,23 @@ import { G, on, subscribe } from "./game";
 import { ambient } from "./fx";
 
 // "heat" (a sun glow) was removed at Zine's request; its translations stay in WT by position.
-const ALL = ["rain", "snow", "wind", "embers", "heat", "fireflies", "birds", "butterflies"];
+const ALL = ["rain", "snow", "wind", "embers", "heat", "fireflies", "birds", "butterflies", "storm"];
 export const WEATHERS = ALL.filter(k => k !== "heat");
 // In Auto the weathers come round in a shuffled order, so two cards in a row never share one.
 const ORDER = [...WEATHERS].sort(() => Math.random() - 0.5);
 
-// Translations are mine, like the rest of the app's strings: [Weather, Auto, Off, rain, snow, wind, embers, heat, fireflies, birds, butterflies].
+// Translations are mine, like the rest of the app's strings: [Weather, Auto, Off, rain, snow, wind, embers, heat, fireflies, birds, butterflies, storm].
 const WT = {
-  en: ["Weather", "Auto", "Off", "Rain", "Snow", "Wind", "Embers", "Summer heat", "Fireflies", "Birds", "Butterflies"],
-  ar: ["الطقس", "تلقائي", "إيقاف", "مطر", "ثلج", "رياح", "جمر", "حر الصيف", "يراعات", "طيور", "فراشات"],
-  fr: ["Météo", "Auto", "Désactivée", "Pluie", "Neige", "Vent", "Braises", "Chaleur d'été", "Lucioles", "Oiseaux", "Papillons"],
-  es: ["Clima", "Auto", "Apagado", "Lluvia", "Nieve", "Viento", "Brasas", "Calor de verano", "Luciérnagas", "Pájaros", "Mariposas"],
-  tr: ["Hava", "Otomatik", "Kapalı", "Yağmur", "Kar", "Rüzgâr", "Kor", "Yaz sıcağı", "Ateş böcekleri", "Kuşlar", "Kelebekler"],
-  ur: ["موسم", "خودکار", "بند", "بارش", "برف", "ہوا", "انگارے", "گرمی", "جگنو", "پرندے", "تتلیاں"],
-  id: ["Cuaca", "Otomatis", "Mati", "Hujan", "Salju", "Angin", "Bara", "Panas musim panas", "Kunang-kunang", "Burung", "Kupu-kupu"],
-  bn: ["আবহাওয়া", "স্বয়ংক্রিয়", "বন্ধ", "বৃষ্টি", "তুষার", "বাতাস", "অঙ্গার", "গ্রীষ্মের তাপ", "জোনাকি", "পাখি", "প্রজাপতি"],
-  ru: ["Погода", "Авто", "Выкл.", "Дождь", "Снег", "Ветер", "Угольки", "Летний зной", "Светлячки", "Птицы", "Бабочки"],
-  de: ["Wetter", "Auto", "Aus", "Regen", "Schnee", "Wind", "Glut", "Sommerhitze", "Glühwürmchen", "Vögel", "Schmetterlinge"],
+  en: ["Weather", "Auto", "Off", "Rain", "Snow", "Wind", "Embers", "Summer heat", "Fireflies", "Birds", "Butterflies", "Thunderstorm"],
+  ar: ["الطقس", "تلقائي", "إيقاف", "مطر", "ثلج", "رياح", "جمر", "حر الصيف", "يراعات", "طيور", "فراشات", "عاصفة رعدية"],
+  fr: ["Météo", "Auto", "Désactivée", "Pluie", "Neige", "Vent", "Braises", "Chaleur d'été", "Lucioles", "Oiseaux", "Papillons", "Orage"],
+  es: ["Clima", "Auto", "Apagado", "Lluvia", "Nieve", "Viento", "Brasas", "Calor de verano", "Luciérnagas", "Pájaros", "Mariposas", "Tormenta"],
+  tr: ["Hava", "Otomatik", "Kapalı", "Yağmur", "Kar", "Rüzgâr", "Kor", "Yaz sıcağı", "Ateş böcekleri", "Kuşlar", "Kelebekler", "Gök gürültülü fırtına"],
+  ur: ["موسم", "خودکار", "بند", "بارش", "برف", "ہوا", "انگارے", "گرمی", "جگنو", "پرندے", "تتلیاں", "طوفانِ برق و باراں"],
+  id: ["Cuaca", "Otomatis", "Mati", "Hujan", "Salju", "Angin", "Bara", "Panas musim panas", "Kunang-kunang", "Burung", "Kupu-kupu", "Badai petir"],
+  bn: ["আবহাওয়া", "স্বয়ংক্রিয়", "বন্ধ", "বৃষ্টি", "তুষার", "বাতাস", "অঙ্গার", "গ্রীষ্মের তাপ", "জোনাকি", "পাখি", "প্রজাপতি", "বজ্রঝড়"],
+  ru: ["Погода", "Авто", "Выкл.", "Дождь", "Снег", "Ветер", "Угольки", "Летний зной", "Светлячки", "Птицы", "Бабочки", "Гроза"],
+  de: ["Wetter", "Auto", "Aus", "Regen", "Schnee", "Wind", "Glut", "Sommerhitze", "Glühwürmchen", "Vögel", "Schmetterlinge", "Gewitter"],
 };
 for (const [l, v] of Object.entries(WT)) if (T[l]) {
   Object.assign(T[l].ui, { wxTitle: v[0], wxAuto: v[1], wxOff: v[2] });
@@ -164,10 +164,48 @@ const Butterfly = memo(function Butterfly({ W, H }) {
   );
 });
 
+// Lightning: every few seconds the sky flickers twice and a thin bolt shows for a moment.
+function Lightning({ W, H }) {
+  const flash = useRef(new Animated.Value(0)).current;
+  const [bolt, setBolt] = useState(null);
+  useEffect(() => {
+    let timer, alive = true;
+    const strike = () => {
+      if (!alive) return;
+      const x = rnd(W * 0.15, W * 0.85);
+      let d = `M${x.toFixed(0)} 0`, cx = x, cy = 0;
+      while (cy < H * 0.42) { cx += rnd(-26, 26); cy += rnd(18, 42); d += ` L${cx.toFixed(0)} ${cy.toFixed(0)}`; }
+      setBolt(d);
+      flash.setValue(0);
+      Animated.sequence([
+        Animated.timing(flash, { toValue: 1, duration: 60, useNativeDriver: true }),
+        Animated.timing(flash, { toValue: 0.2, duration: 90, useNativeDriver: true }),
+        Animated.timing(flash, { toValue: 0.8, duration: 60, useNativeDriver: true }),
+        Animated.timing(flash, { toValue: 0, duration: 700, easing: Easing.out(Easing.quad), useNativeDriver: true }),
+      ]).start();
+      timer = setTimeout(strike, rnd(4500, 10000));
+    };
+    timer = setTimeout(strike, rnd(1200, 4000));
+    return () => { alive = false; clearTimeout(timer); };
+  }, [W, H, flash]);
+  return (
+    <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, { opacity: flash }]}>
+      <View style={[StyleSheet.absoluteFill, { backgroundColor: "rgba(225,230,255,0.22)" }]} />
+      {bolt ? (
+        <Svg width={W} height={H} style={StyleSheet.absoluteFill}>
+          <Path d={bolt} fill="none" stroke="#c9d4ff" strokeOpacity={0.5} strokeWidth={6} strokeLinejoin="round" />
+          <Path d={bolt} fill="none" stroke="#ffffff" strokeWidth={1.8} strokeLinejoin="round" />
+        </Svg>
+      ) : null}
+    </Animated.View>
+  );
+}
+
 const many = (n, El, W, H) => Array.from({ length: n }, (_, i) => <El key={i} W={W} H={H} />);
 
 function Scene({ kind, W, H }) {
   switch (kind) {
+    case "storm": return <><View style={[StyleSheet.absoluteFill, { backgroundColor: "rgba(8,14,40,0.22)" }]} />{many(30, Drop, W, H)}<Lightning W={W} H={H} /></>;
     case "rain": return <><View style={[StyleSheet.absoluteFill, { backgroundColor: "rgba(10,30,60,0.08)" }]} />{many(26, Drop, W, H)}</>;
     case "snow": return <><LinearGradient colors={["rgba(220,235,255,0.10)", "rgba(220,235,255,0)"]} style={StyleSheet.absoluteFill} />{many(28, Flake, W, H)}</>;
     case "wind": return <>{many(7, Gust, W, H)}{many(5, Leaf, W, H)}</>;

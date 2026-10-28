@@ -56,7 +56,7 @@ function wav(name, buf) {
 
 // The scroll sounds climb in pitch with every combo step, like the web app (combo 0 to 24).
 for (const f of fs.readdirSync(out)) if (/^(dial|chime|glass)\d+\.wav$/.test(f)) fs.unlinkSync(path.join(out, f));
-for (let k = 0; k <= 24; k++) {
+for (let k = 0; k <= 0; k++) {   // the pitch no longer climbs (2026-10-28), so only step 0 is made
   const c = k, j = 1 + c * .035;
   wav("dial" + k, render(.12, b => { click(b, 0, 3400 * j, .5); click(b, .055, 2500 * j, .32); }));
   wav("glass" + k, render(.3, b => glass(b, 1568 * j, .3)));

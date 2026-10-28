@@ -1,6 +1,7 @@
 // Renders the quiet looping ambience for each weather (assets/sounds/amb-*.wav). Everything is synthesized,
 // so there are no licences to track. Each file loops seamlessly: steady noise is cross-faded end into start,
 // and short events (drops, crackles, chirps, chimes) wrap around the loop point.
+// Rain, birds and storm are Mixkit recordings Zine sent (2026-10-28), looped by hand, not made here.
 // Run: node scripts/make-ambient.js
 const fs = require("fs");
 const path = require("path");
@@ -52,17 +53,6 @@ function breeze(lo, hi, cycles) {
 }
 const sine = (t, hz) => Math.sin(2 * Math.PI * hz * t);
 
-// Rain: soft hiss with tiny drops.
-{
-  const f = lp(), h = hp();
-  const hiss = bed((i, w) => h(f(w, 2600), 300) * swell(i, 2, 0.25));
-  const drops = new Float32Array(N);
-  for (let k = 0; k < LEN * 28; k++) {
-    const hz = rnd(1800, 5200), a = rnd(0.2, 1), d = rnd(0.004, 0.012);
-    event(drops, Math.floor(rnd(0, N)), Math.floor(0.03 * RATE), t => sine(t, hz) * a * Math.exp(-t / d));
-  }
-  wav("rain", mix([hiss, 1], [drops, 0.18]), 0.55);
-}
 // Wind: a breeze that swells and falls.
 wav("wind", breeze(180, 900, 2), 0.6);
 // Snow: a very soft, dark breeze with an occasional faint tinkle.
@@ -98,23 +88,6 @@ wav("wind", breeze(180, 900, 2), 0.6);
     }
   });
   wav("fireflies", mix([air, 1], [crick, 0.06]), 0.45);
-}
-// Birds: little chirps and trills over a soft breeze.
-{
-  const air = breeze(200, 600, 1);
-  const song = new Float32Array(N);
-  for (let t0 = rnd(0, 1); t0 < LEN; t0 += rnd(0.7, 2.1)) {
-    const notes = Math.floor(rnd(2, 6)), base = rnd(2600, 4600);
-    for (let k = 0; k < notes; k++) {
-      const f0 = base * rnd(0.85, 1.2), f1 = f0 * rnd(0.7, 1.45), d = rnd(0.04, 0.11), a = rnd(0.5, 1);
-      let ph = 0;
-      event(song, Math.floor((t0 + k * rnd(0.07, 0.14)) * RATE), Math.floor(d * RATE), (t) => {
-        ph += 2 * Math.PI * (f0 + (f1 - f0) * (t / d)) / RATE;
-        return Math.sin(ph) * a * Math.sin(Math.PI * t / d);
-      });
-    }
-  }
-  wav("birds", mix([air, 1], [song, 0.09]), 0.5);
 }
 // Butterflies: a meadow breeze with gentle wind chimes.
 {
