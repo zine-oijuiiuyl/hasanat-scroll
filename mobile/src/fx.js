@@ -19,7 +19,7 @@ let ambWant = null;
 export const setFxSettings = s => { settings = { ...settings, ...s }; ambient(ambWant); };
 
 // Weather ambience (scripts/make-ambient.js): one looping player per weather, faded in and out as the
-// cards go by. Quiet on purpose, and silent when sound is off.
+// cards go by. Quiet on purpose.
 const AMB = {
   rain: require("../assets/sounds/amb-rain.wav"),   // rain, birds, storm (Mixkit) and wind, embers (Pixabay, SoundReality): recordings Zine sent
   storm: require("../assets/sounds/amb-storm.wav"), snow: require("../assets/sounds/amb-snow.wav"),
@@ -44,7 +44,8 @@ function fadeTo(k, to, ms, done) {
 }
 export function ambient(kind) {
   ambWant = kind;
-  const k = settings.sound && settings.weatherSound !== false && AMB[kind] ? kind : null;
+  // Only the "Weather sounds" switch controls these; "Sounds" is for the scroll sound (Zine, 2026-10-28).
+  const k = settings.weatherSound !== false && AMB[kind] ? kind : null;
   if (k === ambNow) return;
   if (ambNow) fadeTo(ambNow, 0, 900, p => p.pause());
   ambNow = k;
