@@ -405,8 +405,8 @@ export const isCalm = () => G.life.mode === "calm";
 export function pickMode(m) {
   G.life.mode = m; G.life.lang = getLang();
   if (m === "calm") { G.life.tourDone = true; G.page = "scroll"; emit("page", "scroll"); clearCheers(); }
-  // Game mode starts with the chime and no weather or weather sound; all three can be changed in the settings (Zine, 2026-10-28).
-  if (m === "game") { G.life.scrollSound = "chime"; G.life.weather = "off"; G.life.weatherSound = false; }
+  // Game mode starts with the scroll sound on (chime) and no weather or weather sound; all three can be changed in the settings (Zine, 2026-10-28).
+  if (m === "game") { G.life.sound = true; G.life.scrollSound = "chime"; G.life.weather = "off"; G.life.weatherSound = false; }
   save(); syncFx(); changed();
 }
 export function setMode(calm) {
