@@ -1,7 +1,7 @@
 // Hearting a card in the feed, and the list of hearted cards on the Done screen.
 import { useRef } from "react";
 import { Animated, Easing, Pressable, StyleSheet, Text, View } from "react-native";
-import Svg, { Defs, LinearGradient, Path, Stop } from "react-native-svg";
+import Svg, { Path } from "react-native-svg";
 import { BY_ID, T } from "./web-data";
 import { G, toggleHeart } from "./game";
 import { t, meaning } from "./i18n";
@@ -24,20 +24,13 @@ const HT = {
 };
 for (const [l, v] of Object.entries(HT)) if (T[l]) { T[l].ui.hrtTitle = v[0]; T[l].ui.hrtEmpty = v[1]; }
 
-// A gold heart with a dark outline and a shine, like the app's other gold pieces, instead of Instagram's
-// red heart (Zine, 2026-10-27).
+// The heart is pink-red when on, without the gold (Zine, 2026-10-28).
 const HEART = "M12 20.6 C11.6 20.6 11.3 20.4 11 20.2 C6.4 16.6 2.6 13.2 2.6 9 C2.6 6.1 4.9 3.8 7.7 3.8 C9.5 3.8 11 4.7 12 6.2 C13 4.7 14.5 3.8 16.3 3.8 C19.1 3.8 21.4 6.1 21.4 9 C21.4 13.2 17.6 16.6 13 20.2 C12.7 20.4 12.4 20.6 12 20.6Z";
 
 export function HeartIcon({ on, size = 30 }) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24">
-      <Defs>
-        <LinearGradient id="hg" x1="0" y1="0" x2="0" y2="1">
-          <Stop offset="0" stopColor="#ffeaa6" /><Stop offset="0.55" stopColor="#f5b83d" /><Stop offset="1" stopColor="#c98a1b" />
-        </LinearGradient>
-      </Defs>
-      <Path d={HEART} fill={on ? "url(#hg)" : "rgba(0,0,0,0.18)"} stroke={on ? "#7a4a0a" : "#f4efe2"} strokeWidth={1.5} strokeLinejoin="round" />
-      {on ? <Path d="M5.6 8.2 C5.9 7 6.8 6.2 8 6" stroke="#fff6cc" strokeWidth={1.3} strokeLinecap="round" fill="none" /> : null}
+      <Path d={HEART} fill={on ? "#ff4d6d" : "rgba(0,0,0,0.18)"} stroke={on ? "#ff4d6d" : "#f4efe2"} strokeWidth={1.6} strokeLinejoin="round" />
     </Svg>
   );
 }

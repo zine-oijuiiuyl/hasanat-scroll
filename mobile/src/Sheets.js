@@ -28,6 +28,9 @@ import { T } from "./web-data";
 // The liquid bubble scroll sound (Zine, 2026-10-28). Translations are mine, like the rest of the app's strings.
 const BUBBLE = { en: "Bubble", ar: "فقاعة", fr: "Bulle", es: "Burbuja", tr: "Baloncuk", ur: "بلبلہ", id: "Gelembung", bn: "বুদবুদ", ru: "Пузырёк", de: "Blase" };
 for (const [l, v] of Object.entries(BUBBLE)) if (T[l]) T[l].ui.sndBubble = v;
+// The switch that hides the buddy on the scroll page (Zine, 2026-10-28).
+const FEED_BUDDY = { en: "Show buddy while scrolling", ar: "إظهار الرفيق أثناء التمرير", fr: "Afficher le compagnon pendant le défilement", es: "Mostrar al compañero al deslizar", tr: "Kaydırırken arkadaşı göster", ur: "اسکرول کرتے وقت ساتھی دکھائیں", id: "Tampilkan teman saat menggulir", bn: "স্ক্রল করার সময় সঙ্গী দেখাও", ru: "Показывать спутника при прокрутке", de: "Begleiter beim Scrollen zeigen" };
+for (const [l, v] of Object.entries(FEED_BUDDY)) if (T[l]) T[l].ui.feedBuddy = v;
 import { Ico } from "./Icons";
 
 const TAB_ORDER = [["dhikr", "tabDhikr"], ["dua", "tabDua"], ["quran", "tabQuran"], ["muh", "tabMuh"]];
@@ -251,6 +254,7 @@ export function Progress() {
         <Choice label={t("wxTitle")} value={WEATHERS.includes(L.weather) || L.weather === "off" ? L.weather : "auto"} options={[["auto", t("wxAuto")], ...WEATHERS.map(k => [k, t("wx_" + k)]), ["off", t("wxOff")]]}
           onChange={v => { setSetting("weather", v); }} />
         <Toggle label={t("haptics")} value={L.haptics} onChange={v => setSetting("haptics", v)} />
+        <Toggle label={t("feedBuddy")} value={L.feedBuddy !== false} onChange={v => setSetting("feedBuddy", v)} />
         <Btn title={"💾 " + t("backup")} onPress={backupProgress} />
         <Btn title={"📂 " + t("restore")} onPress={restoreProgress} />
         <Btn title={"🧭 " + t("tutAgain")} onPress={() => setTimeout(startTour, 200)} />

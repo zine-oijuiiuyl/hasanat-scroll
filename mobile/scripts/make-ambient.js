@@ -1,7 +1,8 @@
 // Renders the quiet looping ambience for each weather (assets/sounds/amb-*.wav). Everything is synthesized,
 // so there are no licences to track. Each file loops seamlessly: steady noise is cross-faded end into start,
 // and short events (drops, crackles, chirps, chimes) wrap around the loop point.
-// Rain, birds and storm are Mixkit recordings Zine sent (2026-10-28), looped by hand, not made here.
+// Rain, birds and storm (Mixkit) and wind and embers (Pixabay, by SoundReality) are recordings Zine sent
+// (2026-10-28), looped and levelled by hand, not made here.
 // Run: node scripts/make-ambient.js
 const fs = require("fs");
 const path = require("path");
@@ -53,8 +54,6 @@ function breeze(lo, hi, cycles) {
 }
 const sine = (t, hz) => Math.sin(2 * Math.PI * hz * t);
 
-// Wind: a breeze that swells and falls.
-wav("wind", breeze(180, 900, 2), 0.6);
 // Snow: a very soft, dark breeze with an occasional faint tinkle.
 {
   const air = breeze(120, 420, 1);
@@ -64,17 +63,6 @@ wav("wind", breeze(180, 900, 2), 0.6);
     event(tink, Math.floor(rnd(0, N)), Math.floor(0.6 * RATE), t => (sine(t, hz) + 0.4 * sine(t, hz * 2.7)) * Math.exp(-t / 0.12));
   }
   wav("snow", mix([air, 1], [tink, 0.05]), 0.45);
-}
-// Embers: crackles and pops over a warm low rumble.
-{
-  const f = lp(), g = lp();
-  const rumble = bed((i, w) => g(f(w, 220), 300));
-  const crack = new Float32Array(N);
-  for (let k = 0; k < LEN * 7; k++) {
-    const a = Math.pow(Math.random(), 2), d = rnd(0.001, 0.006), l = lp();
-    event(crack, Math.floor(rnd(0, N)), Math.floor(0.04 * RATE), t => l(Math.random() * 2 - 1, 3500) * a * Math.exp(-t / d));
-  }
-  wav("embers", mix([rumble, 1], [crack, 3.2]), 0.5);
 }
 // Fireflies: night air with two crickets far away.
 {

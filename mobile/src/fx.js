@@ -21,13 +21,13 @@ export const setFxSettings = s => { settings = { ...settings, ...s }; ambient(am
 // Weather ambience (scripts/make-ambient.js): one looping player per weather, faded in and out as the
 // cards go by. Quiet on purpose, and silent when sound is off.
 const AMB = {
-  rain: require("../assets/sounds/amb-rain.wav"),   // rain, birds and storm: Mixkit recordings (Mixkit free licence), sent by Zine
+  rain: require("../assets/sounds/amb-rain.wav"),   // rain, birds, storm (Mixkit) and wind, embers (Pixabay, SoundReality): recordings Zine sent
   storm: require("../assets/sounds/amb-storm.wav"), snow: require("../assets/sounds/amb-snow.wav"),
   wind: require("../assets/sounds/amb-wind.wav"), embers: require("../assets/sounds/amb-embers.wav"),
   fireflies: require("../assets/sounds/amb-fireflies.wav"), birds: require("../assets/sounds/amb-birds.wav"),
   butterflies: require("../assets/sounds/amb-butterflies.wav"),
 };
-const AMB_VOL = { storm: 0.6, rain: 0.55, snow: 0.45, wind: 0.38, embers: 0.8, fireflies: 0.45, birds: 0.6, butterflies: 0.45 };
+const AMB_VOL = { storm: 0.6, rain: 0.55, snow: 0.45, wind: 0.3, embers: 0.9, fireflies: 0.45, birds: 0.6, butterflies: 0.45 };
 const amb = {}, fades = {};
 let ambNow = null;
 function fadeTo(k, to, ms, done) {
