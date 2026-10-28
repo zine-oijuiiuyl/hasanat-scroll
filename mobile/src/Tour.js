@@ -3,13 +3,13 @@ import { useEffect, useRef, useState } from "react";
 import { Animated, Dimensions, Easing, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { G, tourSteps, endTour, goTour, pickBuddy, pickMode } from "./game";
+import { G, tourSteps, endTour, goTour, pickBuddy, pickMode, changed } from "./game";
 import { T } from "./web-data";
 import { Ico } from "./Icons";
 import { t } from "./i18n";
 import { measure, reveal } from "./targets";
 import { BuddyArt } from "./Buddy";
-import { LangPicker, s as u } from "./ui";
+import { LangPicker, Btn, s as u } from "./ui";
 import { C, F, GOLD } from "./theme";
 import Svg, { Path } from "react-native-svg";
 
@@ -220,11 +220,21 @@ for (const [l, v] of Object.entries(TUT)) if (T[l]) Object.assign(T[l].ui, v);
 
 export function Picker() {
   const insets = useSafeAreaInsets();
+  // First the language on its own, then the mode, then the buddy (Zine, 2026-10-28).
+  if (!G.life.mode && !G.langChosen) return (
+    <View style={StyleSheet.absoluteFill}>
+      <LinearGradient colors={["#0b2b26", "#163832", "#051f20"]} locations={[0, 0.55, 1]} style={StyleSheet.absoluteFill} />
+      <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: "center", alignItems: "center", gap: 22, padding: 20, paddingTop: insets.top + 24, paddingBottom: insets.bottom + 24 }}>
+        <Text style={u.arh}>بِسْمِ ٱللَّٰهِ</Text>
+        <View style={{ width: "100%", maxWidth: 420 }}><LangPicker /></View>
+        <View style={{ width: "100%", maxWidth: 420 }}><Btn primary title={t("cont")} onPress={() => { G.langChosen = true; changed(); }} testID="lang-continue" /></View>
+      </ScrollView>
+    </View>
+  );
   if (!G.life.mode) return (
     <View style={StyleSheet.absoluteFill}>
       <LinearGradient colors={["#0b2b26", "#163832", "#051f20"]} locations={[0, 0.55, 1]} style={StyleSheet.absoluteFill} />
       <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: "center", alignItems: "center", gap: 14, padding: 20, paddingTop: insets.top + 24, paddingBottom: insets.bottom + 24 }}>
-        <View style={{ width: "100%", maxWidth: 420 }}><LangPicker /></View>
         <Text style={u.arh}>بِسْمِ ٱللَّٰهِ</Text>
         <Text style={s.h1}>{t("modeTitle")}</Text>
         <Text style={s.p}>{t("modeText")}</Text>
@@ -246,7 +256,6 @@ export function Picker() {
     <View style={StyleSheet.absoluteFill}>
       <LinearGradient colors={["#0b2b26", "#163832", "#051f20"]} locations={[0, 0.55, 1]} style={StyleSheet.absoluteFill} />
       <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: "center", alignItems: "center", gap: 14, padding: 20, paddingTop: insets.top + 24, paddingBottom: insets.bottom + 24 }}>
-        <View style={{ width: "100%", maxWidth: 420 }}><LangPicker /></View>
         <Text style={u.arh}>بِسْمِ ٱللَّٰهِ</Text>
         <Text style={s.h1}>{t("pickTitle")}</Text>
         <Text style={s.p}>{t("pickText")}</Text>

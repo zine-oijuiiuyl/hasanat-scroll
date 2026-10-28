@@ -137,7 +137,9 @@ const fmtTime = ms => { const x = Math.round(ms / 1000); return x >= 60 ? `${Mat
 // fading it in would let the feed underneath show through. The sheet being replaced is still
 // mounted while its successor first renders, so the count tells the two cases apart.
 let openSheets = 0;
-function Sheet({ children, actions }) {
+// Done screens are grey and the settings blue (Zine, 2026-10-28); the rest keep the green.
+const GREY_BG = ["#2a2e33", "#353a40", "#1b1e22"], BLUE_BG = ["#0d2747", "#173a66", "#081a31"];
+function Sheet({ children, actions, bg = SHEET_BG }) {
   const insets = useSafeAreaInsets();
   const a = useRef(new Animated.Value(openSheets > 0 ? 1 : 0)).current;
   const sv = useRef(null), pos = useRef(0);
@@ -153,12 +155,12 @@ function Sheet({ children, actions }) {
   }, [a]);
   return (
     <Animated.View style={[StyleSheet.absoluteFill, { opacity: a, transform: [{ translateY: a.interpolate({ inputRange: [0, 1], outputRange: [40, 0] }) }] }]}>
-      <LinearGradient colors={SHEET_BG} locations={[0, 0.45, 1]} style={StyleSheet.absoluteFill} />
+      <LinearGradient colors={bg} locations={[0, 0.45, 1]} style={StyleSheet.absoluteFill} />
       <ScrollView ref={sv} onScroll={e => { pos.current = e.nativeEvent.contentOffset.y; }} scrollEventThrottle={32}
         contentContainerStyle={{ paddingTop: insets.top + 28, paddingBottom: insets.bottom + 120, paddingHorizontal: 16 }} keyboardShouldPersistTaps="handled">
         <View style={{ width: "100%", maxWidth: 520, alignSelf: "center", gap: 22 }}>{children}</View>
       </ScrollView>
-      <LinearGradient colors={["transparent", "rgba(5,31,32,0.95)"]} locations={[0, 0.4]} style={[s.actions, { paddingBottom: insets.bottom + 14 }]}>
+      <LinearGradient colors={["transparent", bg[2]]} locations={[0, 0.4]} style={[s.actions, { paddingBottom: insets.bottom + 14 }]}>
         {actions}
       </LinearGradient>
     </Animated.View>
@@ -225,7 +227,7 @@ export function Summary({ sm }) {
   const lt = L.said, lv = levelFor(lt);
   const evolved = sm.stageEnd > sm.stageStart;
   return (
-    <Sheet actions={<>
+    <Sheet bg={GREY_BG} actions={<>
       <Btn title={t("reset")} onPress={() => { hapTick(); resetSession(); }} testID="reset" />
       <Btn title={t("again")} primary style={{ flex: 1 }} onPress={() => keepScrolling(sm)} testID="again" />
     </>}>
@@ -353,7 +355,7 @@ function HistoryBody({ now }) {
 // Calm mode's Done screen: just the counts and the history.
 export function History() {
   return (
-    <Sheet actions={<View style={{ flex: 1, maxWidth: 420 }}><Btn title={t("back")} primary onPress={closeView} testID="close" /></View>}>
+    <Sheet bg={GREY_BG} actions={<View style={{ flex: 1, maxWidth: 420 }}><Btn title={t("back")} primary onPress={closeView} testID="close" /></View>}>
       <Hero><Label>{t("histTitle")}</Label></Hero>
       <HistoryBody now={countNow()} />
     </Sheet>
@@ -382,7 +384,7 @@ export function Progress() {
   useEffect(() => { if (!sure) return; const x = setTimeout(() => setSure(false), 4000); return () => clearTimeout(x); }, [sure]);
   const calm = isCalm();   // calm mode shows only the settings: no buddy, levels, points or badges
   return (
-    <Sheet actions={<View ref={target("close")} style={{ flex: 1, maxWidth: 420 }}><Btn title={t("back")} primary onPress={closeView} testID="close" /></View>}>
+    <Sheet bg={BLUE_BG} actions={<View ref={target("close")} style={{ flex: 1, maxWidth: 420 }}><Btn title={t("back")} primary onPress={closeView} testID="close" /></View>}>
       {calm ? null : <>
       <Hero>
         <Label>{t("progress")}</Label>
