@@ -15,6 +15,7 @@ import { Pattern70 } from "./Pattern";
 import { Btn, Tile, Tiles, Label, Panel } from "./ui";
 import { t, num, isRTL, getLang } from "./i18n";
 import { C, F, GOLD, SHEET_BG, tabSpace } from "./theme";
+import { target } from "./targets";
 import { fx, hapTick, buzz } from "./fx";
 import { Ico, IconText } from "./Icons";
 
@@ -210,12 +211,12 @@ function Path({ track }) {
   }, [track]);
   return (
     <Screen page title={t("learn")} scroll={false}
-      left={isLearn() ? <Pressable testID="settings" hitSlop={8} onPress={() => { hapTick(); openView("progress"); }} style={s.setBtn}><Text style={s.setBtnT}>{t("settings")}</Text></Pressable> : null}
+      left={isLearn() ? <Pressable ref={target("settings")} testID="settings" hitSlop={8} onPress={() => { hapTick(); openView("progress"); }} style={s.setBtn}><Text style={s.setBtnT}>{t("settings")}</Text></Pressable> : null}
       right={<IconText style={s.headStat} size={15}>{"👑 " + num(masteredCount())}</IconText>}>
       <View style={{ paddingHorizontal: 16, gap: 12, paddingBottom: 8 }}>
-        <TrackPills track={track} onChange={setTrack} />
+        <View ref={target("tracks")}><TrackPills track={track} onChange={setTrack} /></View>
         <View style={{ flexDirection: "row", gap: 10 }}>
-          <Pressable onPress={() => { hapTick(); openView("review", {}); }} style={[s.action, due > 0 && s.actionHot]}>
+          <Pressable ref={target("memCheck")} onPress={() => { hapTick(); openView("review", {}); }} style={[s.action, due > 0 && s.actionHot]}>
             <Ico e="🧠" size={26} />
             <View style={{ flexShrink: 1 }}>
               <Text style={s.actionT} numberOfLines={1}>{t("memCheck")}</Text>

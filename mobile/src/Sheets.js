@@ -16,7 +16,7 @@ import { BuddyArt } from "./Buddy";
 import { Panel, Label, Cap, Bar, Tile, Tiles, Btn, Toggle, Choice, LangPicker, s as u } from "./ui";
 import { C, F, GOLD, SHEET_BG } from "./theme";
 import { fx, hapTick } from "./fx";
-import { target } from "./targets";
+import { target, setScroller } from "./targets";
 import { Lesson, Review, Library, Reader } from "./LearnScreens";
 import { askLocation, hhmm, nextPrayer, pName, setPrayerOn, setReminders, updatePrayer } from "./prayer";
 import { QiblaCompass } from "./Qibla";
@@ -47,6 +47,12 @@ let openSheets = 0;
 function Sheet({ children, actions }) {
   const insets = useSafeAreaInsets();
   const a = useRef(new Animated.Value(openSheets > 0 ? 1 : 0)).current;
+  const sv = useRef(null), pos = useRef(0);
+  useEffect(() => {
+    const me = { get y() { return pos.current; }, scrollTo: y => sv.current && sv.current.scrollTo({ y, animated: true }) };
+    setScroller(me);
+    return () => setScroller(null);
+  }, []);
   useEffect(() => {
     openSheets++;
     Animated.timing(a, { toValue: 1, duration: 450, easing: Easing.out(Easing.cubic), useNativeDriver: true }).start();
@@ -55,7 +61,8 @@ function Sheet({ children, actions }) {
   return (
     <Animated.View style={[StyleSheet.absoluteFill, { opacity: a, transform: [{ translateY: a.interpolate({ inputRange: [0, 1], outputRange: [40, 0] }) }] }]}>
       <LinearGradient colors={SHEET_BG} locations={[0, 0.45, 1]} style={StyleSheet.absoluteFill} />
-      <ScrollView contentContainerStyle={{ paddingTop: insets.top + 28, paddingBottom: insets.bottom + 120, paddingHorizontal: 16 }} keyboardShouldPersistTaps="handled">
+      <ScrollView ref={sv} onScroll={e => { pos.current = e.nativeEvent.contentOffset.y; }} scrollEventThrottle={32}
+        contentContainerStyle={{ paddingTop: insets.top + 28, paddingBottom: insets.bottom + 120, paddingHorizontal: 16 }} keyboardShouldPersistTaps="handled">
         <View style={{ width: "100%", maxWidth: 520, alignSelf: "center", gap: 22 }}>{children}</View>
       </ScrollView>
       <LinearGradient colors={["transparent", "rgba(5,31,32,0.95)"]} locations={[0, 0.4]} style={[s.actions, { paddingBottom: insets.bottom + 14 }]}>
@@ -203,7 +210,7 @@ async function restoreProgress() {
 function ModeSwitch() {
   const cur = G.life.mode || "game";
   return (
-    <View style={s.modeSw}>
+    <View ref={target("modeSw")} style={s.modeSw}>
       {[["calm", "🍃", "modeCalm"], ["game", "🎉", "modeGame"], ["learn", "📖", "modeLearn"]].map(([m, e, k]) => (
         <Pressable key={m} testID={"modeSw-" + m} onPress={() => { if (m !== cur) { hapTick(); setMode(m); } }} style={s.modeSide}>
           {m === cur ? <LinearGradient colors={GOLD} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={[StyleSheet.absoluteFill, { borderRadius: 999 }]} /> : null}
@@ -273,9 +280,11 @@ export function Progress() {
         <Btn title={"⚖️ " + (L.debt ? t("debtNew") : t("debtTitle"))} onPress={() => openView("debt")} />
         <LangPicker />
         {/* The sound switch sits on the Scroll sound line, like the Weather one (Zine, 2026-10-28). */}
-        <Toggle label={t("scrollSnd")} value={L.sound} onChange={v => setSetting("sound", v)} />
-        <Choice value={L.scrollSound || "dial"} options={[["dial", t("sndDial")], ["chime", t("sndChime")], ["glass", t("sndGlass")], ["bubble", t("sndBubble")]]}
-          onChange={v => { setSetting("scrollSound", v); }} />
+        <View ref={target("sound")} style={{ gap: 12 }}>
+          <Toggle label={t("scrollSnd")} value={L.sound} onChange={v => setSetting("sound", v)} />
+          <Choice value={L.scrollSound || "dial"} options={[["dial", t("sndDial")], ["chime", t("sndChime")], ["glass", t("sndGlass")], ["bubble", t("sndBubble")]]}
+            onChange={v => { setSetting("scrollSound", v); }} />
+        </View>
         {/* Weather: a switch to turn it off, the choice of weather, and a switch for its sounds (Zine, 2026-10-28). */}
         <Toggle label={t("wxTitle")} value={L.weather !== "off"} onChange={v => setSetting("weather", v ? "auto" : "off")} />
         {L.weather !== "off" ? (
@@ -289,7 +298,7 @@ export function Progress() {
         {calm || isLearn() ? null : <Toggle label={t("feedBuddy")} value={L.feedBuddy !== false} onChange={v => setSetting("feedBuddy", v)} />}
         <Btn title={"💾 " + t("backup")} onPress={backupProgress} />
         <Btn title={"📂 " + t("restore")} onPress={restoreProgress} />
-        {calm || isLearn() ? null : <Btn title={"🧭 " + t("tutAgain")} onPress={() => setTimeout(startTour, 200)} />}
+        <Btn title={"🧭 " + t("tutAgain")} onPress={() => setTimeout(startTour, 200)} />
         <Btn title={sure ? t("wipeSure") : t("wipe")} danger={!sure} style={sure && { backgroundColor: "#a33a2c" }} onPress={() => { if (!sure) setSure(true); else { setSure(false); wipeEverything(); } }} />
         {calm ? null : <Btn title={L.gender === "f" ? t("swapBoy") : t("swapGirl")} onPress={swapBuddy} />}
       </Panel>

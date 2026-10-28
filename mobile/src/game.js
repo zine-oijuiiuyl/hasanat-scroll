@@ -410,13 +410,14 @@ export function pickMode(m) {
   G.life.mode = m; G.life.lang = getLang();
   const page = m === "learn" ? "learn" : "scroll";
   if (G.page !== page) { G.page = page; emit("page", page); }
-  if (m === "calm" || m === "learn") { G.life.tourDone = true; clearCheers(); }
+  if (m === "calm" || m === "learn") clearCheers();
   if (m === "learn") ambient(null);
   // Game mode starts with the scroll sound on (chime) and no weather or weather sound; all three can be changed in the settings (Zine, 2026-10-28).
   // Calm is the reverse: no scroll sound, weather and its sound on.
   if (m === "calm") { G.life.sound = false; G.life.weather = "auto"; G.life.weatherSound = true; }
   if (m === "game") { G.life.sound = true; G.life.scrollSound = "chime"; G.life.weather = "off"; G.life.weatherSound = false; }
   save(); syncFx(); changed();
+  if (m) maybeTour(1200);
 }
 export function setMode(m) {
   G.view = null;
@@ -424,10 +425,10 @@ export function setMode(m) {
   if (m === "game" && G.life.gender) { fx.party(); emit("confetti", false); }
 }
 export function pickBuddy(g) {
-  G.life.gender = g; G.life.lang = getLang(); G.life.tourDone = isLearn(); save();
+  G.life.gender = g; G.life.lang = getLang(); save();
   fx.party(); emit("confetti", false); emit("cheerBuddy");
   changed();
-  if (!isLearn()) setTimeout(startTour, 1700);
+  maybeTour(1700);
 }
 export function swapBuddy() { G.life.gender = G.life.gender === "f" ? "m" : "f"; save(); changed(); }
 export function rate(n) { G.life.rating = n; save(); fx.up(); if (n >= 4) { fx.party(); emit("confetti", n === 5); } changed(); }
@@ -446,7 +447,7 @@ export function toggleHeart(id) {
 // Back to zero. The buddy, language, sound choices and hearted cards stay, since those are settings, not progress.
 export function wipeEverything() {
   const l = G.life;
-  const keep = { mode: l.mode, gender: l.gender, lang: l.lang, sound: l.sound, haptics: l.haptics, scrollSound: l.scrollSound, weather: l.weather, weatherSound: l.weatherSound, feedBuddy: l.feedBuddy, tourDone: l.tourDone, rating: l.rating, prayer: l.prayer, tab: l.tab, hearts: l.hearts };
+  const keep = { mode: l.mode, gender: l.gender, lang: l.lang, sound: l.sound, haptics: l.haptics, scrollSound: l.scrollSound, weather: l.weather, weatherSound: l.weatherSound, feedBuddy: l.feedBuddy, tourDone: l.tourDone, tourSeen: l.tourSeen, rating: l.rating, prayer: l.prayer, tab: l.tab, hearts: l.hearts };
   G.life = Object.assign(fresh(), keep);
   G.buddyMood = "happy";
   G.S = newSession(); G.undo = null; clearCheers();
@@ -481,32 +482,69 @@ export function restoreText(text) {
 }
 
 // ---------- Interactive tutorial: do each thing yourself, it moves on when you have ----------
-export const TOUR = [
-  { k: "tutSwipe", wait: "scroll", hand: true },
-  { k: "tutPoints", target: "pts", next: true },
-  { k: "tutTabs", target: "tabs", next: true },
-  { k: "tutRepeat", wait: "repeat", tapHand: true },
-  { k: "tutBuddy", target: "buddy", next: true },
-  { k: "tutLevel", target: "lvl", wait: "open" },
-  { k: "tutBack", target: "close", wait: "close", vars: () => ({ b: t("back") }), delay: 700 },
-  { k: "tutSins", target: "debt", next: true },
-  { k: "tutDone", target: "done", next: true, vars: () => ({ b: t("done") }) },
-  { k: "tutEnd", next: true, last: true },
+// One tutorial per mode. Each shows the sound settings and the mode switch (Zine, 2026-10-28).
+const IN_SETTINGS = [
+  { k: "tutSound", target: "sound", next: true, delay: 700 },
+  { k: "tutMode", target: "modeSw", next: true },
+  { k: "tutClose", target: "close", wait: "close", vars: () => ({ b: t("back") }) },
 ];
+const TOURS = {
+  game: [
+    { k: "tutSwipe", wait: "scroll", hand: true },
+    { k: "tutPoints", target: "pts", next: true },
+    { k: "tutTabs", target: "tabs", next: true },
+    { k: "tutRepeat", wait: "repeat", tapHand: true },
+    { k: "tutBuddy", target: "buddy", next: true },
+    { k: "tutLevel", target: "lvl", wait: "open" },
+    ...IN_SETTINGS,
+    { k: "tutSins", target: "debt", next: true },
+    { k: "tutDone", target: "done", next: true, vars: () => ({ b: t("done") }) },
+    { k: "tutEnd", next: true, last: true },
+  ],
+  calm: [
+    { k: "tutSwipe", wait: "scroll", hand: true },
+    { k: "tutTabs", target: "tabs", next: true },
+    { k: "tutRepeat", wait: "repeat", tapHand: true },
+    { k: "tutSins", target: "debt", next: true },
+    { k: "tutSettings", target: "settings", wait: "open" },
+    ...IN_SETTINGS,
+    { k: "tutEndCalm", next: true, last: true },
+  ],
+  learn: [
+    { k: "tutLearn", next: true },
+    { k: "tutTracks", target: "tracks", next: true },
+    { k: "tutMem", target: "memCheck", next: true },
+    { k: "tutSettings", target: "settings", wait: "open" },
+    ...IN_SETTINGS,
+    { k: "tutEndLearn", next: true, last: true },
+  ],
+};
+const modeNow = () => (TOURS[G.life.mode] ? G.life.mode : "game");
+export const tourSteps = () => TOURS[modeNow()];
+// Each mode's tutorial plays once, the first time you are in it.
+function maybeTour(delay) {
+  const seen = G.life.tourSeen || {};
+  if (picking() || seen[modeNow()]) return;
+  setTimeout(() => { if (!picking() && G.tourStep === -1) startTour(); }, delay);
+}
 let tourTimer = 0;
 export function startTour() { closeView(); G.tourStep = 0; changed(); }
-export function endTour() { clearTimeout(tourTimer); G.tourStep = -1; G.life.tourDone = true; save(); changed(); }
+export function endTour() {
+  clearTimeout(tourTimer); G.tourStep = -1;
+  G.life.tourDone = true; G.life.tourSeen = { ...(G.life.tourSeen || {}), [modeNow()]: true };
+  save(); changed();
+}
 export function goTour(i) {
   clearTimeout(tourTimer);
-  if (i >= TOUR.length) return endTour();
+  if (i >= tourSteps().length) return endTour();
   G.tourStep = -2;   // hidden for a moment between steps
   changed();
-  tourTimer = setTimeout(() => { G.tourStep = i; changed(); }, TOUR[i].delay || 250);
+  tourTimer = setTimeout(() => { G.tourStep = i; changed(); }, tourSteps()[i].delay || 250);
 }
 let tourWaiting = -1;
 function tourAdvance(ev) {
   const i = G.tourStep;
-  if (i >= 0 && TOUR[i].wait === ev && tourWaiting !== i) { tourWaiting = i; goTour(i + 1); setTimeout(() => { tourWaiting = -1; }, 300); }
+  if (i >= 0 && tourSteps()[i] && tourSteps()[i].wait === ev && tourWaiting !== i) { tourWaiting = i; goTour(i + 1); setTimeout(() => { tourWaiting = -1; }, 300); }
 }
 
 // ---------- App lifecycle ----------
@@ -539,6 +577,7 @@ export async function load() {
   setLangRaw(LANGS[l.lang] ? l.lang : pickLang());
   if (!["dial", "chime", "glass", "bubble"].includes(l.scrollSound)) l.scrollSound = "dial";   // silent, pop and wind were removed
   if (l.gender && l.tourDone === undefined) { l.tourDone = true; save(); }   // people who were here before the tutorial existed
+  if (l.tourDone && !l.tourSeen) { l.tourSeen = { [l.mode || "game"]: true }; save(); }   // before there was one tutorial per mode
   G.tab = ["dhikr", "dua", "muh", "quran"].includes(l.tab) ? l.tab : "dhikr";
   G.page = l.mode === "learn" ? "learn" : "scroll";
   G.buddyMood = l.lastSeen ? moodFor((Date.now() - l.lastSeen) / 36e5) : "happy";

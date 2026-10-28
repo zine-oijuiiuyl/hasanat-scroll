@@ -3,11 +3,11 @@ import { useEffect, useRef, useState } from "react";
 import { Animated, Dimensions, Easing, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { G, TOUR, endTour, goTour, pickBuddy, pickMode } from "./game";
+import { G, tourSteps, endTour, goTour, pickBuddy, pickMode } from "./game";
 import { T } from "./web-data";
 import { Ico } from "./Icons";
 import { t } from "./i18n";
-import { measure } from "./targets";
+import { measure, reveal } from "./targets";
 import { BuddyArt } from "./Buddy";
 import { LangPicker, s as u } from "./ui";
 import { C, F, GOLD } from "./theme";
@@ -43,14 +43,16 @@ function TouchHint({ swipe }) {
 export function Tour() {
   const i = G.tourStep;
   const [spot, setSpot] = useState(null);
-  const step = i >= 0 ? TOUR[i] : null;
+  const steps = tourSteps();
+  const step = i >= 0 ? steps[i] : null;
   useEffect(() => {
     let live = true;
     setSpot(null);
     // Measured again after a moment: a sheet that is still sliding in reports a position that is a bit off.
     const place = () => measure(step.target).then(r => { if (live && r) setSpot({ x: r.x - 8, y: r.y - 8, w: r.w + 16, h: r.h + 16 }); });
     let timers = [];
-    if (step && step.target) { place(); timers = [setTimeout(place, 500), setTimeout(place, 1000)]; }
+    // Settings further down the sheet are scrolled into view first.
+    if (step && step.target) { if (step.target !== "close") reveal(step.target, Dimensions.get("window").height); place(); timers = [setTimeout(place, 500), setTimeout(place, 1000)]; }
     return () => { live = false; timers.forEach(clearTimeout); };
   }, [i, step]);
   const { height: H } = Dimensions.get("window");
@@ -70,7 +72,7 @@ export function Tour() {
       <View style={[s.tip, top]}>
         <Text style={s.tipT}>{t(step.k, step.vars && step.vars())}</Text>
         <View style={s.foot}>
-          <Text style={s.count}>{i + 1} / {TOUR.length}</Text>
+          <Text style={s.count}>{i + 1} / {steps.length}</Text>
           <View style={{ flexDirection: "row", gap: 8 }}>
             {step.last ? null : <Pressable onPress={endTour} style={s.skip}><Text style={s.skipT}>{t("tutSkip")}</Text></Pressable>}
             {step.next ? (
@@ -100,6 +102,121 @@ const MODE = {
   de: { modeLearn: "Lernen", modeLearnS: "Kurze Lektionen, um Koran, Hadithe und Dhikr Schritt für Schritt zu lernen, mit deinem Begleiter.", modeTitle: "Wie möchtest du scrollen?", modeText: "Wähle, was zu dir passt. Du kannst es jederzeit in den Einstellungen ändern.", modeGame: "Wie ein Spiel", modeGameS: "Ein Begleiter, der mit dir wächst, Punkte, Level, Belohnungen und Konfetti.", modeCalm: "Ruhig", modeCalmS: "Nur die Karten, still und schlicht. Kein Begleiter, keine Punkte, keine Belohnungen.", settings: "Einstellungen" },
 };
 for (const [l, v] of Object.entries(MODE)) if (T[l]) Object.assign(T[l].ui, v);
+
+// The tutorial lines added with one tutorial per mode (Zine, 2026-10-28).
+const TUT = {
+ "en": {
+  "tutSound": "Turn the scroll sound on or off here, and pick the one you like. Weather sounds have their own switch below.",
+  "tutMode": "Switch between Calm, Game-like and Learning here, any time.",
+  "tutClose": "Tap “{b}” to go back.",
+  "tutSettings": "Tap Settings for sounds, weather, language and to change mode.",
+  "tutEndCalm": "That's it! Scroll calmly and enjoy your dhikr.",
+  "tutLearn": "This is your learning path. Tap the next lesson to start; each one takes a minute or two.",
+  "tutTracks": "Choose what to learn here: Qur'an or hadith.",
+  "tutMem": "Memory check brings back what you learned so you don't forget it. The library keeps everything you learned.",
+  "tutEndLearn": "That's it! Start your first lesson, bismillah."
+ },
+ "ar": {
+  "tutSound": "من هنا تشغّل صوت التمرير أو توقفه وتختار الصوت الذي يعجبك. لأصوات الطقس مفتاح خاص بها في الأسفل.",
+  "tutMode": "من هنا تنتقل بين الوضع الهادئ ووضع اللعبة ووضع التعلّم في أي وقت.",
+  "tutClose": "اضغط «{b}» للرجوع.",
+  "tutSettings": "اضغط الإعدادات للأصوات والطقس واللغة ولتغيير الوضع.",
+  "tutEndCalm": "هذا كل شيء! تصفّح بهدوء واستمتع بأذكارك.",
+  "tutLearn": "هذا مسار تعلّمك. اضغط الدرس التالي لتبدأ، وكل درس يستغرق دقيقة أو دقيقتين.",
+  "tutTracks": "اختر من هنا ما تتعلّمه: القرآن أو الحديث.",
+  "tutMem": "اختبار الذاكرة يعيد عليك ما تعلّمته حتى لا تنساه، والمكتبة تحفظ كل ما تعلّمته.",
+  "tutEndLearn": "هذا كل شيء! ابدأ درسك الأول، بسم الله."
+ },
+ "fr": {
+  "tutSound": "Active ou coupe le son du défilement ici, et choisis celui que tu préfères. Les sons de la météo ont leur propre bouton plus bas.",
+  "tutMode": "Passe ici entre Calme, Comme un jeu et Apprentissage, à tout moment.",
+  "tutClose": "Appuie sur « {b} » pour revenir.",
+  "tutSettings": "Appuie sur Réglages pour les sons, la météo, la langue et pour changer de mode.",
+  "tutEndCalm": "C'est tout ! Fais défiler au calme et profite de tes dhikr.",
+  "tutLearn": "Voici ton parcours. Appuie sur la prochaine leçon pour commencer ; chacune prend une minute ou deux.",
+  "tutTracks": "Choisis ici ce que tu apprends : le Coran ou les hadiths.",
+  "tutMem": "Le test de mémoire te fait revoir ce que tu as appris pour ne pas l'oublier. La bibliothèque garde tout ce que tu as appris.",
+  "tutEndLearn": "C'est tout ! Commence ta première leçon, bismillah."
+ },
+ "es": {
+  "tutSound": "Activa o quita aquí el sonido al deslizar y elige el que te guste. Los sonidos del clima tienen su propio interruptor abajo.",
+  "tutMode": "Cambia aquí entre Tranquilo, Como un juego y Aprendizaje cuando quieras.",
+  "tutClose": "Toca «{b}» para volver.",
+  "tutSettings": "Toca Ajustes para los sonidos, el clima, el idioma y para cambiar de modo.",
+  "tutEndCalm": "¡Eso es todo! Desliza con calma y disfruta de tu dhikr.",
+  "tutLearn": "Este es tu camino de aprendizaje. Toca la siguiente lección para empezar; cada una dura uno o dos minutos.",
+  "tutTracks": "Elige aquí qué aprender: Corán o hadices.",
+  "tutMem": "La prueba de memoria te repasa lo que aprendiste para que no lo olvides. La biblioteca guarda todo lo aprendido.",
+  "tutEndLearn": "¡Eso es todo! Empieza tu primera lección, bismillah."
+ },
+ "tr": {
+  "tutSound": "Kaydırma sesini buradan açıp kapat ve sevdiğin sesi seç. Hava durumu seslerinin aşağıda kendi düğmesi var.",
+  "tutMode": "Sakin, Oyun gibi ve Öğrenme arasında buradan istediğin zaman geçiş yap.",
+  "tutClose": "Geri dönmek için “{b}” düğmesine dokun.",
+  "tutSettings": "Sesler, hava durumu, dil ve mod değiştirmek için Ayarlar'a dokun.",
+  "tutEndCalm": "Hepsi bu! Sakince kaydır ve zikrinin tadını çıkar.",
+  "tutLearn": "Bu senin öğrenme yolun. Başlamak için sıradaki derse dokun; her biri bir iki dakika sürer.",
+  "tutTracks": "Ne öğreneceğini buradan seç: Kur'an ya da hadis.",
+  "tutMem": "Hafıza testi öğrendiklerini unutmaman için tekrar ettirir. Kütüphane öğrendiğin her şeyi saklar.",
+  "tutEndLearn": "Hepsi bu! İlk dersine başla, bismillah."
+ },
+ "ur": {
+  "tutSound": "یہاں اسکرول کی آواز آن یا آف کریں اور اپنی پسند کی آواز چنیں۔ موسم کی آوازوں کا الگ بٹن نیچے ہے۔",
+  "tutMode": "یہاں کسی بھی وقت پُرسکون، کھیل جیسا اور سیکھنا کے درمیان بدلیں۔",
+  "tutClose": "واپس جانے کے لیے «{b}» دبائیں۔",
+  "tutSettings": "آوازوں، موسم، زبان اور موڈ بدلنے کے لیے ترتیبات دبائیں۔",
+  "tutEndCalm": "بس اتنا ہی! سکون سے اسکرول کریں اور اپنے اذکار سے لطف اٹھائیں۔",
+  "tutLearn": "یہ آپ کا سیکھنے کا راستہ ہے۔ شروع کرنے کے لیے اگلا سبق دبائیں؛ ہر سبق ایک دو منٹ کا ہے۔",
+  "tutTracks": "یہاں چنیں کہ کیا سیکھنا ہے: قرآن یا حدیث۔",
+  "tutMem": "یادداشت کا امتحان سیکھی ہوئی چیزیں دہراتا ہے تاکہ آپ بھولیں نہیں۔ لائبریری میں سب کچھ محفوظ رہتا ہے۔",
+  "tutEndLearn": "بس اتنا ہی! اپنا پہلا سبق شروع کریں، بسم اللہ۔"
+ },
+ "id": {
+  "tutSound": "Nyalakan atau matikan suara gulir di sini, lalu pilih yang kamu suka. Suara cuaca punya tombolnya sendiri di bawah.",
+  "tutMode": "Pindah di sini antara Tenang, Seperti game, dan Belajar kapan saja.",
+  "tutClose": "Ketuk “{b}” untuk kembali.",
+  "tutSettings": "Ketuk Pengaturan untuk suara, cuaca, bahasa, dan untuk mengganti mode.",
+  "tutEndCalm": "Selesai! Menggulirlah dengan tenang dan nikmati zikirmu.",
+  "tutLearn": "Ini jalur belajarmu. Ketuk pelajaran berikutnya untuk mulai; tiap pelajaran satu atau dua menit.",
+  "tutTracks": "Pilih di sini apa yang ingin dipelajari: Al-Qur'an atau hadis.",
+  "tutMem": "Tes hafalan mengulang yang sudah kamu pelajari agar tidak lupa. Perpustakaan menyimpan semua yang kamu pelajari.",
+  "tutEndLearn": "Selesai! Mulai pelajaran pertamamu, bismillah."
+ },
+ "bn": {
+  "tutSound": "এখানে স্ক্রলের শব্দ চালু বা বন্ধ করো আর পছন্দের শব্দ বেছে নাও। আবহাওয়ার শব্দের আলাদা সুইচ নিচে আছে।",
+  "tutMode": "এখানে যেকোনো সময় শান্ত, খেলার মতো আর শেখার মধ্যে বদলাও।",
+  "tutClose": "ফিরে যেতে “{b}” চাপো।",
+  "tutSettings": "শব্দ, আবহাওয়া, ভাষা আর মোড বদলাতে সেটিংস চাপো।",
+  "tutEndCalm": "ব্যস! শান্তভাবে স্ক্রল করো আর তোমার যিকির উপভোগ করো।",
+  "tutLearn": "এটা তোমার শেখার পথ। শুরু করতে পরের পাঠে চাপো; প্রতিটি এক-দুই মিনিটের।",
+  "tutTracks": "এখানে বেছে নাও কী শিখবে: কুরআন না হাদিস।",
+  "tutMem": "স্মৃতি পরীক্ষা শেখা জিনিস আবার দেখায় যাতে ভুলে না যাও। লাইব্রেরিতে সব শেখা জিনিস থাকে।",
+  "tutEndLearn": "ব্যস! তোমার প্রথম পাঠ শুরু করো, বিসমিল্লাহ।"
+ },
+ "ru": {
+  "tutSound": "Здесь включай и выключай звук прокрутки и выбирай тот, что нравится. У звуков погоды свой переключатель ниже.",
+  "tutMode": "Здесь можно в любой момент переключаться между режимами «Спокойно», «Как игра» и «Обучение».",
+  "tutClose": "Нажми «{b}», чтобы вернуться.",
+  "tutSettings": "Нажми «Настройки», чтобы выбрать звуки, погоду, язык и сменить режим.",
+  "tutEndCalm": "Вот и всё! Листай спокойно и наслаждайся зикром.",
+  "tutLearn": "Это твой путь обучения. Нажми на следующий урок, чтобы начать; каждый занимает минуту-две.",
+  "tutTracks": "Выбери здесь, что учить: Коран или хадисы.",
+  "tutMem": "Проверка памяти повторяет выученное, чтобы ты не забыл. В библиотеке хранится всё, что ты выучил.",
+  "tutEndLearn": "Вот и всё! Начни первый урок, бисмиллях."
+ },
+ "de": {
+  "tutSound": "Schalte hier den Scroll-Ton ein oder aus und wähle den, der dir gefällt. Die Wettergeräusche haben weiter unten einen eigenen Schalter.",
+  "tutMode": "Wechsle hier jederzeit zwischen Ruhig, Wie ein Spiel und Lernen.",
+  "tutClose": "Tippe auf „{b}“, um zurückzugehen.",
+  "tutSettings": "Tippe auf Einstellungen für Töne, Wetter, Sprache und um den Modus zu wechseln.",
+  "tutEndCalm": "Das war's! Scrolle in Ruhe und genieße deinen Dhikr.",
+  "tutLearn": "Das ist dein Lernpfad. Tippe auf die nächste Lektion, um zu beginnen; jede dauert ein, zwei Minuten.",
+  "tutTracks": "Wähle hier, was du lernen willst: Koran oder Hadith.",
+  "tutMem": "Der Gedächtnistest wiederholt, was du gelernt hast, damit du es nicht vergisst. Die Bibliothek bewahrt alles Gelernte auf.",
+  "tutEndLearn": "Das war's! Beginne deine erste Lektion, bismillah."
+ }
+};
+for (const [l, v] of Object.entries(TUT)) if (T[l]) Object.assign(T[l].ui, v);
 
 export function Picker() {
   const insets = useSafeAreaInsets();
