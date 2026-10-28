@@ -5,7 +5,7 @@ import { ActivityIndicator, Animated, Easing, FlatList, Pressable, ScrollView, S
 import { LinearGradient } from "expo-linear-gradient";
 import Svg, { Path as SvgPath } from "react-native-svg";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { G, closeView, openView, stageNow, emit, showToast, subscribe, on } from "./game";
+import { G, closeView, openView, stageNow, emit, showToast, subscribe, on, isLearn } from "./game";
 import {
   L, TRACKS, TRACK_KEYS, unitTitle, unitSub, lessonItems, lessonLabel, unitAt, loadItems, lessonExercises, reviewExercises,
   finishLesson, finishReview, setOf, SET, SET_BONUS, dueKeys, dueCount, boxOf, MASTER, masteredCount, learnedCount, MEDALS, medalName, REVIEW_SIZE, setTrack, backToPath,
@@ -29,7 +29,7 @@ const arSize = (s, base = 32) => { const n = s.length; return Math.max(18, n < 4
 // When one learning screen replaces another (library and reader, lesson and result), the new one
 // appears at once; fading it in would let the path underneath show through.
 let openScreens = 0;
-function Screen({ children, onBack, back = "✕", title, right, scroll = true, page }) {
+function Screen({ children, onBack, back = "✕", title, left, right, scroll = true, page }) {
   const insets = useSafeAreaInsets();
   // The screen being replaced is still mounted while its successor first renders.
   const a = useRef(new Animated.Value(page || openScreens > 0 ? 1 : 0)).current;
@@ -44,7 +44,7 @@ function Screen({ children, onBack, back = "✕", title, right, scroll = true, p
       <LinearGradient colors={SHEET_BG} locations={[0, 0.45, 1]} style={StyleSheet.absoluteFill} />
       <Pattern70 />
       <View style={[s.head, { paddingTop: insets.top + 8 }]}>
-        {onBack ? <Pressable hitSlop={12} onPress={() => { hapTick(); onBack(); }} style={s.x}><Text style={s.xT}>{back}</Text></Pressable> : <View style={{ width: 36 }} />}
+        {left || (onBack ? <Pressable hitSlop={12} onPress={() => { hapTick(); onBack(); }} style={s.x}><Text style={s.xT}>{back}</Text></Pressable> : <View style={{ width: 36 }} />)}
         <View style={{ flex: 1 }}>{typeof title === "string" ? <Text style={s.headT} numberOfLines={1}>{title}</Text> : title}</View>
         <View style={{ minWidth: 36, alignItems: "flex-end" }}>{right}</View>
       </View>
@@ -210,6 +210,7 @@ function Path({ track }) {
   }, [track]);
   return (
     <Screen page title={t("learn")} scroll={false}
+      left={isLearn() ? <Pressable testID="settings" hitSlop={8} onPress={() => { hapTick(); openView("progress"); }} style={s.setBtn}><Text style={s.setBtnT}>{t("settings")}</Text></Pressable> : null}
       right={<IconText style={s.headStat} size={15}>{"👑 " + num(masteredCount())}</IconText>}>
       <View style={{ paddingHorizontal: 16, gap: 12, paddingBottom: 8 }}>
         <TrackPills track={track} onChange={setTrack} />
@@ -674,6 +675,8 @@ export function Reader({ track, g }) {
 }
 
 const s = StyleSheet.create({
+  setBtn: { paddingVertical: 8, paddingHorizontal: 13, borderRadius: 999, backgroundColor: "rgba(244,239,226,0.16)" },
+  setBtnT: { fontSize: 14, fontFamily: F.heavy, color: C.ink },
   head: { flexDirection: "row", alignItems: "center", gap: 12, paddingHorizontal: 16, paddingBottom: 10 },
   x: { width: 36, height: 36, borderRadius: 18, alignItems: "center", justifyContent: "center", backgroundColor: "rgba(244,239,226,0.12)" },
   xT: { color: C.ink, fontSize: 20, fontFamily: F.heavy, marginTop: -2 },

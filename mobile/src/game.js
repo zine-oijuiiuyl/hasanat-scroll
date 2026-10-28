@@ -4,7 +4,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { LIB, BY_ID, LANGS, RULES, isMilestone, levelFor, stageFor, BADGES, STAGES } from "./web-data";
 import "./hadith";
 import { t, levelTitle, levelLine, badgeText, stageName, stageLine, setLangRaw, pickLang, getLang, num } from "./i18n";
-import { fx, scrollSound, setFxSettings } from "./fx";
+import { fx, scrollSound, setFxSettings, ambient } from "./fx";
 
 // Zine chose a shorter wait for the native app (2026-10-25): normal swipes grow the combo, only flicks under 0.5s don't.
 RULES.minDwellMs = 500;
@@ -402,25 +402,30 @@ export function setLang(l) {
 export function setSetting(k, v) { G.life[k] = v; save(); syncFx(); changed(); }
 // The first question: game-like (buddy, points, rewards) or calm (only the cards). Zine, 2026-10-28.
 export const isCalm = () => G.life.mode === "calm";
+// Learning mode is only the learning path; game and calm are only the scroll feed (Zine, 2026-10-28).
+export const isLearn = () => G.life.mode === "learn";
 export function pickMode(m) {
   G.life.mode = m; G.life.lang = getLang();
-  if (m === "calm") { G.life.tourDone = true; G.page = "scroll"; emit("page", "scroll"); clearCheers(); }
+  const page = m === "learn" ? "learn" : "scroll";
+  if (G.page !== page) { G.page = page; emit("page", page); }
+  if (m === "calm" || m === "learn") { G.life.tourDone = true; clearCheers(); }
+  if (m === "learn") ambient(null);
   // Game mode starts with the scroll sound on (chime) and no weather or weather sound; all three can be changed in the settings (Zine, 2026-10-28).
   // Calm is the reverse: no scroll sound, weather and its sound on.
   if (m === "calm") { G.life.sound = false; G.life.weather = "auto"; G.life.weatherSound = true; }
   if (m === "game") { G.life.sound = true; G.life.scrollSound = "chime"; G.life.weather = "off"; G.life.weatherSound = false; }
   save(); syncFx(); changed();
 }
-export function setMode(calm) {
+export function setMode(m) {
   G.view = null;
-  pickMode(calm ? "calm" : "game");
-  if (!calm && G.life.gender) { fx.party(); emit("confetti", false); }
+  pickMode(m);
+  if (m === "game" && G.life.gender) { fx.party(); emit("confetti", false); }
 }
 export function pickBuddy(g) {
-  G.life.gender = g; G.life.lang = getLang(); G.life.tourDone = false; save();
+  G.life.gender = g; G.life.lang = getLang(); G.life.tourDone = isLearn(); save();
   fx.party(); emit("confetti", false); emit("cheerBuddy");
   changed();
-  setTimeout(startTour, 1700);
+  if (!isLearn()) setTimeout(startTour, 1700);
 }
 export function swapBuddy() { G.life.gender = G.life.gender === "f" ? "m" : "f"; save(); changed(); }
 export function rate(n) { G.life.rating = n; save(); fx.up(); if (n >= 4) { fx.party(); emit("confetti", n === 5); } changed(); }
@@ -533,6 +538,7 @@ export async function load() {
   if (!["dial", "chime", "glass", "bubble"].includes(l.scrollSound)) l.scrollSound = "dial";   // silent, pop and wind were removed
   if (l.gender && l.tourDone === undefined) { l.tourDone = true; save(); }   // people who were here before the tutorial existed
   G.tab = ["dhikr", "dua", "muh", "quran"].includes(l.tab) ? l.tab : "dhikr";
+  G.page = l.mode === "learn" ? "learn" : "scroll";
   G.buddyMood = l.lastSeen ? moodFor((Date.now() - l.lastSeen) / 36e5) : "happy";
   G.S = newSession();
   syncFx();

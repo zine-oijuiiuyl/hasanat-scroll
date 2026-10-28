@@ -9,7 +9,7 @@ import { File, Paths } from "expo-file-system";
 import { BY_ID, STAGES, BADGES, levelFor, levelProgress, stageProgress, threshold, PR_NAMES, PR_METHODS, prayerDay } from "./web-data";
 import {
   G, closeView, keepScrolling, resetSession, openView, openCinematic, tabOf, lifeTaps, stageNow, sTaps, askToRate, rate, rateLater,
-  setSetting, swapBuddy, startTour, isCalm, setMode, wipeEverything, backupText, restoreText, digits, startDebt, removeDebt,
+  setSetting, swapBuddy, startTour, isCalm, isLearn, setMode, wipeEverything, backupText, restoreText, digits, startDebt, removeDebt,
 } from "./game";
 import { t, levelTitle, stageName, badgeText, num, isRTL } from "./i18n";
 import { BuddyArt } from "./Buddy";
@@ -199,14 +199,15 @@ async function restoreProgress() {
   } catch (e) { restoreText(""); }
 }
 
-// Calm or game, as one two-sided switch (Zine, 2026-10-28).
-function ModeSwitch({ calm }) {
+// Calm, game or learning, as one switch with three sides (Zine, 2026-10-28).
+function ModeSwitch() {
+  const cur = G.life.mode || "game";
   return (
     <View style={s.modeSw}>
-      {[[true, "🍃", "modeCalm"], [false, "🎉", "modeGame"]].map(([c, e, k]) => (
-        <Pressable key={k} testID={"modeSw-" + (c ? "calm" : "game")} onPress={() => { if (c !== calm) { hapTick(); setMode(c); } }} style={s.modeSide}>
-          {c === calm ? <LinearGradient colors={GOLD} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={[StyleSheet.absoluteFill, { borderRadius: 999 }]} /> : null}
-          <IconText style={[s.modeT, c === calm && { color: "#2a1a00" }]} size={15}>{e + " " + t(k)}</IconText>
+      {[["calm", "🍃", "modeCalm"], ["game", "🎉", "modeGame"], ["learn", "📖", "modeLearn"]].map(([m, e, k]) => (
+        <Pressable key={m} testID={"modeSw-" + m} onPress={() => { if (m !== cur) { hapTick(); setMode(m); } }} style={s.modeSide}>
+          {m === cur ? <LinearGradient colors={GOLD} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={[StyleSheet.absoluteFill, { borderRadius: 999 }]} /> : null}
+          <IconText style={[s.modeT, m === cur && { color: "#2a1a00" }]} size={13} gap={4} numberOfLines={1}>{e + " " + t(k)}</IconText>
         </Pressable>
       ))}
     </View>
@@ -266,7 +267,7 @@ export function Progress() {
       <Rate />
       <Panel>
         {calm ? <Label>{t("settings")}</Label> : null}
-        <ModeSwitch calm={calm} />
+        <ModeSwitch />
         <Btn title={"🕌 " + t("prTitle")} onPress={() => openView("prayer")} testID="prayerOpen" />
         <Btn title={"🧭 " + t("qbTitle")} onPress={() => openView("qibla")} testID="qiblaOpen" />
         <Btn title={"⚖️ " + (L.debt ? t("debtNew") : t("debtTitle"))} onPress={() => openView("debt")} />
@@ -285,10 +286,10 @@ export function Progress() {
           </>
         ) : null}
         <Toggle label={t("haptics")} value={L.haptics} onChange={v => setSetting("haptics", v)} />
-        {calm ? null : <Toggle label={t("feedBuddy")} value={L.feedBuddy !== false} onChange={v => setSetting("feedBuddy", v)} />}
+        {calm || isLearn() ? null : <Toggle label={t("feedBuddy")} value={L.feedBuddy !== false} onChange={v => setSetting("feedBuddy", v)} />}
         <Btn title={"💾 " + t("backup")} onPress={backupProgress} />
         <Btn title={"📂 " + t("restore")} onPress={restoreProgress} />
-        {calm ? null : <Btn title={"🧭 " + t("tutAgain")} onPress={() => setTimeout(startTour, 200)} />}
+        {calm || isLearn() ? null : <Btn title={"🧭 " + t("tutAgain")} onPress={() => setTimeout(startTour, 200)} />}
         <Btn title={sure ? t("wipeSure") : t("wipe")} danger={!sure} style={sure && { backgroundColor: "#a33a2c" }} onPress={() => { if (!sure) setSure(true); else { setSure(false); wipeEverything(); } }} />
         {calm ? null : <Btn title={L.gender === "f" ? t("swapBoy") : t("swapGirl")} onPress={swapBuddy} />}
       </Panel>
@@ -408,8 +409,8 @@ export default function Sheets() {
 
 const s = StyleSheet.create({
   modeSw: { flexDirection: "row", padding: 4, borderRadius: 999, backgroundColor: "rgba(244,239,226,0.1)", borderWidth: 1.5, borderColor: C.line },
-  modeSide: { flex: 1, height: 44, borderRadius: 999, alignItems: "center", justifyContent: "center", overflow: "hidden" },
-  modeT: { fontSize: 15, fontFamily: F.heavy, color: C.ink },
+  modeSide: { flex: 1, height: 44, paddingHorizontal: 4, borderRadius: 999, alignItems: "center", justifyContent: "center", overflow: "hidden" },
+  modeT: { fontSize: 13, fontFamily: F.heavy, color: C.ink },
   actions: { position: "absolute", left: 0, right: 0, bottom: 0, flexDirection: "row", gap: 12, justifyContent: "center", paddingTop: 16, paddingHorizontal: 16 },
   badges: { flexDirection: "row", flexWrap: "wrap", gap: 14, justifyContent: "flex-start" },
   badge: { width: 88, alignItems: "center", gap: 4 },
