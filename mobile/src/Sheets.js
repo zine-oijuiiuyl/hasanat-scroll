@@ -250,8 +250,9 @@ export function Progress() {
         <Btn title={"🧭 " + t("qbTitle")} onPress={() => openView("qibla")} testID="qiblaOpen" />
         <Btn title={"⚖️ " + (L.debt ? t("debtNew") : t("debtTitle"))} onPress={() => openView("debt")} />
         <LangPicker />
-        <Toggle label={t("sounds")} value={L.sound} onChange={v => setSetting("sound", v)} />
-        <Choice label={"🔊 " + t("scrollSnd")} value={L.scrollSound || "dial"} options={[["dial", t("sndDial")], ["chime", t("sndChime")], ["glass", t("sndGlass")], ["bubble", t("sndBubble")]]}
+        {/* The sound switch sits on the Scroll sound line, like the Weather one (Zine, 2026-10-28). */}
+        <Toggle label={t("scrollSnd")} value={L.sound} onChange={v => setSetting("sound", v)} />
+        <Choice value={L.scrollSound || "dial"} options={[["dial", t("sndDial")], ["chime", t("sndChime")], ["glass", t("sndGlass")], ["bubble", t("sndBubble")]]}
           onChange={v => { setSetting("scrollSound", v); }} />
         {/* Weather: a switch to turn it off, the choice of weather, and a switch for its sounds (Zine, 2026-10-28). */}
         <Toggle label={t("wxTitle")} value={L.weather !== "off"} onChange={v => setSetting("weather", v ? "auto" : "off")} />
