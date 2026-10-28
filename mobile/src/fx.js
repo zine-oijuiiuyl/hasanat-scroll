@@ -44,7 +44,7 @@ function fadeTo(k, to, ms, done) {
 }
 export function ambient(kind) {
   ambWant = kind;
-  const k = settings.sound && AMB[kind] ? kind : null;
+  const k = settings.sound && settings.weatherSound !== false && AMB[kind] ? kind : null;
   if (k === ambNow) return;
   if (ambNow) fadeTo(ambNow, 0, 900, p => p.pause());
   ambNow = k;

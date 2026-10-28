@@ -31,6 +31,8 @@ for (const [l, v] of Object.entries(BUBBLE)) if (T[l]) T[l].ui.sndBubble = v;
 // The switch that hides the buddy on the scroll page (Zine, 2026-10-28).
 const FEED_BUDDY = { en: "Show buddy while scrolling", ar: "إظهار الرفيق أثناء التمرير", fr: "Afficher le compagnon pendant le défilement", es: "Mostrar al compañero al deslizar", tr: "Kaydırırken arkadaşı göster", ur: "اسکرول کرتے وقت ساتھی دکھائیں", id: "Tampilkan teman saat menggulir", bn: "স্ক্রল করার সময় সঙ্গী দেখাও", ru: "Показывать спутника при прокрутке", de: "Begleiter beim Scrollen zeigen" };
 for (const [l, v] of Object.entries(FEED_BUDDY)) if (T[l]) T[l].ui.feedBuddy = v;
+const WX_SOUND = { en: "Weather sounds", ar: "أصوات الطقس", fr: "Sons de la météo", es: "Sonidos del clima", tr: "Hava sesleri", ur: "موسم کی آوازیں", id: "Suara cuaca", bn: "আবহাওয়ার শব্দ", ru: "Звуки погоды", de: "Wettergeräusche" };
+for (const [l, v] of Object.entries(WX_SOUND)) if (T[l]) T[l].ui.wxSound = v;
 import { Ico } from "./Icons";
 
 const TAB_ORDER = [["dhikr", "tabDhikr"], ["dua", "tabDua"], ["quran", "tabQuran"], ["muh", "tabMuh"]];
@@ -251,8 +253,15 @@ export function Progress() {
         <Toggle label={t("sounds")} value={L.sound} onChange={v => setSetting("sound", v)} />
         <Choice label={"🔊 " + t("scrollSnd")} value={L.scrollSound || "dial"} options={[["dial", t("sndDial")], ["chime", t("sndChime")], ["glass", t("sndGlass")], ["bubble", t("sndBubble")]]}
           onChange={v => { setSetting("scrollSound", v); }} />
-        <Choice label={t("wxTitle")} value={WEATHERS.includes(L.weather) || L.weather === "off" ? L.weather : "auto"} options={[["auto", t("wxAuto")], ...WEATHERS.map(k => [k, t("wx_" + k)]), ["off", t("wxOff")]]}
-          onChange={v => { setSetting("weather", v); }} />
+        {/* Weather: a switch to turn it off, the choice of weather, and a switch for its sounds (Zine, 2026-10-28). */}
+        <Toggle label={t("wxTitle")} value={L.weather !== "off"} onChange={v => setSetting("weather", v ? "auto" : "off")} />
+        {L.weather !== "off" ? (
+          <>
+            <Choice value={WEATHERS.includes(L.weather) ? L.weather : "auto"} options={[["auto", t("wxAuto")], ...WEATHERS.map(k => [k, t("wx_" + k)])]}
+              onChange={v => { setSetting("weather", v); }} />
+            <Toggle label={t("wxSound")} value={L.weatherSound !== false} onChange={v => setSetting("weatherSound", v)} />
+          </>
+        ) : null}
         <Toggle label={t("haptics")} value={L.haptics} onChange={v => setSetting("haptics", v)} />
         <Toggle label={t("feedBuddy")} value={L.feedBuddy !== false} onChange={v => setSetting("feedBuddy", v)} />
         <Btn title={"💾 " + t("backup")} onPress={backupProgress} />

@@ -51,7 +51,7 @@ export const save = () => {
   saveTimer = setTimeout(() => AsyncStorage.setItem(KEY, JSON.stringify(G.life)).catch(() => {}), 150);
 };
 export const saveNow = () => { clearTimeout(saveTimer); return AsyncStorage.setItem(KEY, JSON.stringify(G.life)).catch(() => {}); };
-const syncFx = () => setFxSettings({ sound: G.life.sound, haptics: G.life.haptics, scrollSound: G.life.scrollSound || "dial" });
+const syncFx = () => setFxSettings({ sound: G.life.sound, haptics: G.life.haptics, scrollSound: G.life.scrollSound || "dial", weatherSound: G.life.weatherSound !== false });
 
 // ---------- Session ----------
 const sum = o => Object.values(o).reduce((a, b) => a + b, 0);
@@ -357,7 +357,7 @@ export function keepScrolling(sm) {
   const { undo } = G;
   if (undo && sm && undo.S.start === sm.start) {
     const l = G.life;
-    const keep = { rating: l.rating, rateLater: l.rateLater, hearts: l.hearts, lang: l.lang, sound: l.sound, haptics: l.haptics, scrollSound: l.scrollSound, weather: l.weather, feedBuddy: l.feedBuddy };
+    const keep = { rating: l.rating, rateLater: l.rateLater, hearts: l.hearts, lang: l.lang, sound: l.sound, haptics: l.haptics, scrollSound: l.scrollSound, weather: l.weather, weatherSound: l.weatherSound, feedBuddy: l.feedBuddy };
     G.life = Object.assign(undo.life, keep);
     G.S = undo.S; G.S.last = 0; save();
   }
@@ -413,7 +413,7 @@ export function toggleHeart(id) {
 // Back to zero. The buddy, language, sound choices and hearted cards stay, since those are settings, not progress.
 export function wipeEverything() {
   const l = G.life;
-  const keep = { gender: l.gender, lang: l.lang, sound: l.sound, haptics: l.haptics, scrollSound: l.scrollSound, weather: l.weather, feedBuddy: l.feedBuddy, tourDone: l.tourDone, rating: l.rating, prayer: l.prayer, tab: l.tab, hearts: l.hearts };
+  const keep = { gender: l.gender, lang: l.lang, sound: l.sound, haptics: l.haptics, scrollSound: l.scrollSound, weather: l.weather, weatherSound: l.weatherSound, feedBuddy: l.feedBuddy, tourDone: l.tourDone, rating: l.rating, prayer: l.prayer, tab: l.tab, hearts: l.hearts };
   G.life = Object.assign(fresh(), keep);
   G.buddyMood = "happy";
   G.S = newSession(); G.undo = null; clearCheers();
