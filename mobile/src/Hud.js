@@ -86,10 +86,11 @@ export default function Hud() {
               <Text style={s.doneT}>{t("settings")}</Text>
             </Pressable>
           </View>
-          <View style={[s.score, { flexDirection: "row", justifyContent: "center", gap: 6 }]}>
+          {/* Tapping the count opens the history (Zine, 2026-10-28). */}
+          <Pressable testID="count" onPress={() => { hapTick(); openView("history"); }} style={[s.score, { flexDirection: "row", justifyContent: "center", gap: 6 }]}>
             <Ico e="📿" size={22} />
             <Text style={s.pts}>{num(G.calmN || 0)}</Text>
-          </View>
+          </Pressable>
           <View style={{ width: 96 }} />
         </View>
       ) : <View style={s.bar}>
@@ -100,6 +101,7 @@ export default function Hud() {
             <Text style={s.lvNum}>{t("lv", { n: lv })}</Text>
           </View>
         </Pressable>
+        <Pressable testID="pts" onPress={() => { hapTick(); openView("history"); }} style={{ flex: 1 }}>
         <Animated.View ref={target("pts")} style={[s.score, { transform: [{ scale }] }]}>
           <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
             <Text style={s.star}>✦</Text>
@@ -107,6 +109,7 @@ export default function Hud() {
           </View>
           <Text style={s.sub}>{t("pointsSub", { t: levelTitle(lv) })}</Text>
         </Animated.View>
+        </Pressable>
         <View style={{ width: 76, alignItems: "flex-end" }}>
           <Pressable ref={target("done")} testID="done" onPress={() => { hapTick(); openView("summary", { sm: finish() }); }} style={s.done}>
             <Text style={s.doneT}>{t("done")}</Text>

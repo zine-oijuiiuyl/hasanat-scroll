@@ -9,9 +9,9 @@ import { File, Paths } from "expo-file-system";
 import { BY_ID, STAGES, BADGES, levelFor, levelProgress, stageProgress, threshold, PR_NAMES, PR_METHODS, prayerDay } from "./web-data";
 import {
   G, closeView, keepScrolling, resetSession, openView, openCinematic, tabOf, lifeTaps, stageNow, sTaps, askToRate, rate, rateLater,
-  setSetting, swapBuddy, startTour, isCalm, isLearn, setMode, wipeEverything, backupText, restoreText, digits, startDebt, removeDebt,
+  setSetting, swapBuddy, startTour, isCalm, isLearn, setMode, countNow, countToday, countAll, dayKey, wipeEverything, backupText, restoreText, digits, startDebt, removeDebt,
 } from "./game";
-import { t, levelTitle, stageName, badgeText, num, isRTL } from "./i18n";
+import { t, levelTitle, stageName, badgeText, num, isRTL, getLang } from "./i18n";
 import { BuddyArt } from "./Buddy";
 import { Panel, Label, Cap, Bar, Tile, Tiles, Btn, Toggle, Choice, LangPicker, s as u } from "./ui";
 import { C, F, GOLD, SHEET_BG } from "./theme";
@@ -33,6 +33,99 @@ const FEED_BUDDY = { en: "Show buddy while scrolling", ar: "إظهار الرف�
 for (const [l, v] of Object.entries(FEED_BUDDY)) if (T[l]) T[l].ui.feedBuddy = v;
 const CALM_MODE = { en: "Calm mode", ar: "الوضع الهادئ", fr: "Mode calme", es: "Modo tranquilo", tr: "Sakin mod", ur: "پُرسکون موڈ", id: "Mode tenang", bn: "শান্ত মোড", ru: "Спокойный режим", de: "Ruhiger Modus" };
 for (const [l, v] of Object.entries(CALM_MODE)) if (T[l]) T[l].ui.calmMode = v;
+const HIST = {
+ "en": {
+  "histTitle": "History",
+  "histNow": "Right now",
+  "histToday": "Today",
+  "histAll": "Since you started",
+  "histDays": "Day by day",
+  "histEmpty": "Nothing yet. Scroll a few cards and they'll show up here.",
+  "histNote": "Every card you scroll to and every tap counts, in both Calm and Game-like."
+ },
+ "ar": {
+  "histTitle": "السجل",
+  "histNow": "الآن",
+  "histToday": "اليوم",
+  "histAll": "منذ البداية",
+  "histDays": "يومًا بيوم",
+  "histEmpty": "لا شيء بعد. تصفّح بعض البطاقات وستظهر هنا.",
+  "histNote": "كل بطاقة تصل إليها وكل ضغطة تُحسب، في الوضع الهادئ ووضع اللعبة."
+ },
+ "fr": {
+  "histTitle": "Historique",
+  "histNow": "En ce moment",
+  "histToday": "Aujourd'hui",
+  "histAll": "Depuis le début",
+  "histDays": "Jour par jour",
+  "histEmpty": "Rien pour l'instant. Fais défiler quelques cartes et elles apparaîtront ici.",
+  "histNote": "Chaque carte atteinte et chaque appui comptent, en mode Calme comme en mode Jeu."
+ },
+ "es": {
+  "histTitle": "Historial",
+  "histNow": "Ahora mismo",
+  "histToday": "Hoy",
+  "histAll": "Desde el principio",
+  "histDays": "Día a día",
+  "histEmpty": "Nada todavía. Desliza algunas tarjetas y aparecerán aquí.",
+  "histNote": "Cuenta cada tarjeta a la que llegas y cada toque, en Tranquilo y en Como un juego."
+ },
+ "tr": {
+  "histTitle": "Geçmiş",
+  "histNow": "Şu an",
+  "histToday": "Bugün",
+  "histAll": "Başladığından beri",
+  "histDays": "Gün gün",
+  "histEmpty": "Henüz bir şey yok. Birkaç kart kaydır, burada görünecek.",
+  "histNote": "Kaydırdığın her kart ve her dokunuş sayılır, hem Sakin hem Oyun gibi modda."
+ },
+ "ur": {
+  "histTitle": "تاریخچہ",
+  "histNow": "ابھی",
+  "histToday": "آج",
+  "histAll": "شروع سے اب تک",
+  "histDays": "دن بہ دن",
+  "histEmpty": "ابھی کچھ نہیں۔ چند کارڈز اسکرول کریں، وہ یہاں نظر آئیں گے۔",
+  "histNote": "ہر کارڈ جس تک آپ پہنچیں اور ہر ٹیپ گنا جاتا ہے، پُرسکون اور کھیل جیسا دونوں میں۔"
+ },
+ "id": {
+  "histTitle": "Riwayat",
+  "histNow": "Saat ini",
+  "histToday": "Hari ini",
+  "histAll": "Sejak awal",
+  "histDays": "Hari demi hari",
+  "histEmpty": "Belum ada. Gulir beberapa kartu dan akan muncul di sini.",
+  "histNote": "Setiap kartu yang kamu capai dan setiap ketukan dihitung, di mode Tenang maupun Seperti game."
+ },
+ "bn": {
+  "histTitle": "ইতিহাস",
+  "histNow": "এখন",
+  "histToday": "আজ",
+  "histAll": "শুরু থেকে",
+  "histDays": "দিন অনুযায়ী",
+  "histEmpty": "এখনো কিছু নেই। কয়েকটা কার্ড স্ক্রল করো, এখানে দেখা যাবে।",
+  "histNote": "প্রতিটি কার্ড আর প্রতিটি ট্যাপ গোনা হয়, শান্ত ও খেলার মতো দুই মোডেই।"
+ },
+ "ru": {
+  "histTitle": "История",
+  "histNow": "Сейчас",
+  "histToday": "Сегодня",
+  "histAll": "С самого начала",
+  "histDays": "По дням",
+  "histEmpty": "Пока пусто. Пролистай несколько карточек, и они появятся здесь.",
+  "histNote": "Считается каждая карточка и каждое касание, и в спокойном режиме, и в игровом."
+ },
+ "de": {
+  "histTitle": "Verlauf",
+  "histNow": "Gerade",
+  "histToday": "Heute",
+  "histAll": "Seit dem Start",
+  "histDays": "Tag für Tag",
+  "histEmpty": "Noch nichts. Scrolle ein paar Karten, dann erscheinen sie hier.",
+  "histNote": "Jede Karte, zu der du scrollst, und jedes Tippen zählt, im ruhigen wie im Spielmodus."
+ }
+};
+for (const [l, v] of Object.entries(HIST)) if (T[l]) Object.assign(T[l].ui, v);
 const WX_SOUND = { en: "Weather sounds", ar: "أصوات الطقس", fr: "Sons de la météo", es: "Sonidos del clima", tr: "Hava sesleri", ur: "موسم کی آوازیں", id: "Suara cuaca", bn: "আবহাওয়ার শব্দ", ru: "Звуки погоды", de: "Wettergeräusche" };
 for (const [l, v] of Object.entries(WX_SOUND)) if (T[l]) T[l].ui.wxSound = v;
 import { Ico, IconText } from "./Icons";
@@ -206,6 +299,55 @@ async function restoreProgress() {
   } catch (e) { restoreText(""); }
 }
 
+// ---------- History: what you scored right now, today, since the start, and on each day by the hour ----------
+const dayName = key => {
+  const [y, m, d] = key.split("-").map(Number);
+  try { return new Date(y, m - 1, d).toLocaleDateString(getLang(), { weekday: "long", day: "numeric", month: "long", year: "numeric" }); }
+  catch (e) { return key; }
+};
+const hourName = h => `${String(h).padStart(2, "0")}:00 – ${String((h + 1) % 24).padStart(2, "0")}:00`;
+
+function DayRow({ k, day, open, onToggle }) {
+  const hours = Object.entries(day.h).map(([h, n]) => [+h, n]).sort((a, b) => a[0] - b[0]);
+  const max = Math.max(1, ...hours.map(x => x[1]));
+  return (
+    <View style={{ gap: 8 }}>
+      <Pressable onPress={() => { hapTick(); onToggle(); }} style={u.row} testID={"day-" + k}>
+        <Text style={u.rowT} numberOfLines={1}>{(open ? "▾ " : "▸ ") + (k === dayKey() ? t("histToday") : dayName(k))}</Text>
+        <Text style={u.rowN}>{num(day.n)}</Text>
+      </Pressable>
+      {open ? hours.map(([h, n]) => (
+        <View key={h} style={s.hourRow}>
+          <Text style={s.hourT}>{hourName(h)}</Text>
+          <View style={s.hourBar}><LinearGradient colors={GOLD} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={{ height: "100%", width: `${(n / max) * 100}%`, borderRadius: 999 }} /></View>
+          <Text style={[u.rowN, { minWidth: 40, textAlign: "right" }]}>{num(n)}</Text>
+        </View>
+      )) : null}
+    </View>
+  );
+}
+
+export function History() {
+  const days = Object.entries(G.life.log || {}).sort((a, b) => (a[0] < b[0] ? 1 : -1));
+  const [open, setOpen] = useState(days.length ? days[0][0] : null);
+  return (
+    <Sheet actions={<View style={{ flex: 1, maxWidth: 420 }}><Btn title={t("back")} primary onPress={closeView} testID="close" /></View>}>
+      <Hero><Label>{t("histTitle")}</Label></Hero>
+      <Tiles>
+        <Tile icon="📿" v={num(countNow())} k={t("histNow")} />
+        <Tile icon="📅" v={num(countToday())} k={t("histToday")} />
+        <Tile icon="🏆" v={num(countAll())} k={t("histAll")} />
+      </Tiles>
+      <Panel>
+        <Label>{t("histDays")}</Label>
+        {days.length ? days.map(([k, day]) => <DayRow key={k} k={k} day={day} open={open === k} onToggle={() => setOpen(open === k ? null : k)} />)
+          : <Text style={s.faint}>{t("histEmpty")}</Text>}
+      </Panel>
+      <Text style={u.note}>{t("histNote")}</Text>
+    </Sheet>
+  );
+}
+
 // Calm, game or learning, as one switch with three sides (Zine, 2026-10-28).
 function ModeSwitch() {
   const cur = G.life.mode || "game";
@@ -275,6 +417,7 @@ export function Progress() {
       <Panel>
         {calm ? <Label>{t("settings")}</Label> : null}
         <ModeSwitch />
+        {isLearn() ? null : <Btn title={"📅 " + t("histTitle")} onPress={() => openView("history")} testID="historyOpen" />}
         <Btn title={"🕌 " + t("prTitle")} onPress={() => openView("prayer")} testID="prayerOpen" />
         <Btn title={"🧭 " + t("qbTitle")} onPress={() => openView("qibla")} testID="qiblaOpen" />
         <Btn title={"⚖️ " + (L.debt ? t("debtNew") : t("debtTitle"))} onPress={() => openView("debt")} />
@@ -406,6 +549,7 @@ export default function Sheets() {
   if (!v) return null;
   if (v.name === "summary") return <Summary key={v.sm.start} sm={v.sm} />;
   if (v.name === "progress") return <Progress />;
+  if (v.name === "history") return <History />;
   if (v.name === "debt") return <Debt />;
   if (v.name === "prayer") return <Prayer />;
   if (v.name === "qibla") return <Qibla />;
@@ -417,6 +561,9 @@ export default function Sheets() {
 }
 
 const s = StyleSheet.create({
+  hourRow: { flexDirection: "row", alignItems: "center", gap: 10, paddingLeft: 18 },
+  hourT: { width: 104, fontSize: 12, fontFamily: F.bold, color: C.inkSoft, fontVariant: ["tabular-nums"] },
+  hourBar: { flex: 1, height: 8, borderRadius: 999, backgroundColor: "rgba(244,239,226,0.1)", overflow: "hidden" },
   modeSw: { flexDirection: "row", padding: 4, borderRadius: 999, backgroundColor: "rgba(244,239,226,0.1)", borderWidth: 1.5, borderColor: C.line },
   modeSide: { flex: 1, height: 44, paddingHorizontal: 4, borderRadius: 999, alignItems: "center", justifyContent: "center", overflow: "hidden" },
   modeT: { fontSize: 13, fontFamily: F.heavy, color: C.ink },

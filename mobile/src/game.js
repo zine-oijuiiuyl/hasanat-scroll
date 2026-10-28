@@ -157,6 +157,20 @@ export function repeatCard(idx) {
   changed();
 }
 
+// ---------- History: every card and tap, by day and hour, in both game and calm (Zine, 2026-10-28) ----------
+export const dayKey = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+function logCount() {
+  const l = G.life, d = new Date();
+  const log = l.log || (l.log = {});
+  const day = log[dayKey(d)] || (log[dayKey(d)] = { n: 0, h: {} });
+  day.n++; day.h[d.getHours()] = (day.h[d.getHours()] || 0) + 1;
+  l.allTime = (l.allTime || 0) + 1;
+  save();
+}
+export const countNow = () => (isCalm() ? G.calmN || 0 : sTaps());
+export const countToday = () => ((G.life.log || {})[dayKey()] || { n: 0 }).n;
+export const countAll = () => G.life.allTime || 0;
+
 const snap = () => ({ lv: levelFor(lifeTaps()), st: stageNow() });
 
 function scoreCard(el, quiet, repeat) {
@@ -168,6 +182,7 @@ function scoreCard(el, quiet, repeat) {
     // Calm: no points, buddy or show, only a plain count of cards scrolled and taps at the top (Zine, 2026-10-28).
     G.life.lastSeen = Date.now(); save();
     G.calmN = (G.calmN || 0) + 1;
+    logCount();
     // "Lighten the load" still goes down, without the rock: reaching zero is a quiet note at the top.
     if (lowerDebt()) { fx.up(); toast("⚖️", t("debtDoneT"), t("debtDoneS")); } else scrollSound();
     return;
@@ -176,6 +191,7 @@ function scoreCard(el, quiet, repeat) {
   const S = G.S, id = el.id, golden = !repeat && el.golden;   // repeating a card never counts as a golden find
   const before = snap();
   S.said[id] = (S.said[id] || 0) + 1;
+  logCount();
   if (golden) S.golden++;
   const grew = tick(el);
   G.life.lastSeen = Date.now(); save();
@@ -578,6 +594,7 @@ export async function load() {
   setLangRaw(LANGS[l.lang] ? l.lang : pickLang());
   if (!["dial", "chime", "glass", "bubble"].includes(l.scrollSound)) l.scrollSound = "dial";   // silent, pop and wind were removed
   if (l.gender && l.tourDone === undefined) { l.tourDone = true; save(); }   // people who were here before the tutorial existed
+  if (l.allTime === undefined) { l.allTime = l.said; save(); }   // the history starts here; earlier points count in the total
   if (l.tourDone && !l.tourSeen) { l.tourSeen = { [l.mode || "game"]: true }; save(); }   // before there was one tutorial per mode
   G.tab = ["dhikr", "dua", "muh", "quran"].includes(l.tab) ? l.tab : "dhikr";
   G.page = l.mode === "learn" ? "learn" : "scroll";
