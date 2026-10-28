@@ -78,15 +78,14 @@ if (want("fireflies")) {
   });
   wav("fireflies", mix([air, 1], [crick, 0.06]), 0.45);
 }
-// Butterflies: a meadow breeze with soft, low wind chimes. The first version's chimes were too high and loud
-// (Zine, 2026-10-28), so they are an octave lower, rounder and much quieter.
+// Butterflies: soft, low wind chimes alone. The first version's chimes were too high and loud, and its breeze
+// sounded like strong wind (Zine, 2026-10-28), so the breeze is gone and the chimes are an octave lower and rounder.
 if (want("butterflies")) {
-  const air = breeze(180, 520, 1);
   const chimes = new Float32Array(N);
   const SCALE = [523.25, 587.33, 659.25, 783.99, 880];
   for (let t0 = rnd(0, 1); t0 < LEN; t0 += rnd(0.9, 2.4)) {
     const hz = SCALE[Math.floor(rnd(0, SCALE.length))], a = rnd(0.5, 1);
     event(chimes, Math.floor(t0 * RATE), Math.floor(2.4 * RATE), t => a * Math.min(1, t / 0.02) * Math.exp(-t / 0.7) * (sine(t, hz) + 0.15 * sine(t, hz * 2)));
   }
-  wav("butterflies", mix([air, 1], [chimes, 0.025]), 0.45);
+  wav("butterflies", chimes, 0.2);
 }
