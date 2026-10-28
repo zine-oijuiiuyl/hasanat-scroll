@@ -4,7 +4,7 @@ import { Animated, Easing, Pressable, StyleSheet, Text, View } from "react-nativ
 import { LinearGradient } from "expo-linear-gradient";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { levelFor, levelProgress } from "./web-data";
-import { G, on, sTaps, lifeTaps, stageNow, switchTab, finish, openView } from "./game";
+import { G, on, sTaps, lifeTaps, stageNow, switchTab, finish, openView, isCalm } from "./game";
 import { t, levelTitle, num } from "./i18n";
 import { BuddyArt } from "./Buddy";
 import { C, F, GOLD } from "./theme";
@@ -45,7 +45,7 @@ function Toast() {
 function Debt() {
   const scale = useBump("debtTick");
   const d = G.life.debt;
-  if (!G.life.gender) return null;
+  if (!G.life.gender && !isCalm()) return null;
   if (!d) {
     return (
       <Pressable ref={target("debt")} onPress={() => { hapTick(); openView("debt"); }} style={s.debtAdd}>
@@ -78,7 +78,14 @@ export default function Hud() {
           </Pressable>
         ))}
       </View>
-      <View style={s.bar}>
+      {isCalm() ? (
+        // Calm: no level, points or Done, only a way to the settings.
+        <View style={[s.bar, { justifyContent: "flex-end" }]}>
+          <Pressable testID="settings" onPress={() => { hapTick(); openView("progress"); }} style={s.done}>
+            <Text style={s.doneT}>{t("settings")}</Text>
+          </Pressable>
+        </View>
+      ) : <View style={s.bar}>
         <Pressable ref={target("lvl")} testID="level" onPress={() => { hapTick(); openView("progress"); }} style={s.lvl}>
           <View style={{ width: 76, height: 41 }}>{L.gender ? <BuddyArt gender={L.gender} stage={stageNow()} mood={G.buddyMood} crop width={76} height={41} /> : null}</View>
           <View style={s.lvbar}>
@@ -98,7 +105,7 @@ export default function Hud() {
             <Text style={s.doneT}>{t("done")}</Text>
           </Pressable>
         </View>
-      </View>
+      </View>}
       <Debt />
       <Toast />
     </View>

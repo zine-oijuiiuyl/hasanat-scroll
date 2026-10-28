@@ -3,7 +3,7 @@ import { memo, useEffect, useRef, useSyncExternalStore } from "react";
 import { Animated, Pressable, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import Svg, { Path, Rect } from "react-native-svg";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { G, on, setPage, subscribe } from "./game";
+import { G, on, setPage, subscribe, isCalm } from "./game";
 import { dueCount } from "./learn";
 import { t, getLang } from "./i18n";
 import { C, F, GOLD, TAB_H, tabSpace } from "./theme";
@@ -30,6 +30,8 @@ export function Pager({ children }) {
     });
     return () => x.removeListener(id);
   }, [x, width]);
+  // Calm mode is only the scroll feed: no learning path with its hearts and rewards (Zine, 2026-10-28).
+  if (isCalm()) return <View style={{ width, height }}>{children[0]}</View>;
   return (
     <>
       <Animated.ScrollView

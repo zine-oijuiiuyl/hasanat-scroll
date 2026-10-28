@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Animated, Dimensions, Easing, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { G, on, stageNow } from "./game";
+import { G, on, stageNow, isCalm } from "./game";
 import { BuddyArt, useBuddyMotion } from "./Buddy";
 import { C, F, GOLD, tabSpace } from "./theme";
 import { target } from "./targets";
@@ -23,6 +23,8 @@ export function BuddyLayer() {
     });
     return () => { a(); b(); c(); };
   }, [api, pop]);
+  // Calm: no buddy or speech bubble, only the "Lighten the load" rock while a number is set.
+  if (isCalm()) return <View pointerEvents="none" style={StyleSheet.absoluteFill}><View style={[s.miner, { bottom: Math.max(insets.bottom, 10) + 14 }]}><FeedMiner /></View></View>;
   if (!G.life.gender) return null;
   const mining = G.life.debt && !G.life.debt.done;
   return (
@@ -111,6 +113,7 @@ function Burst({ gold, from, onDone }) {
 export function Confetti() {
   const [bursts, setBursts] = useState([]);
   useEffect(() => on("confetti", (gold, from) => setBursts(x => x.slice(-2).concat({ id: Date.now() + Math.random(), gold, from }))), []);
+  if (isCalm()) return null;
   return (
     <View pointerEvents="none" style={StyleSheet.absoluteFill}>
       {bursts.map(b => <Burst key={b.id} gold={b.gold} from={b.from} onDone={() => setBursts(x => x.filter(y => y.id !== b.id))} />)}

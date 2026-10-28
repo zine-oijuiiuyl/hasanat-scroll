@@ -1,6 +1,6 @@
 // The buddy's name, shown on a tag over it: Ahmed for the boy, Fatima for the girl (Zine, 2026-10-26).
 import { StyleSheet, Text, View } from "react-native";
-import { G } from "./game";
+import { G, isCalm } from "./game";
 import { getLang } from "./i18n";
 import { C, F } from "./theme";
 
@@ -12,7 +12,7 @@ export const buddyName = (gender = G.life.gender) => {
 
 // A small tag with the buddy's name.
 export function NameTag({ size = 13, style }) {
-  if (!G.life.gender) return null;
+  if (!G.life.gender || isCalm()) return null;
   return (
     <View pointerEvents="none" style={[s.tag, { paddingVertical: size * 0.22, paddingHorizontal: size * 0.75 }, style]}>
       <Text style={[s.tagT, { fontSize: size }]} numberOfLines={1}>{buddyName()}</Text>

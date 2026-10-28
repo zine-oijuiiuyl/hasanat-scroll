@@ -3,7 +3,9 @@ import { useEffect, useRef, useState } from "react";
 import { Animated, Dimensions, Easing, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { G, TOUR, endTour, goTour, pickBuddy } from "./game";
+import { G, TOUR, endTour, goTour, pickBuddy, pickMode } from "./game";
+import { T } from "./web-data";
+import { Ico } from "./Icons";
 import { t } from "./i18n";
 import { measure } from "./targets";
 import { BuddyArt } from "./Buddy";
@@ -84,8 +86,45 @@ export function Tour() {
   );
 }
 
+// The first question on a new phone: game-like or calm (Zine, 2026-10-28).
+const MODE = {
+  en: { modeTitle: "How do you want to scroll?", modeText: "Pick the experience that suits you. You can change it any time in the settings.", modeGame: "Game-like", modeGameS: "A buddy who grows with you, points, levels, rewards and confetti.", modeCalm: "Calm", modeCalmS: "Just the cards, quiet and simple. No buddy, points or rewards.", settings: "Settings" },
+  ar: { modeTitle: "كيف تريد أن تتصفح؟", modeText: "اختر التجربة التي تناسبك. يمكنك تغييرها في أي وقت من الإعدادات.", modeGame: "مثل اللعبة", modeGameS: "رفيق يكبر معك، ونقاط ومستويات ومكافآت واحتفالات.", modeCalm: "هادئ", modeCalmS: "البطاقات فقط، بهدوء وبساطة. بلا رفيق ولا نقاط ولا مكافآت.", settings: "الإعدادات" },
+  fr: { modeTitle: "Comment veux-tu faire défiler ?", modeText: "Choisis l'expérience qui te convient. Tu peux la changer à tout moment dans les réglages.", modeGame: "Comme un jeu", modeGameS: "Un compagnon qui grandit avec toi, des points, des niveaux, des récompenses et des confettis.", modeCalm: "Calme", modeCalmS: "Juste les cartes, au calme. Sans compagnon, points ni récompenses.", settings: "Réglages" },
+  es: { modeTitle: "¿Cómo quieres deslizar?", modeText: "Elige la experiencia que te va mejor. Puedes cambiarla cuando quieras en los ajustes.", modeGame: "Como un juego", modeGameS: "Un compañero que crece contigo, puntos, niveles, premios y confeti.", modeCalm: "Tranquilo", modeCalmS: "Solo las tarjetas, con calma. Sin compañero, puntos ni premios.", settings: "Ajustes" },
+  tr: { modeTitle: "Nasıl kaydırmak istersin?", modeText: "Sana uyan deneyimi seç. Ayarlardan istediğin zaman değiştirebilirsin.", modeGame: "Oyun gibi", modeGameS: "Seninle büyüyen bir arkadaş, puanlar, seviyeler, ödüller ve konfeti.", modeCalm: "Sakin", modeCalmS: "Sadece kartlar, sade ve sakin. Arkadaş, puan ya da ödül yok.", settings: "Ayarlar" },
+  ur: { modeTitle: "آپ کیسے اسکرول کرنا چاہتے ہیں؟", modeText: "اپنے لیے موزوں تجربہ چنیں۔ آپ اسے کسی بھی وقت ترتیبات میں بدل سکتے ہیں۔", modeGame: "کھیل جیسا", modeGameS: "آپ کے ساتھ بڑھنے والا ساتھی، پوائنٹس، لیول، انعامات اور جشن۔", modeCalm: "پُرسکون", modeCalmS: "صرف کارڈز، سادہ اور پُرسکون۔ نہ ساتھی، نہ پوائنٹس، نہ انعامات۔", settings: "ترتیبات" },
+  id: { modeTitle: "Bagaimana kamu ingin menggulir?", modeText: "Pilih pengalaman yang cocok untukmu. Kamu bisa mengubahnya kapan saja di pengaturan.", modeGame: "Seperti game", modeGameS: "Teman yang tumbuh bersamamu, poin, level, hadiah, dan konfeti.", modeCalm: "Tenang", modeCalmS: "Hanya kartu, tenang dan sederhana. Tanpa teman, poin, atau hadiah.", settings: "Pengaturan" },
+  bn: { modeTitle: "তুমি কীভাবে স্ক্রল করতে চাও?", modeText: "তোমার পছন্দের অভিজ্ঞতা বেছে নাও। সেটিংসে যেকোনো সময় বদলাতে পারো।", modeGame: "খেলার মতো", modeGameS: "তোমার সাথে বেড়ে ওঠা সঙ্গী, পয়েন্ট, লেভেল, পুরস্কার আর কনফেটি।", modeCalm: "শান্ত", modeCalmS: "শুধু কার্ড, শান্ত ও সহজ। কোনো সঙ্গী, পয়েন্ট বা পুরস্কার নেই।", settings: "সেটিংস" },
+  ru: { modeTitle: "Как ты хочешь листать?", modeText: "Выбери, что тебе ближе. Это можно изменить в любой момент в настройках.", modeGame: "Как игра", modeGameS: "Спутник, который растёт вместе с тобой, очки, уровни, награды и конфетти.", modeCalm: "Спокойно", modeCalmS: "Только карточки, тихо и просто. Без спутника, очков и наград.", settings: "Настройки" },
+  de: { modeTitle: "Wie möchtest du scrollen?", modeText: "Wähle, was zu dir passt. Du kannst es jederzeit in den Einstellungen ändern.", modeGame: "Wie ein Spiel", modeGameS: "Ein Begleiter, der mit dir wächst, Punkte, Level, Belohnungen und Konfetti.", modeCalm: "Ruhig", modeCalmS: "Nur die Karten, still und schlicht. Kein Begleiter, keine Punkte, keine Belohnungen.", settings: "Einstellungen" },
+};
+for (const [l, v] of Object.entries(MODE)) if (T[l]) Object.assign(T[l].ui, v);
+
 export function Picker() {
   const insets = useSafeAreaInsets();
+  if (!G.life.mode) return (
+    <View style={StyleSheet.absoluteFill}>
+      <LinearGradient colors={["#0b2b26", "#163832", "#051f20"]} locations={[0, 0.55, 1]} style={StyleSheet.absoluteFill} />
+      <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: "center", alignItems: "center", gap: 14, padding: 20, paddingTop: insets.top + 24, paddingBottom: insets.bottom + 24 }}>
+        <View style={{ width: "100%", maxWidth: 420 }}><LangPicker /></View>
+        <Text style={u.arh}>بِسْمِ ٱللَّٰهِ</Text>
+        <Text style={s.h1}>{t("modeTitle")}</Text>
+        <Text style={s.p}>{t("modeText")}</Text>
+        <View style={{ width: "100%", maxWidth: 420, gap: 12 }}>
+          {[["game", "🎉", "modeGame"], ["calm", "🍃", "modeCalm"]].map(([m, e, k]) => (
+            <Pressable key={m} testID={"mode-" + m} onPress={() => pickMode(m)} style={({ pressed }) => [s.mode, pressed && { transform: [{ scale: 0.97 }], borderColor: C.gold2 }]}>
+              <Ico e={e} size={44} />
+              <View style={{ flex: 1, gap: 4 }}>
+                <Text style={s.choiceT}>{t(k)}</Text>
+                <Text style={s.modeS}>{t(k + "S")}</Text>
+              </View>
+            </Pressable>
+          ))}
+        </View>
+      </ScrollView>
+    </View>
+  );
   return (
     <View style={StyleSheet.absoluteFill}>
       <LinearGradient colors={["#0b2b26", "#163832", "#051f20"]} locations={[0, 0.55, 1]} style={StyleSheet.absoluteFill} />
@@ -103,6 +142,7 @@ export function Picker() {
           ))}
         </View>
         <Text style={s.small}>{t("pickHint")}</Text>
+        <Pressable testID="mode-back" onPress={() => pickMode(undefined)} hitSlop={10}><Text style={[s.small, { fontSize: 14 }]}>{"‹  " + t("modeTitle")}</Text></Pressable>
       </ScrollView>
     </View>
   );
@@ -128,5 +168,7 @@ const s = StyleSheet.create({
   choices: { flexDirection: "row", gap: 14, width: "100%", maxWidth: 420 },
   choice: { flex: 1, alignItems: "center", gap: 6, paddingVertical: 14, paddingHorizontal: 8, borderRadius: 24, backgroundColor: "rgba(244,239,226,0.08)", borderWidth: 1.5, borderColor: C.line },
   choiceT: { fontSize: 18, fontFamily: F.heavy, color: C.ink },
+  mode: { flexDirection: "row", alignItems: "center", gap: 14, paddingVertical: 16, paddingHorizontal: 18, borderRadius: 24, backgroundColor: "rgba(244,239,226,0.08)", borderWidth: 1.5, borderColor: C.line },
+  modeS: { fontSize: 13, lineHeight: 18, fontFamily: F.ui, color: C.inkSoft },
   small: { fontSize: 12, fontFamily: F.ui, color: C.inkFaint, textAlign: "center" },
 });

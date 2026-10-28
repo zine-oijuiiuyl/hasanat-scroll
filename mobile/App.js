@@ -59,7 +59,7 @@ export default function App() {
           <LearnPath />
         </Pager>
         <Sheets key={G.view ? G.view.name : "none"} />
-        {!G.life.gender ? <Picker key={lang} /> : null}
+        {!G.life.gender && G.life.mode !== "calm" ? <Picker key={lang} /> : null}
         <Cinematic />
         <RockFree />
         <Confetti />

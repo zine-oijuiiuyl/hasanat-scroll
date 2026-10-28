@@ -82,7 +82,7 @@ function moodCheerUp() {
   celebrate({ key: "moodback" + Date.now(), icon: "🥰", title: t("moodBackT"), sub: t("moodBackS"), confetti: "color", sound: fx.party });
 }
 function showMood() {
-  if (G.buddyMood === "happy" || !G.life.gender) return;
+  if (G.buddyMood === "happy" || !G.life.gender || isCalm()) return;
   const M = G.buddyMood[0].toUpperCase() + G.buddyMood.slice(1);
   setTimeout(() => celebrate({ key: "mood-open", icon: MOOD_ICON[G.buddyMood], title: t("mood" + M + "T"), sub: t("mood" + M + "S"), sound: () => {}, still: true }), 900);
 }
@@ -100,7 +100,7 @@ function pick() {
 }
 function makeCard() {
   const d = pick();
-  const golden = nextIdx > 3 && Math.random() < RULES.goldenChance;
+  const golden = !isCalm() && nextIdx > 3 && Math.random() < RULES.goldenChance;
   const idx = nextIdx++;
   return { key: G.tab + ":" + idx, idx, id: d.id, golden, counted: false, rep: 0, repAt: 0 };
 }
@@ -146,12 +146,12 @@ export function setCurrent(idx) {
 export function repeatCard(idx) {
   const el = G.cards[idx];
   const now = Date.now();
-  if (!el || !G.life.gender || now - el.repAt < 280) return;   // ignore a double tap
+  if (!el || !(G.life.gender || isCalm()) || now - el.repAt < 280) return;   // ignore a double tap
   el.repAt = now;
   el.rep++;
   scoreCard(el, false, true);
   const n = el.rep;
-  if ([33, 66, 99, 100].includes(n)) { fx.up(); emit("cheerBuddy"); toast("📿", t("repT", { n }), t("repS")); }
+  if (!isCalm() && [33, 66, 99, 100].includes(n)) { fx.up(); emit("cheerBuddy"); toast("📿", t("repT", { n }), t("repS")); }
   emit("repeat", el.key);
   tourAdvance("repeat");
   changed();
@@ -163,6 +163,12 @@ function scoreCard(el, quiet, repeat) {
   if (!repeat) {
     if (el.counted) return;
     el.counted = true;
+  }
+  if (isCalm()) {
+    // Calm: no points, buddy or show. "Lighten the load" still goes down, with the rock alone (Zine, 2026-10-28).
+    G.life.lastSeen = Date.now(); save();
+    if (lowerDebt()) openFreed(G.life.debt.start); else scrollSound();
+    return;
   }
   if (!G.life.gender) return;
   const S = G.S, id = el.id, golden = !repeat && el.golden;   // repeating a card never counts as a golden find
@@ -232,6 +238,7 @@ function nextToast() {
 
 const cheers = []; let cheerTimer = 0;
 function celebrate(c) {
+  if (isCalm()) return;
   if ((G.cheer && G.cheer.key === c.key) || cheers.some(x => x.key === c.key)) return;
   cheers.push(c);
   if (!G.cheer) nextCheer();
@@ -392,6 +399,18 @@ export function setLang(l) {
   setLangRaw(l); G.life.lang = l; save(); changed();
 }
 export function setSetting(k, v) { G.life[k] = v; save(); syncFx(); changed(); }
+// The first question: game-like (buddy, points, rewards) or calm (only the cards). Zine, 2026-10-28.
+export const isCalm = () => G.life.mode === "calm";
+export function pickMode(m) {
+  G.life.mode = m; G.life.lang = getLang();
+  if (m === "calm") { G.life.tourDone = true; G.page = "scroll"; emit("page", "scroll"); clearCheers(); }
+  save(); changed();
+}
+export function setMode(calm) {
+  G.view = null;
+  pickMode(calm ? "calm" : "game");
+  if (!calm && G.life.gender) { fx.party(); emit("confetti", false); }
+}
 export function pickBuddy(g) {
   G.life.gender = g; G.life.lang = getLang(); G.life.tourDone = false; save();
   fx.party(); emit("confetti", false); emit("cheerBuddy");
@@ -415,7 +434,7 @@ export function toggleHeart(id) {
 // Back to zero. The buddy, language, sound choices and hearted cards stay, since those are settings, not progress.
 export function wipeEverything() {
   const l = G.life;
-  const keep = { gender: l.gender, lang: l.lang, sound: l.sound, haptics: l.haptics, scrollSound: l.scrollSound, weather: l.weather, weatherSound: l.weatherSound, feedBuddy: l.feedBuddy, tourDone: l.tourDone, rating: l.rating, prayer: l.prayer, tab: l.tab, hearts: l.hearts };
+  const keep = { mode: l.mode, gender: l.gender, lang: l.lang, sound: l.sound, haptics: l.haptics, scrollSound: l.scrollSound, weather: l.weather, weatherSound: l.weatherSound, feedBuddy: l.feedBuddy, tourDone: l.tourDone, rating: l.rating, prayer: l.prayer, tab: l.tab, hearts: l.hearts };
   G.life = Object.assign(fresh(), keep);
   G.buddyMood = "happy";
   G.S = newSession(); G.undo = null; clearCheers();

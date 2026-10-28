@@ -9,7 +9,7 @@ import { File, Paths } from "expo-file-system";
 import { BY_ID, STAGES, BADGES, levelFor, levelProgress, stageProgress, threshold, PR_NAMES, PR_METHODS, prayerDay } from "./web-data";
 import {
   G, closeView, keepScrolling, resetSession, openView, openCinematic, tabOf, lifeTaps, stageNow, sTaps, askToRate, rate, rateLater,
-  setSetting, swapBuddy, startTour, wipeEverything, backupText, restoreText, digits, startDebt, removeDebt,
+  setSetting, swapBuddy, startTour, isCalm, setMode, wipeEverything, backupText, restoreText, digits, startDebt, removeDebt,
 } from "./game";
 import { t, levelTitle, stageName, badgeText, num, isRTL } from "./i18n";
 import { BuddyArt } from "./Buddy";
@@ -31,6 +31,8 @@ for (const [l, v] of Object.entries(BUBBLE)) if (T[l]) T[l].ui.sndBubble = v;
 // The switch that hides the buddy on the scroll page (Zine, 2026-10-28).
 const FEED_BUDDY = { en: "Show buddy while scrolling", ar: "إظهار الرفيق أثناء التمرير", fr: "Afficher le compagnon pendant le défilement", es: "Mostrar al compañero al deslizar", tr: "Kaydırırken arkadaşı göster", ur: "اسکرول کرتے وقت ساتھی دکھائیں", id: "Tampilkan teman saat menggulir", bn: "স্ক্রল করার সময় সঙ্গী দেখাও", ru: "Показывать спутника при прокрутке", de: "Begleiter beim Scrollen zeigen" };
 for (const [l, v] of Object.entries(FEED_BUDDY)) if (T[l]) T[l].ui.feedBuddy = v;
+const CALM_MODE = { en: "Calm mode", ar: "الوضع الهادئ", fr: "Mode calme", es: "Modo tranquilo", tr: "Sakin mod", ur: "پُرسکون موڈ", id: "Mode tenang", bn: "শান্ত মোড", ru: "Спокойный режим", de: "Ruhiger Modus" };
+for (const [l, v] of Object.entries(CALM_MODE)) if (T[l]) T[l].ui.calmMode = v;
 const WX_SOUND = { en: "Weather sounds", ar: "أصوات الطقس", fr: "Sons de la météo", es: "Sonidos del clima", tr: "Hava sesleri", ur: "موسم کی آوازیں", id: "Suara cuaca", bn: "আবহাওয়ার শব্দ", ru: "Звуки погоды", de: "Wettergeräusche" };
 for (const [l, v] of Object.entries(WX_SOUND)) if (T[l]) T[l].ui.wxSound = v;
 import { Ico } from "./Icons";
@@ -202,8 +204,10 @@ export function Progress() {
   const p = lifeTaps(), lv = levelFor(p), st = stageNow();
   const [sure, setSure] = useState(false);
   useEffect(() => { if (!sure) return; const x = setTimeout(() => setSure(false), 4000); return () => clearTimeout(x); }, [sure]);
+  const calm = isCalm();   // calm mode shows only the settings: no buddy, levels, points or badges
   return (
     <Sheet actions={<View ref={target("close")} style={{ flex: 1, maxWidth: 420 }}><Btn title={t("back")} primary onPress={closeView} testID="close" /></View>}>
+      {calm ? null : <>
       <Hero>
         <Label>{t("progress")}</Label>
         <BuddyArt gender={L.gender || "m"} stage={st} width={210} height={180} />
@@ -244,8 +248,11 @@ export function Progress() {
           </Panel>
         ) : null;
       })}
+      </>}
       <Rate />
       <Panel>
+        {calm ? <Label>{t("settings")}</Label> : null}
+        <Toggle label={t("calmMode")} value={calm} onChange={setMode} />
         <Btn title={"🕌 " + t("prTitle")} onPress={() => openView("prayer")} testID="prayerOpen" />
         <Btn title={"🧭 " + t("qbTitle")} onPress={() => openView("qibla")} testID="qiblaOpen" />
         <Btn title={"⚖️ " + (L.debt ? t("debtNew") : t("debtTitle"))} onPress={() => openView("debt")} />
@@ -264,12 +271,12 @@ export function Progress() {
           </>
         ) : null}
         <Toggle label={t("haptics")} value={L.haptics} onChange={v => setSetting("haptics", v)} />
-        <Toggle label={t("feedBuddy")} value={L.feedBuddy !== false} onChange={v => setSetting("feedBuddy", v)} />
+        {calm ? null : <Toggle label={t("feedBuddy")} value={L.feedBuddy !== false} onChange={v => setSetting("feedBuddy", v)} />}
         <Btn title={"💾 " + t("backup")} onPress={backupProgress} />
         <Btn title={"📂 " + t("restore")} onPress={restoreProgress} />
-        <Btn title={"🧭 " + t("tutAgain")} onPress={() => setTimeout(startTour, 200)} />
+        {calm ? null : <Btn title={"🧭 " + t("tutAgain")} onPress={() => setTimeout(startTour, 200)} />}
         <Btn title={sure ? t("wipeSure") : t("wipe")} danger={!sure} style={sure && { backgroundColor: "#a33a2c" }} onPress={() => { if (!sure) setSure(true); else { setSure(false); wipeEverything(); } }} />
-        <Btn title={L.gender === "f" ? t("swapBoy") : t("swapGirl")} onPress={swapBuddy} />
+        {calm ? null : <Btn title={L.gender === "f" ? t("swapBoy") : t("swapGirl")} onPress={swapBuddy} />}
       </Panel>
       <Text style={u.note}>{t("disclaimer")}{"\n"}Expo v1</Text>
     </Sheet>
