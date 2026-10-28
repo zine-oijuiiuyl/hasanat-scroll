@@ -274,6 +274,8 @@ export function Summary({ sm }) {
         <Bar value={levelProgress(lt)} />
         <Text style={s.faint}>{t("sessLine", { s: L.sessions, d: L.bestStreak })}</Text>
       </Panel>
+      <Label>{t("histTitle")}</Label>
+      <HistoryBody now={sm.taps} />
       {askToRate() ? <Rate ask later /> : null}
       <Panel><LangPicker /></Panel>
       <Text style={u.note}>{t("disclaimer")}</Text>
@@ -327,14 +329,14 @@ function DayRow({ k, day, open, onToggle }) {
   );
 }
 
-export function History() {
+// The history sits in the Done screen of both modes (Zine, 2026-10-28). `now` is this session's count.
+function HistoryBody({ now }) {
   const days = Object.entries(G.life.log || {}).sort((a, b) => (a[0] < b[0] ? 1 : -1));
   const [open, setOpen] = useState(days.length ? days[0][0] : null);
   return (
-    <Sheet actions={<View style={{ flex: 1, maxWidth: 420 }}><Btn title={t("back")} primary onPress={closeView} testID="close" /></View>}>
-      <Hero><Label>{t("histTitle")}</Label></Hero>
+    <>
       <Tiles>
-        <Tile icon="📿" v={num(countNow())} k={t("histNow")} />
+        <Tile icon="📿" v={num(now)} k={t("histNow")} />
         <Tile icon="📅" v={num(countToday())} k={t("histToday")} />
         <Tile icon="🏆" v={num(countAll())} k={t("histAll")} />
       </Tiles>
@@ -344,6 +346,16 @@ export function History() {
           : <Text style={s.faint}>{t("histEmpty")}</Text>}
       </Panel>
       <Text style={u.note}>{t("histNote")}</Text>
+    </>
+  );
+}
+
+// Calm mode's Done screen: just the counts and the history.
+export function History() {
+  return (
+    <Sheet actions={<View style={{ flex: 1, maxWidth: 420 }}><Btn title={t("back")} primary onPress={closeView} testID="close" /></View>}>
+      <Hero><Label>{t("histTitle")}</Label></Hero>
+      <HistoryBody now={countNow()} />
     </Sheet>
   );
 }
@@ -417,7 +429,6 @@ export function Progress() {
       <Panel>
         {calm ? <Label>{t("settings")}</Label> : null}
         <ModeSwitch />
-        {isLearn() ? null : <Btn title={"📅 " + t("histTitle")} onPress={() => openView("history")} testID="historyOpen" />}
         <Btn title={"🕌 " + t("prTitle")} onPress={() => openView("prayer")} testID="prayerOpen" />
         <Btn title={"🧭 " + t("qbTitle")} onPress={() => openView("qibla")} testID="qiblaOpen" />
         <Btn title={"⚖️ " + (L.debt ? t("debtNew") : t("debtTitle"))} onPress={() => openView("debt")} />

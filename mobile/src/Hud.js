@@ -91,7 +91,11 @@ export default function Hud() {
             <Ico e="📿" size={22} />
             <Text style={s.pts}>{num(G.calmN || 0)}</Text>
           </Pressable>
-          <View style={{ width: 96 }} />
+          <View style={{ width: 96, alignItems: "flex-end" }}>
+            <Pressable ref={target("done")} testID="done" onPress={() => { hapTick(); openView("history"); }} style={s.done}>
+              <Text style={s.doneT}>{t("done")}</Text>
+            </Pressable>
+          </View>
         </View>
       ) : <View style={s.bar}>
         <Pressable ref={target("lvl")} testID="level" onPress={() => { hapTick(); openView("progress"); }} style={s.lvl}>
