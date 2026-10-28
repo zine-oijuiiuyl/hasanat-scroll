@@ -12,7 +12,7 @@ import { hapTick } from "./fx";
 import { target } from "./targets";
 import { Ico } from "./Icons";
 
-const TABS = [["dhikr", "tabDhikr"], ["dua", "tabDua"], ["quran", "tabQuran"], ["muh", "tabMuh"]];
+const TABS = [["dhikr", "tabDhikr"], ["dua", "tabDua"], ["quran", "tabQuran"], ["muh", "tabHadith"]];
 
 function useBump(event) {
   const v = useRef(new Animated.Value(0)).current;

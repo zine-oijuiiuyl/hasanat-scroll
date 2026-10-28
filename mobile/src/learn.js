@@ -119,7 +119,7 @@ export async function loadItem(key) {
   const d = BY_ID[a];
   return {
     key, kind: "d", ar: d.ar, mean: meaning(d), tl: d.tr, ref: sourceText(d),
-    poolAr: LIB.filter(x => x.id !== a).map(x => x.ar), poolMean: LIB.filter(x => x.id !== a && (x.kind === "seerah") === (d.kind === "seerah")).map(meaning),
+    poolAr: LIB.filter(x => x.id !== a && x.kind !== "hadith").map(x => x.ar), poolMean: LIB.filter(x => x.id !== a && x.kind !== "hadith" && (x.kind === "seerah") === (d.kind === "seerah")).map(meaning),
   };
 }
 const seenHadith = new Map();   // the last hadith translations loaded, used as wrong answers

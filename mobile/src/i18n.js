@@ -32,6 +32,6 @@ export const levelLine = () => { const L = TR().lines || T.en.lines; return L[Ma
 export const badgeText = b => (TR().badges || T.en.badges)[b.i];
 // The English meaning lives in LIB; other languages override it by index.
 export const meaning = d => (NEW_T[lang] && NEW_T[lang][d.id]) || (TR().dhikr && TR().dhikr[d.i]) || d.en;
-export const kindLabel = d => t({ dhikr: "kDhikr", dua: "kDua", quran: "kQuran", salawat: "kSalawat", seerah: "kSeerah" }[d.kind]);
+export const kindLabel = d => t({ dhikr: "kDhikr", dua: "kDua", quran: "kQuran", salawat: "kSalawat", seerah: d.hadith ? "kHadith" : "kSeerah", hadith: "kHadith" }[d.kind]);
 export const sourceText = d => d.srcKey ? t(d.srcKey) + " · " + d.src : (d.src || "");
 export const num = n => Number(n).toLocaleString("en-US");

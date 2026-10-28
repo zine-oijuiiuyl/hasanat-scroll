@@ -2,6 +2,7 @@
 // Ported from the web app (index.html). State lives here; screens re-render through subscribe().
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { LIB, BY_ID, LANGS, RULES, isMilestone, levelFor, stageFor, BADGES, STAGES } from "./web-data";
+import "./hadith";
 import { t, levelTitle, levelLine, badgeText, stageName, stageLine, setLangRaw, pickLang, getLang, num } from "./i18n";
 import { fx, scrollSound, setFxSettings } from "./fx";
 
@@ -87,10 +88,11 @@ function showMood() {
 }
 
 // ---------- Feed ----------
-export const tabOf = d => d.kind === "dua" ? "dua" : d.kind === "seerah" ? "muh" : d.kind === "quran" ? "quran" : "dhikr";
+export const tabOf = d => d.kind === "dua" ? "dua" : d.kind === "seerah" || d.kind === "hadith" ? "muh" : d.kind === "quran" ? "quran" : "dhikr";
 let bag = [], lastId = null, nextIdx = 0, lastIdx = -1;
 function pick() {
-  if (!bag.length) bag = LIB.filter(d => tabOf(d) === G.tab).flatMap(d => Array(d.w).fill(d)).sort(() => Math.random() - .5);
+  // The "muh" tab is now Hadith: only sayings of the Prophet ﷺ, not the cards about his life (Zine, 2026-10-28).
+  if (!bag.length) bag = LIB.filter(d => tabOf(d) === G.tab && (G.tab !== "muh" || d.hadith)).flatMap(d => Array(d.w).fill(d)).sort(() => Math.random() - .5);
   let d = bag.pop();
   if (d.id === lastId) { const i = bag.findIndex(x => x.id !== lastId); if (i >= 0) { bag.push(d); d = bag.splice(i, 1)[0]; } }
   lastId = d.id;

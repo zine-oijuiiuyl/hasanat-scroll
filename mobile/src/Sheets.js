@@ -35,7 +35,7 @@ const WX_SOUND = { en: "Weather sounds", ar: "أصوات الطقس", fr: "Sons 
 for (const [l, v] of Object.entries(WX_SOUND)) if (T[l]) T[l].ui.wxSound = v;
 import { Ico } from "./Icons";
 
-const TAB_ORDER = [["dhikr", "tabDhikr"], ["dua", "tabDua"], ["quran", "tabQuran"], ["muh", "tabMuh"]];
+const TAB_ORDER = [["dhikr", "tabDhikr"], ["dua", "tabDua"], ["quran", "tabQuran"], ["muh", "tabHadith"]];
 const fmtTime = ms => { const x = Math.round(ms / 1000); return x >= 60 ? `${Math.floor(x / 60)}m ${x % 60}s` : `${x}s`; };
 
 // When one sheet replaces another (progress and prayer times, say), the new one appears at once;
