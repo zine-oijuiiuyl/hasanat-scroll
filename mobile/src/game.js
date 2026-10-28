@@ -3,6 +3,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { LIB, BY_ID, LANGS, RULES, isMilestone, levelFor, stageFor, BADGES, STAGES } from "./web-data";
 import "./hadith";
+import "./more";
 import { t, levelTitle, levelLine, badgeText, stageName, stageLine, setLangRaw, pickLang, getLang, num } from "./i18n";
 import { fx, scrollSound, setFxSettings, ambient } from "./fx";
 
