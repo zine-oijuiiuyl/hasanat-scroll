@@ -7,7 +7,7 @@ import { Animated, Dimensions, Easing, StyleSheet, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import Svg, { Path } from "react-native-svg";
 import { T } from "./web-data";
-import { G, on, subscribe } from "./game";
+import { G, on, subscribe, picking } from "./game";
 import { ambient } from "./fx";
 
 // "heat" (a sun glow) was removed at Zine's request; its translations stay in WT by position.
@@ -221,7 +221,7 @@ const settingNow = () => WEATHERS.includes(G.life.weather) || G.life.weather ===
 const kindFor = idx => { const st = settingNow(); return st === "off" ? null : st === "auto" ? ORDER[idx % ORDER.length] : st; };
 
 // The ambience follows the card on screen, only while the feed is showing.
-const syncSound = () => ambient(G.page === "scroll" && !G.view && G.current >= 0 ? kindFor(G.current) : null);
+const syncSound = () => ambient(G.page === "scroll" && !G.view && !picking() && G.current >= 0 ? kindFor(G.current) : null);
 on("cardIdx", syncSound);
 on("page", syncSound);
 subscribe(syncSound);

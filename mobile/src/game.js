@@ -404,6 +404,8 @@ export function setSetting(k, v) { G.life[k] = v; save(); syncFx(); changed(); }
 export const isCalm = () => G.life.mode === "calm";
 // Learning mode is only the learning path; game and calm are only the scroll feed (Zine, 2026-10-28).
 export const isLearn = () => G.life.mode === "learn";
+// True while the first screens (mode, then buddy) are showing. The app stays silent until then (Zine, 2026-10-28).
+export const picking = () => !G.life.gender && G.life.mode !== "calm";
 export function pickMode(m) {
   G.life.mode = m; G.life.lang = getLang();
   const page = m === "learn" ? "learn" : "scroll";

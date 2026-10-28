@@ -6,7 +6,7 @@ import { useFonts } from "expo-font";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { Amiri_700Bold } from "@expo-google-fonts/amiri";
 import { BricolageGrotesque_500Medium, BricolageGrotesque_700Bold, BricolageGrotesque_800ExtraBold } from "@expo-google-fonts/bricolage-grotesque";
-import { G, subscribe, getVersion, load, onBackground, onForeground } from "./src/game";
+import { G, subscribe, getVersion, load, onBackground, onForeground, picking } from "./src/game";
 import { getLang, isRTL } from "./src/i18n";
 import { initSounds, resumeAmbient } from "./src/fx";
 import { schedulePrayer } from "./src/prayer";
@@ -59,7 +59,7 @@ export default function App() {
           <LearnPath />
         </Pager>
         <Sheets key={G.view ? G.view.name : "none"} />
-        {!G.life.gender && G.life.mode !== "calm" ? <Picker key={lang} /> : null}
+        {picking() ? <Picker key={lang} /> : null}
         <Cinematic />
         <RockFree />
         <Confetti />
