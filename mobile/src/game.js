@@ -165,9 +165,10 @@ function scoreCard(el, quiet, repeat) {
     el.counted = true;
   }
   if (isCalm()) {
-    // Calm: no points, buddy or show. "Lighten the load" still goes down, with the rock alone (Zine, 2026-10-28).
+    // Calm: no points, buddy or show, only a plain count of cards scrolled and taps at the top (Zine, 2026-10-28).
     G.life.lastSeen = Date.now(); save();
-    // No rock in calm either (Zine, 2026-10-28): reaching zero is a quiet note at the top.
+    G.calmN = (G.calmN || 0) + 1;
+    // "Lighten the load" still goes down, without the rock: reaching zero is a quiet note at the top.
     if (lowerDebt()) { fx.up(); toast("⚖️", t("debtDoneT"), t("debtDoneS")); } else scrollSound();
     return;
   }

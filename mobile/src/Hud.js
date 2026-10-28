@@ -80,10 +80,17 @@ export default function Hud() {
       </View>
       {isCalm() ? (
         // Calm: no level, points or Done, only a way to the settings.
-        <View style={[s.bar, { justifyContent: "flex-start" }]}>
-          <Pressable ref={target("settings")} testID="settings" onPress={() => { hapTick(); openView("progress"); }} style={s.done}>
-            <Text style={s.doneT}>{t("settings")}</Text>
-          </Pressable>
+        <View style={s.bar}>
+          <View style={{ width: 96 }}>
+            <Pressable ref={target("settings")} testID="settings" onPress={() => { hapTick(); openView("progress"); }} style={[s.done, { alignSelf: "flex-start" }]}>
+              <Text style={s.doneT}>{t("settings")}</Text>
+            </Pressable>
+          </View>
+          <View style={[s.score, { flexDirection: "row", justifyContent: "center", gap: 6 }]}>
+            <Ico e="📿" size={22} />
+            <Text style={s.pts}>{num(G.calmN || 0)}</Text>
+          </View>
+          <View style={{ width: 96 }} />
         </View>
       ) : <View style={s.bar}>
         <Pressable ref={target("lvl")} testID="level" onPress={() => { hapTick(); openView("progress"); }} style={s.lvl}>
