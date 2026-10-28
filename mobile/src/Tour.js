@@ -1,6 +1,6 @@
 // First-launch tutorial and the language/buddy picker.
-import { useEffect, useState } from "react";
-import { Dimensions, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { useEffect, useRef, useState } from "react";
+import { Animated, Dimensions, Easing, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { G, TOUR, endTour, goTour, pickBuddy } from "./game";
@@ -9,7 +9,34 @@ import { measure } from "./targets";
 import { BuddyArt } from "./Buddy";
 import { LangPicker, s as u } from "./ui";
 import { C, F, GOLD } from "./theme";
-import { Ico } from "./Icons";
+import Svg, { Path } from "react-native-svg";
+
+// Shows where to touch: a glowing gold dot that slides up for a swipe, or pulses for a tap. It replaced a
+// pointing-hand icon that looked like a rude gesture (Zine, 2026-10-28).
+function TouchHint({ swipe }) {
+  const a = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    const loop = Animated.loop(Animated.sequence([
+      Animated.timing(a, { toValue: 1, duration: swipe ? 1100 : 900, easing: Easing.inOut(Easing.quad), useNativeDriver: true }),
+      Animated.delay(swipe ? 250 : 150),
+      Animated.timing(a, { toValue: 0, duration: 0, useNativeDriver: true }),
+    ]));
+    loop.start();
+    return () => loop.stop();
+  }, [a, swipe]);
+  const dot = swipe
+    ? { opacity: a.interpolate({ inputRange: [0, 0.1, 0.75, 1], outputRange: [0, 1, 1, 0] }), transform: [{ translateY: a.interpolate({ inputRange: [0, 1], outputRange: [50, -50] }) }] }
+    : { transform: [{ scale: a.interpolate({ inputRange: [0, 0.25, 0.5, 1], outputRange: [1, 0.8, 1, 1] }) }] };
+  const ring = { opacity: a.interpolate({ inputRange: [0, 0.2, 1], outputRange: [0, 0.8, 0] }), transform: [{ scale: a.interpolate({ inputRange: [0, 1], outputRange: [0.6, 2.2] }) }] };
+  return (
+    <View style={{ width: 90, height: 150, alignItems: "center", justifyContent: "center" }}>
+      {swipe ? <Svg width={40} height={22} viewBox="0 0 40 22" style={s.arrow}><Path d="M5 18 L20 5 L35 18" fill="none" stroke="#ffe08a" strokeWidth={4} strokeLinecap="round" strokeLinejoin="round" /></Svg> : null}
+      <Animated.View style={[s.touch, dot]}>
+        {swipe ? null : <Animated.View style={[s.touchRing, ring]} />}
+      </Animated.View>
+    </View>
+  );
+}
 
 export function Tour() {
   const i = G.tourStep;
@@ -36,8 +63,8 @@ export function Tour() {
     <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
       {block ? <View style={StyleSheet.absoluteFill} /> : null}
       {spot && !aboveBar ? <View pointerEvents="none" style={[s.spot, { left: spot.x, top: spot.y, width: spot.w, height: spot.h }]} /> : null}
-      {step.hand ? <View pointerEvents="none" style={[s.hand, { top: "62%" }]}><Ico e="👆" size={60} /></View> : null}
-      {step.tapHand ? <View pointerEvents="none" style={[s.hand, { top: "57%" }]}><Ico e="👆" size={60} /></View> : null}
+      {step.hand ? <View pointerEvents="none" style={[s.hand, { top: "58%" }]}><TouchHint swipe /></View> : null}
+      {step.tapHand ? <View pointerEvents="none" style={[s.hand, { top: "57%" }]}><TouchHint /></View> : null}
       <View style={[s.tip, top]}>
         <Text style={s.tipT}>{t(step.k, step.vars && step.vars())}</Text>
         <View style={s.foot}>
@@ -82,6 +109,10 @@ export function Picker() {
 }
 
 const s = StyleSheet.create({
+  touch: { width: 34, height: 34, borderRadius: 17, backgroundColor: "rgba(255,224,138,0.9)", borderWidth: 3, borderColor: "#fff6dc", alignItems: "center", justifyContent: "center",
+    shadowColor: "#f5b83d", shadowOpacity: 0.9, shadowRadius: 14, shadowOffset: { width: 0, height: 0 } },
+  touchRing: { position: "absolute", width: 34, height: 34, borderRadius: 17, borderWidth: 2.5, borderColor: "#ffe08a" },
+  arrow: { position: "absolute", top: 0 },
   spot: { position: "absolute", borderRadius: 18, borderWidth: 2, borderColor: C.gold2 },
   hand: { position: "absolute", alignSelf: "center", fontSize: 52 },
   tip: { position: "absolute", left: 16, right: 16, alignSelf: "center", maxWidth: 384, padding: 16, paddingBottom: 14, borderRadius: 22, backgroundColor: "#0f2f2b", borderWidth: 1.5, borderColor: C.gold2 },
