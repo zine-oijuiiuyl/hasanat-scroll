@@ -27,7 +27,7 @@ const AMB = {
   fireflies: require("../assets/sounds/amb-fireflies.wav"), birds: require("../assets/sounds/amb-birds.wav"),
   butterflies: require("../assets/sounds/amb-butterflies.wav"),
 };
-const AMB_VOL = { storm: 0.6, rain: 0.55, snow: 0.15, wind: 0.3, embers: 0.9, fireflies: 0.45, birds: 0.6, butterflies: 0.45 };
+const AMB_VOL = { storm: 0.6, rain: 0.55, snow: 0.07, wind: 0.18, embers: 0.9, fireflies: 0.45, birds: 0.6, butterflies: 0.45 };
 const amb = {}, fades = {};
 let ambNow = null;
 function fadeTo(k, to, ms, done) {
