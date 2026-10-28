@@ -298,7 +298,7 @@ export function Debt() {
     <Sheet actions={<><Btn title={t("back")} onPress={closeView} /><Btn title={t("debtStart")} primary style={{ flex: 1 }} onPress={go} /></>}>
       <Hero>
         <Label>{t("debtTitle")}</Label>
-        {d && !d.done ? <SheetMiner start={d.start} left={d.left} /> : <SheetMiner start={+digits(value) || 0} left={+digits(value) || 0} />}
+        {isCalm() ? null : d && !d.done ? <SheetMiner start={d.start} left={d.left} /> : <SheetMiner start={+digits(value) || 0} left={+digits(value) || 0} />}
         <Text style={[u.note, { fontSize: 15, color: C.inkSoft }]}>{t("debtIntro")}</Text>
       </Hero>
       {d && !d.done ? <Panel><Label>{t("debtLeft", { n: num(d.left) })}</Label><Bar value={1 - d.left / d.start} /></Panel> : null}

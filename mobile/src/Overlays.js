@@ -23,8 +23,8 @@ export function BuddyLayer() {
     });
     return () => { a(); b(); c(); };
   }, [api, pop]);
-  // Calm: no buddy or speech bubble, only the "Lighten the load" rock while a number is set.
-  if (isCalm()) return <View pointerEvents="none" style={StyleSheet.absoluteFill}><View style={[s.miner, { bottom: Math.max(insets.bottom, 10) + 14 }]}><FeedMiner /></View></View>;
+  // Calm: no buddy, speech bubble or rock (Zine, 2026-10-28).
+  if (isCalm()) return null;
   if (!G.life.gender) return null;
   const mining = G.life.debt && !G.life.debt.done;
   return (

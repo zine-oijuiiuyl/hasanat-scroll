@@ -167,7 +167,8 @@ function scoreCard(el, quiet, repeat) {
   if (isCalm()) {
     // Calm: no points, buddy or show. "Lighten the load" still goes down, with the rock alone (Zine, 2026-10-28).
     G.life.lastSeen = Date.now(); save();
-    if (lowerDebt()) openFreed(G.life.debt.start); else scrollSound();
+    // No rock in calm either (Zine, 2026-10-28): reaching zero is a quiet note at the top.
+    if (lowerDebt()) { fx.up(); toast("⚖️", t("debtDoneT"), t("debtDoneS")); } else scrollSound();
     return;
   }
   if (!G.life.gender) return;
