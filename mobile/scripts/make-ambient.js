@@ -3,12 +3,13 @@
 // and short events (drops, crackles, chirps, chimes) wrap around the loop point.
 // Rain, birds and storm (Mixkit) and wind and embers (Pixabay, by SoundReality) are recordings Zine sent
 // (2026-10-28), looped and levelled by hand, not made here.
-// Run: node scripts/make-ambient.js
+// Run: node scripts/make-ambient.js [names...]   (no names renders all)
 const fs = require("fs");
 const path = require("path");
 const RATE = 16000, LEN = 12, N = RATE * LEN, FADE = RATE;
 const out = path.join(__dirname, "..", "assets", "sounds");
 const rnd = (a, b) => a + Math.random() * (b - a);
+const want = n => process.argv.length < 3 || process.argv.includes(n);
 
 // Steady noise, n + FADE samples long, filtered by fn(sampleIndex, white) and cross-faded into a loop.
 function bed(fn) {
@@ -55,7 +56,7 @@ function breeze(lo, hi, cycles) {
 const sine = (t, hz) => Math.sin(2 * Math.PI * hz * t);
 
 // Snow: a very soft, dark breeze with an occasional faint tinkle.
-{
+if (want("snow")) {
   const air = breeze(120, 420, 1);
   const tink = new Float32Array(N);
   for (let k = 0; k < 7; k++) {
@@ -65,7 +66,7 @@ const sine = (t, hz) => Math.sin(2 * Math.PI * hz * t);
   wav("snow", mix([air, 1], [tink, 0.05]), 0.45);
 }
 // Fireflies: night air with two crickets far away.
-{
+if (want("fireflies")) {
   const air = breeze(150, 380, 1);
   const crick = new Float32Array(N);
   [[4650, 0.52, 1], [4280, 0.67, 0.7]].forEach(([hz, every, a]) => {
@@ -77,14 +78,15 @@ const sine = (t, hz) => Math.sin(2 * Math.PI * hz * t);
   });
   wav("fireflies", mix([air, 1], [crick, 0.06]), 0.45);
 }
-// Butterflies: a meadow breeze with gentle wind chimes.
-{
+// Butterflies: a meadow breeze with soft, low wind chimes. The first version's chimes were too high and loud
+// (Zine, 2026-10-28), so they are an octave lower, rounder and much quieter.
+if (want("butterflies")) {
   const air = breeze(180, 520, 1);
   const chimes = new Float32Array(N);
-  const SCALE = [1046.5, 1174.7, 1318.5, 1568, 1760, 2093];
+  const SCALE = [523.25, 587.33, 659.25, 783.99, 880];
   for (let t0 = rnd(0, 1); t0 < LEN; t0 += rnd(0.9, 2.4)) {
     const hz = SCALE[Math.floor(rnd(0, SCALE.length))], a = rnd(0.5, 1);
-    event(chimes, Math.floor(t0 * RATE), Math.floor(2.4 * RATE), t => a * Math.min(1, t / 0.004) * Math.exp(-t / 0.7) * (sine(t, hz) + 0.3 * sine(t, hz * 2.76) + 0.12 * sine(t, hz * 5.4)));
+    event(chimes, Math.floor(t0 * RATE), Math.floor(2.4 * RATE), t => a * Math.min(1, t / 0.02) * Math.exp(-t / 0.7) * (sine(t, hz) + 0.15 * sine(t, hz * 2)));
   }
-  wav("butterflies", mix([air, 1], [chimes, 0.07]), 0.45);
+  wav("butterflies", mix([air, 1], [chimes, 0.025]), 0.45);
 }
