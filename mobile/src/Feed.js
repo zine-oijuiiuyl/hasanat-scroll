@@ -7,7 +7,7 @@ import { Pattern70 } from "./Pattern";
 import { CardWeather } from "./Weather";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BY_ID, PALETTES } from "./web-data";
-import { G, on, repeatCard, setCurrent, isHearted } from "./game";
+import { G, on, repeatCard, setCurrent, isHearted, isCalm } from "./game";
 import { t, meaning, kindLabel, sourceText } from "./i18n";
 import { C, F, GOLD, tabSpace } from "./theme";
 import { hapTick } from "./fx";
@@ -34,7 +34,9 @@ function SwipeHint() {
   );
 }
 
-const Card = memo(function Card({ card, height, lang, rep, hearted, insetTop, insetBottom }) {
+// `wx` (the weather setting) and `calm` are props only so that a card already on screen redraws when the mode or
+// the weather changes; the card is memoised and would otherwise keep its old look until it scrolled away.
+const Card = memo(function Card({ card, height, lang, rep, hearted, insetTop, insetBottom, wx, calm }) {
   const d = BY_ID[card.id];
   const pulse = useRef(new Animated.Value(0)).current;
   useEffect(() => on("repeat", key => {
@@ -43,16 +45,17 @@ const Card = memo(function Card({ card, height, lang, rep, hearted, insetTop, in
     Animated.timing(pulse, { toValue: 1, duration: 280, easing: Easing.out(Easing.quad), useNativeDriver: true }).start();
   }), [card.key, pulse]);
   const scale = pulse.interpolate({ inputRange: [0, 0.4, 1], outputRange: [1, 1.045, 1] });
-  const colors = card.golden ? ["#3D2A00", "#8A6110"] : PALETTES[d.pal % PALETTES.length];
+  const gold = card.golden && !calm;   // golden cards were drawn before calm mode switched them off
+  const colors = gold ? ["#3D2A00", "#8A6110"] : PALETTES[d.pal % PALETTES.length];
   const size = d.ar.length < 20 ? 64 : d.ar.length < 40 ? 46 : 34;
   const src = sourceText(d);
   return (
     <View style={{ height }}>
       <LinearGradient colors={colors} start={{ x: 0.33, y: 0 }} end={{ x: 0.67, y: 1 }} style={[s.card, { paddingTop: insetTop + 130, paddingBottom: insetBottom + 40 }]}>
         <Pattern70 />
-        <CardWeather idx={card.idx} height={height} />
-        <Text style={[s.kind, card.golden && { color: C.gold1 }]}>{card.golden ? t("golden") : kindLabel(d)}</Text>
-        <Animated.Text style={[s.ar, { fontSize: size, lineHeight: size * 1.65 }, card.golden && s.arGold, { transform: [{ scale }] }]} adjustsFontSizeToFit>{d.ar}</Animated.Text>
+        <CardWeather idx={card.idx} height={height} wx={wx} />
+        <Text style={[s.kind, gold && { color: C.gold1 }]}>{gold ? t("golden") : kindLabel(d)}</Text>
+        <Animated.Text style={[s.ar, { fontSize: size, lineHeight: size * 1.65 }, gold && s.arGold, { transform: [{ scale }] }]} adjustsFontSizeToFit>{d.ar}</Animated.Text>
         <View style={s.meta}>
           <Text style={s.tr}>{d.tr}</Text>
           <Text style={s.en}>{meaning(d)}</Text>
@@ -82,6 +85,7 @@ export default function Feed({ version, lang }) {
   const insets = useSafeAreaInsets();
   const list = useRef(null);
   const tab = G.tab;
+  const wx = G.life.weather || "auto", calm = isCalm();
   useEffect(() => { list.current && list.current.scrollToOffset({ offset: 0, animated: false }); }, [tab, G.feedRun]);
   const onScroll = useCallback(e => {
     if (!height) return;
@@ -90,8 +94,8 @@ export default function Feed({ version, lang }) {
   }, [height]);
   useEffect(() => { if (height && G.current < 0) setCurrent(0); }, [height, tab, G.feedRun]);
   const renderItem = useCallback(({ item }) => (
-    <Card card={item} height={height} lang={lang} rep={item.rep} hearted={isHearted(item.id)} insetTop={insets.top} insetBottom={tabSpace(insets)} />
-  ), [height, lang, insets.top, insets.bottom]);
+    <Card card={item} height={height} lang={lang} rep={item.rep} hearted={isHearted(item.id)} insetTop={insets.top} insetBottom={tabSpace(insets)} wx={wx} calm={calm} />
+  ), [height, lang, insets.top, insets.bottom, wx, calm]);
   return (
     <View style={StyleSheet.absoluteFill} onLayout={e => setHeight(e.nativeEvent.layout.height)}>
       {height > 0 && (
