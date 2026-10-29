@@ -385,6 +385,8 @@ export function Progress() {
   const calm = isCalm();   // calm mode shows only the settings: no buddy, levels, points or badges
   return (
     <Sheet bg={BLUE_BG} actions={<View ref={target("close")} style={{ flex: 1, maxWidth: 420 }}><Btn title={t("back")} primary onPress={closeView} testID="close" /></View>}>
+      {/* The mode switch comes first in every mode (Zine, 2026-10-29). */}
+      <ModeSwitch />
       {calm ? null : <>
       <Hero>
         <Label>{t("progress")}</Label>
@@ -430,7 +432,6 @@ export function Progress() {
       <Rate />
       <Panel>
         {calm ? <Label>{t("settings")}</Label> : null}
-        <ModeSwitch />
         <Btn title={"🕌 " + t("prTitle")} onPress={() => openView("prayer")} testID="prayerOpen" />
         <Btn title={"🧭 " + t("qbTitle")} onPress={() => openView("qibla")} testID="qiblaOpen" />
         <Btn title={"⚖️ " + (L.debt ? t("debtNew") : t("debtTitle"))} onPress={() => openView("debt")} />
