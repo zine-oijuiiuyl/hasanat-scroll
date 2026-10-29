@@ -429,7 +429,6 @@ export function Progress() {
         ) : null;
       })}
       </>}
-      <Rate />
       <Panel>
         {calm ? <Label>{t("settings")}</Label> : null}
         <Btn title={"🕌 " + t("prTitle")} onPress={() => openView("prayer")} testID="prayerOpen" />
@@ -459,6 +458,8 @@ export function Progress() {
         <Btn title={sure ? t("wipeSure") : t("wipe")} danger={!sure} style={sure && { backgroundColor: "#a33a2c" }} onPress={() => { if (!sure) setSure(true); else { setSure(false); wipeEverything(); } }} />
         {calm ? null : <Btn title={L.gender === "f" ? t("swapBoy") : t("swapGirl")} onPress={swapBuddy} />}
       </Panel>
+      {/* Rating sits last in every mode (Zine, 2026-10-29). */}
+      <Rate />
       <Text style={u.note}>{t("disclaimer")}{"\n"}Expo v1</Text>
     </Sheet>
   );
