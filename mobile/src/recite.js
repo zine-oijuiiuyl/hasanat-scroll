@@ -1,6 +1,6 @@
 // Hearing the card read aloud (Zine, 2026-10-30). Cards from the Qur'an play Mishary Alafasy's recitation, cut to
 // exactly the words on the card and bundled in the app (scripts/make-recitations.py, src/recite-data.js); the dhikr,
-// duas and hadith are read by the phone's Arabic voice. On by default, with a switch in the settings.
+// duas and hadith are read by the phone's Arabic voice. On by default, with a switch in the settings. Each card loops.
 // The word being read lights up on the card (Zine, 2026-10-30): for a verse, from the word timings that come with the
 // clip; for the phone's voice, from its word-by-word progress. Sent as the "reciteWord" event (card, word).
 import * as Speech from "expo-speech";
@@ -42,18 +42,29 @@ export function stopRecite() {
 
 const reciteOn = () => G.life.recite !== false;
 
+// Every card is read again and again while you stay on it, with a short rest in between (Zine, 2026-10-30).
+const REST = 1500;
+
 // Play the card's clip, lighting each word from its start until the next one starts.
 function playClip(idx, c, me) {
   try {
     player = createAudioPlayer(c.file);
     sub = player.addListener("playbackStatusUpdate", st => {
-      if (st.didJustFinish && me === run) { clearInterval(tick); light(idx, -1); }
+      if (st.didJustFinish && me === run) {
+        light(idx, -1);
+        timer = setTimeout(() => {
+          const p = player;
+          if (me !== run || !p) return;
+          const go = () => { try { p.play(); } catch (e) {} };
+          Promise.resolve(p.seekTo(0)).then(go, go);
+        }, REST);
+      }
     });
     player.volume = G.life.volRecite ?? 1;
     player.play();
     tick = setInterval(() => {
       const p = player;
-      if (!p || me !== run) return;
+      if (!p || me !== run || !p.playing) return;   // resting between two readings
       const ms = (p.currentTime || 0) * 1000;
       let cur = -1;
       c.t.forEach((x, i) => { if (x && x[0] <= ms + 40) cur = i; });
@@ -88,7 +99,12 @@ function speak(idx, d, me) {
       starts.forEach((st, i) => { if (st <= c) cur = i; });
       if (cur >= 0) light(idx, cur);
     },
-    onDone: () => { if (me === run) { clearInterval(tick); light(idx, -1); } },
+    onDone: () => {
+      if (me !== run) return;
+      clearInterval(tick);
+      light(idx, -1);
+      timer = setTimeout(() => { if (me === run) speak(idx, d, me); }, REST);
+    },
   });
 }
 

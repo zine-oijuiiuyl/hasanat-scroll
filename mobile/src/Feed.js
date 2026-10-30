@@ -15,6 +15,7 @@ import { HeartButton } from "./Hearts";
 import { Ico } from "./Icons";
 import MuteButton from "./Mute";
 import { cardWords } from "./recite";
+import { CLIPS } from "./recite-data";
 
 function SwipeHint() {
   const a = useRef(new Animated.Value(0)).current;
@@ -36,6 +37,45 @@ function SwipeHint() {
   );
 }
 
+// A Qur'an card holds a whole passage and shows it a part at a time (Zine, 2026-10-30: cards felt too short).
+// While it is read aloud the parts follow the reciter; with reading off they turn on a timer. Either way it loops.
+// Each part fades out and the next fades in.
+const tidyTr = x => x.replace(/AA/g, "'").replace(/\s+/g, " ").trim();
+function usePart(card, P) {
+  const [part, setPart] = useState(0);
+  const fade = useRef(new Animated.Value(1)).current;
+  const shown = useRef(0);
+  const go = useCallback(k => {
+    if (k < 0 || k === shown.current) return;
+    shown.current = k;
+    Animated.timing(fade, { toValue: 0, duration: 180, useNativeDriver: true }).start(() => {
+      setPart(k);
+      Animated.timing(fade, { toValue: 1, duration: 280, useNativeDriver: true }).start();
+    });
+  }, [fade]);
+  useEffect(() => {
+    if (!P) return;
+    return on("reciteWord", (idx, i) => { if (idx === card.idx && i >= 0) go(P.p.findIndex(([a, b]) => i >= a && i < b)); });
+  }, [P, card.idx, go]);
+  useEffect(() => {
+    if (!P || P.p.length < 2) return;
+    let tm;
+    const len = k => {
+      const [a, b] = P.p[k], x = P.t[a], y = P.t[b - 1];
+      return Math.max(3500, (x && y ? y[1] - x[0] : (b - a) * 900) + 1500);
+    };
+    const tick = () => {
+      const quiet = G.life.recite === false;
+      if (G.current !== card.idx) go(0);
+      else if (quiet) go((shown.current + 1) % P.p.length);
+      tm = setTimeout(tick, len(shown.current));
+    };
+    tm = setTimeout(tick, len(0));
+    return () => clearTimeout(tm);
+  }, [P, card.idx, go]);
+  return [part, fade];
+}
+
 // `wx` (the weather setting) and `calm` are props only so that a card already on screen redraws when the mode or
 // the weather changes; the card is memoised and would otherwise keep its old look until it scrolled away.
 const Card = memo(function Card({ card, height, lang, rep, hearted, insetTop, insetBottom, wx, calm }) {
@@ -50,27 +90,42 @@ const Card = memo(function Card({ card, height, lang, rep, hearted, insetTop, in
   // The word being read aloud glows gold, the ones still to come wait a little dimmer (Zine, 2026-10-30).
   const [word, setWord] = useState(-1);
   useEffect(() => on("reciteWord", (idx, i) => { if (idx === card.idx) setWord(i); }), [card.idx]);
+  const P = CLIPS[card.id];
+  const [part, fade] = usePart(card, P);
   const gold = card.golden && !calm;   // golden cards were drawn before calm mode switched them off
   const colors = gold ? ["#3D2A00", "#8A6110"] : PALETTES[d.pal % PALETTES.length];
-  const size = d.ar.length < 20 ? 64 : d.ar.length < 40 ? 46 : 34;
-  const src = sourceText(d);
+  // What the card shows now: the whole text, or for a passage the current part with its verses' words around it.
+  let words, from = 0, trText = d.tr, meanText = meaning(d), src = sourceText(d);
+  if (P) {
+    const [a, b] = P.p[Math.min(part, P.p.length - 1)];
+    from = a;
+    words = P.w.slice(a, b);
+    const vs = [...new Set(P.v.slice(a, b))].map(k => P.verses[k]);
+    trText = vs.map(v => tidyTr(v.tr)).join(" ");
+    meanText = lang === "ar" ? "" : vs.map(v => v.m[lang] || v.m.en).join(" ");
+    src = src.replace(/\d+:\d+(?:-\d+)?/, P.ref);
+  } else words = cardWords(d);
+  const text = words.join(" ");
+  const size = text.length < 20 ? 64 : text.length < 40 ? 46 : text.length < 70 ? 34 : 28;
+  const w = word - from;
   return (
     <View style={{ height }}>
       <LinearGradient colors={colors} start={{ x: 0.33, y: 0 }} end={{ x: 0.67, y: 1 }} style={[s.card, { paddingTop: insetTop + 130, paddingBottom: insetBottom + 40 }]}>
         <Pattern70 />
         <CardWeather idx={card.idx} height={height} wx={wx} />
         <Text style={[s.kind, gold && { color: C.gold1 }]}>{gold ? t("golden") : kindLabel(d)}</Text>
-        <Animated.Text style={[s.ar, { fontSize: size, lineHeight: size * 1.65 }, gold && s.arGold, { transform: [{ scale }] }]} adjustsFontSizeToFit>
-          {word < 0 ? d.ar : cardWords(d).map((w, i, all) => (
-            <Text key={i} style={i === word ? (gold ? s.wNowGold : s.wNow) : i > word ? s.wNext : null}>{w}{i < all.length - 1 ? " " : ""}</Text>
+        <Animated.Text style={[s.ar, { fontSize: size, lineHeight: size * 1.65 }, gold && s.arGold, { opacity: fade, transform: [{ scale }] }]} adjustsFontSizeToFit>
+          {word < 0 || w < 0 || w >= words.length ? text : words.map((x, i) => (
+            <Text key={i} style={i === w ? (gold ? s.wNowGold : s.wNow) : i > w ? s.wNext : null}>{x}{i < words.length - 1 ? " " : ""}</Text>
           ))}
         </Animated.Text>
-        <View style={s.meta}>
-          <Text style={s.tr}>{d.tr}</Text>
-          <Text style={s.en}>{meaning(d)}</Text>
+        <Animated.View style={[s.meta, { opacity: fade }]}>
+          <Text style={s.tr}>{trText}</Text>
+          {meanText ? <Text style={s.en}>{meanText}</Text> : null}
           {src ? <Text style={s.src}>{src}</Text> : null}
           {rep > 0 ? <View style={[s.rep, { flexDirection: "row", alignItems: "center", gap: 5 }]}><Ico e="📿" size={18} /><Text style={s.repT}>×{rep}</Text></View> : null}
-        </View>
+          {P && P.p.length > 1 ? <View style={s.dots}>{P.p.map((_, k) => <View key={k} style={[s.dot, k === part && s.dotOn]} />)}</View> : null}
+        </Animated.View>
         <View style={s.counter}>
           <SwipeHint />
           <Text style={s.hint}>{t("swipe")}</Text>
@@ -139,6 +194,9 @@ const s = StyleSheet.create({
   ar: { fontFamily: F.ar, color: C.ink, textAlign: "center", writingDirection: "rtl", maxWidth: 540, textShadowColor: "rgba(0,0,0,0.28)", textShadowOffset: { width: 0, height: 8 }, textShadowRadius: 28 },
   wNow: { color: GOLD[0], textShadowColor: "rgba(255,200,80,0.9)", textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 22 },
   wNowGold: { color: "#fff", textShadowColor: "rgba(255,255,255,0.9)", textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 22 },
+  dots: { flexDirection: "row", gap: 6, marginTop: 8 },
+  dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: "rgba(255,255,255,0.25)" },
+  dotOn: { backgroundColor: GOLD[0], width: 16 },
   wNext: { color: "rgba(255,255,255,0.45)" },
   arGold: { color: C.gold1, textShadowColor: "rgba(255,200,80,0.45)", textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 18 },
   meta: { gap: 6, alignItems: "center", maxWidth: 540 },
