@@ -490,7 +490,7 @@ export function Progress() {
       </Panel>
       {/* Rating sits last in every mode (Zine, 2026-10-29). */}
       <Rate />
-      <Text style={u.note}>{t("disclaimer")}{"\n"}Expo v1</Text>
+      <Text style={u.note}>{t("disclaimer")}{"\n"}Recitation: Mishary Alafasy (everyayah.com). Word timings: quran-align by Charles Parker, CC BY 4.0.{"\n"}Expo v1</Text>
     </Sheet>
   );
 }
