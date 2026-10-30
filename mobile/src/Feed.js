@@ -16,6 +16,7 @@ import { Ico } from "./Icons";
 import MuteButton from "./Mute";
 import { cardWords } from "./recite";
 import { CLIPS } from "./recite-data";
+import { LONG } from "./hadith-long";
 
 function SwipeHint() {
   const a = useRef(new Animated.Value(0)).current;
@@ -37,7 +38,7 @@ function SwipeHint() {
   );
 }
 
-// A Qur'an card holds a whole passage and shows it a part at a time (Zine, 2026-10-30: cards felt too short).
+// A Qur'an, hadith or hadith-dua card holds a whole passage and shows it a part at a time (Zine, 2026-10-30: cards felt too short).
 // While it is read aloud the parts follow the reciter; with reading off they turn on a timer. Either way it loops.
 // Each part fades out and the next fades in.
 const tidyTr = x => x.replace(/AA/g, "'").replace(/\s+/g, " ").trim();
@@ -90,7 +91,7 @@ const Card = memo(function Card({ card, height, lang, rep, hearted, insetTop, in
   // The word being read aloud glows gold, the ones still to come wait a little dimmer (Zine, 2026-10-30).
   const [word, setWord] = useState(-1);
   useEffect(() => on("reciteWord", (idx, i) => { if (idx === card.idx) setWord(i); }), [card.idx]);
-  const P = CLIPS[card.id];
+  const P = CLIPS[card.id] || LONG[card.id];
   const [part, fade] = usePart(card, P);
   const gold = card.golden && !calm;   // golden cards were drawn before calm mode switched them off
   const colors = gold ? ["#3D2A00", "#8A6110"] : PALETTES[d.pal % PALETTES.length];
@@ -100,10 +101,17 @@ const Card = memo(function Card({ card, height, lang, rep, hearted, insetTop, in
     const [a, b] = P.p[Math.min(part, P.p.length - 1)];
     from = a;
     words = P.w.slice(a, b);
-    const vs = [...new Set(P.v.slice(a, b))].map(k => P.verses[k]);
-    trText = vs.map(v => tidyTr(v.tr)).join(" ");
-    meanText = lang === "ar" ? "" : vs.map(v => v.m[lang] || v.m.en).join(" ");
-    src = src.replace(/\d+:\d+(?:-\d+)?/, P.ref);
+    if (P.verses) {
+      const vs = [...new Set(P.v.slice(a, b))].map(k => P.verses[k]);
+      trText = vs.map(v => tidyTr(v.tr)).join(" ");
+      meanText = lang === "ar" ? "" : vs.map(v => v.m[lang] || v.m.en).join(" ");
+      src = src.replace(/\d+:\d+(?:-\d+)?/, P.ref);
+    } else {
+      // A hadith: its meaning in this language a piece per part; without one (es, de, ar) the card's own short meaning.
+      trText = "";
+      const ms = P.m[lang];
+      meanText = ms ? ms[Math.min(part, ms.length - 1)] : meaning(d);
+    }
   } else words = cardWords(d);
   const text = words.join(" ");
   const size = text.length < 20 ? 64 : text.length < 40 ? 46 : text.length < 70 ? 34 : 28;
@@ -120,7 +128,7 @@ const Card = memo(function Card({ card, height, lang, rep, hearted, insetTop, in
           ))}
         </Animated.Text>
         <Animated.View style={[s.meta, { opacity: fade }]}>
-          <Text style={s.tr}>{trText}</Text>
+          {trText ? <Text style={s.tr}>{trText}</Text> : null}
           {meanText ? <Text style={s.en}>{meanText}</Text> : null}
           {src ? <Text style={s.src}>{src}</Text> : null}
           {rep > 0 ? <View style={[s.rep, { flexDirection: "row", alignItems: "center", gap: 5 }]}><Ico e="📿" size={18} /><Text style={s.repT}>×{rep}</Text></View> : null}

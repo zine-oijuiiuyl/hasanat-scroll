@@ -8,6 +8,7 @@ import { createAudioPlayer } from "expo-audio";
 import { G, on, emit, isLearn, picking } from "./game";
 import { BY_ID, T } from "./web-data";
 import { CLIPS } from "./recite-data";
+import { LONG } from "./hadith-long";
 
 // The card's Arabic split into the words drawn one by one on the card (Feed.js uses the same split).
 export const cardWords = d => d.ar.split(/\s+/).filter(Boolean);
@@ -75,10 +76,12 @@ function playClip(idx, c, me) {
 
 // The phone's voice tells where it is in the text; until it does (or if it never does), guess from the length.
 function speak(idx, d, me) {
-  const words = cardWords(d);
+  // A hadith card with its fuller text is read whole; the card shows it part by part (Feed.js).
+  const words = LONG[d.id] ? LONG[d.id].w : cardWords(d);
+  const text = words.join(" ");
   const starts = [];
   let from = 0;
-  words.forEach(w => { const at = d.ar.indexOf(w, from); starts.push(at); from = at + w.length; });
+  words.forEach(w => { const at = text.indexOf(w, from); starts.push(at); from = at + w.length; });
   const lens = words.map(w => norm(w).length || 1), total = lens.reduce((a, b) => a + b, 0);
   let heard = false, t0 = 0;
   const guess = () => {
@@ -88,7 +91,7 @@ function speak(idx, d, me) {
     for (let i = 0; i < lens.length; i++) { if (at >= acc) cur = i; acc += lens[i]; }
     if (at < total) light(idx, cur);
   };
-  Speech.speak(d.ar, {
+  Speech.speak(text, {
     language: "ar-SA", rate: 0.85, volume: G.life.volRecite ?? 1,
     onStart: () => { t0 = Date.now(); clearInterval(tick); tick = setInterval(guess, 80); },
     onBoundary: e => {
