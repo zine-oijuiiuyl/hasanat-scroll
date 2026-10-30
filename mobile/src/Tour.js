@@ -90,24 +90,25 @@ export function Tour() {
 
 // The first question on a new phone: game-like or calm (Zine, 2026-10-28).
 const MODE = {
-  en: { modeLearn: "Learning", modeLearnS: "Short lessons to learn Qur'an and hadith step by step, with your buddy.", modeTitle: "How do you want to scroll?", modeText: "Pick the experience that suits you. You can change it any time in the settings.", modeGame: "Game-like", modeGameS: "A buddy who grows with you, points, levels, rewards and confetti.", modeCalm: "Calm", modeCalmS: "Just the cards, quiet and simple, with a plain count. No buddy or rewards.", settings: "Settings" },
-  ar: { modeLearn: "التعلّم", modeLearnS: "دروس قصيرة لتعلّم القرآن والحديث خطوة بخطوة، مع رفيقك.", modeTitle: "كيف تريد أن تتصفح؟", modeText: "اختر التجربة التي تناسبك. يمكنك تغييرها في أي وقت من الإعدادات.", modeGame: "مثل اللعبة", modeGameS: "رفيق يكبر معك، ونقاط ومستويات ومكافآت واحتفالات.", modeCalm: "هادئ", modeCalmS: "البطاقات فقط، بهدوء وبساطة، مع عدّاد بسيط. بلا رفيق ولا مكافآت.", settings: "الإعدادات" },
-  fr: { modeLearn: "Apprentissage", modeLearnS: "De courtes leçons pour apprendre le Coran et les hadiths pas à pas, avec ton compagnon.", modeTitle: "Comment veux-tu faire défiler ?", modeText: "Choisis l'expérience qui te convient. Tu peux la changer à tout moment dans les réglages.", modeGame: "Comme un jeu", modeGameS: "Un compagnon qui grandit avec toi, des points, des niveaux, des récompenses et des confettis.", modeCalm: "Calme", modeCalmS: "Juste les cartes, au calme, avec un simple compteur. Sans compagnon ni récompenses.", settings: "Réglages" },
-  es: { modeLearn: "Aprendizaje", modeLearnS: "Lecciones cortas para aprender Corán y hadices paso a paso, con tu compañero.", modeTitle: "¿Cómo quieres deslizar?", modeText: "Elige la experiencia que te va mejor. Puedes cambiarla cuando quieras en los ajustes.", modeGame: "Como un juego", modeGameS: "Un compañero que crece contigo, puntos, niveles, premios y confeti.", modeCalm: "Tranquilo", modeCalmS: "Solo las tarjetas, con calma, y un contador sencillo. Sin compañero ni premios.", settings: "Ajustes" },
-  tr: { modeLearn: "Öğrenme", modeLearnS: "Arkadaşınla birlikte Kur'an ve hadisi adım adım öğrenmek için kısa dersler.", modeTitle: "Nasıl kaydırmak istersin?", modeText: "Sana uyan deneyimi seç. Ayarlardan istediğin zaman değiştirebilirsin.", modeGame: "Oyun gibi", modeGameS: "Seninle büyüyen bir arkadaş, puanlar, seviyeler, ödüller ve konfeti.", modeCalm: "Sakin", modeCalmS: "Sadece kartlar, sade ve sakin, basit bir sayaçla. Arkadaş ya da ödül yok.", settings: "Ayarlar" },
-  ur: { modeLearn: "سیکھنا", modeLearnS: "اپنے ساتھی کے ساتھ قرآن اور حدیث قدم بہ قدم سیکھنے کے مختصر اسباق۔", modeTitle: "آپ کیسے اسکرول کرنا چاہتے ہیں؟", modeText: "اپنے لیے موزوں تجربہ چنیں۔ آپ اسے کسی بھی وقت ترتیبات میں بدل سکتے ہیں۔", modeGame: "کھیل جیسا", modeGameS: "آپ کے ساتھ بڑھنے والا ساتھی، پوائنٹس، لیول، انعامات اور جشن۔", modeCalm: "پُرسکون", modeCalmS: "صرف کارڈز، سادہ اور پُرسکون، ایک سادہ گنتی کے ساتھ۔ نہ ساتھی، نہ انعامات۔", settings: "ترتیبات" },
-  id: { modeLearn: "Belajar", modeLearnS: "Pelajaran singkat untuk belajar Al-Qur'an dan hadis selangkah demi selangkah, bersama temanmu.", modeTitle: "Bagaimana kamu ingin menggulir?", modeText: "Pilih pengalaman yang cocok untukmu. Kamu bisa mengubahnya kapan saja di pengaturan.", modeGame: "Seperti game", modeGameS: "Teman yang tumbuh bersamamu, poin, level, hadiah, dan konfeti.", modeCalm: "Tenang", modeCalmS: "Hanya kartu, tenang dan sederhana, dengan hitungan biasa. Tanpa teman atau hadiah.", settings: "Pengaturan" },
-  bn: { modeLearn: "শেখা", modeLearnS: "তোমার সঙ্গীর সাথে ধাপে ধাপে কুরআন ও হাদিস শেখার ছোট ছোট পাঠ।", modeTitle: "তুমি কীভাবে স্ক্রল করতে চাও?", modeText: "তোমার পছন্দের অভিজ্ঞতা বেছে নাও। সেটিংসে যেকোনো সময় বদলাতে পারো।", modeGame: "খেলার মতো", modeGameS: "তোমার সাথে বেড়ে ওঠা সঙ্গী, পয়েন্ট, লেভেল, পুরস্কার আর কনফেটি।", modeCalm: "শান্ত", modeCalmS: "শুধু কার্ড, শান্ত ও সহজ, সাথে একটা সাধারণ গণনা। কোনো সঙ্গী বা পুরস্কার নেই।", settings: "সেটিংস" },
-  ru: { modeLearn: "Обучение", modeLearnS: "Короткие уроки, чтобы шаг за шагом учить Коран и хадисы вместе со спутником.", modeTitle: "Как ты хочешь листать?", modeText: "Выбери, что тебе ближе. Это можно изменить в любой момент в настройках.", modeGame: "Как игра", modeGameS: "Спутник, который растёт вместе с тобой, очки, уровни, награды и конфетти.", modeCalm: "Спокойно", modeCalmS: "Только карточки, тихо и просто, с обычным счётчиком. Без спутника и наград.", settings: "Настройки" },
-  de: { modeLearn: "Lernen", modeLearnS: "Kurze Lektionen, um Koran und Hadithe Schritt für Schritt zu lernen, mit deinem Begleiter.", modeTitle: "Wie möchtest du scrollen?", modeText: "Wähle, was zu dir passt. Du kannst es jederzeit in den Einstellungen ändern.", modeGame: "Wie ein Spiel", modeGameS: "Ein Begleiter, der mit dir wächst, Punkte, Level, Belohnungen und Konfetti.", modeCalm: "Ruhig", modeCalmS: "Nur die Karten, still und schlicht, mit einem einfachen Zähler. Kein Begleiter, keine Belohnungen.", settings: "Einstellungen" },
+  en: { modeLearn: "Learning", modeLearnS: "Short lessons to learn Qur'an and hadith step by step, with your buddy.", modeTitle: "How do you want to scroll?", modeText: "Pick the experience that suits you. You can change it any time in the settings.", modeGame: "Game", modeGameS: "A buddy who grows with you, points, levels, rewards and confetti.", modeCalm: "Calm", modeCalmS: "Just the cards, quiet and simple, with a plain count. No buddy or rewards.", settings: "Settings" },
+  ar: { modeLearn: "التعلّم", modeLearnS: "دروس قصيرة لتعلّم القرآن والحديث خطوة بخطوة، مع رفيقك.", modeTitle: "كيف تريد أن تتصفح؟", modeText: "اختر التجربة التي تناسبك. يمكنك تغييرها في أي وقت من الإعدادات.", modeGame: "اللعبة", modeGameS: "رفيق يكبر معك، ونقاط ومستويات ومكافآت واحتفالات.", modeCalm: "هادئ", modeCalmS: "البطاقات فقط، بهدوء وبساطة، مع عدّاد بسيط. بلا رفيق ولا مكافآت.", settings: "الإعدادات" },
+  fr: { modeLearn: "Apprentissage", modeLearnS: "De courtes leçons pour apprendre le Coran et les hadiths pas à pas, avec ton compagnon.", modeTitle: "Comment veux-tu faire défiler ?", modeText: "Choisis l'expérience qui te convient. Tu peux la changer à tout moment dans les réglages.", modeGame: "Jeu", modeGameS: "Un compagnon qui grandit avec toi, des points, des niveaux, des récompenses et des confettis.", modeCalm: "Calme", modeCalmS: "Juste les cartes, au calme, avec un simple compteur. Sans compagnon ni récompenses.", settings: "Réglages" },
+  es: { modeLearn: "Aprendizaje", modeLearnS: "Lecciones cortas para aprender Corán y hadices paso a paso, con tu compañero.", modeTitle: "¿Cómo quieres deslizar?", modeText: "Elige la experiencia que te va mejor. Puedes cambiarla cuando quieras en los ajustes.", modeGame: "Juego", modeGameS: "Un compañero que crece contigo, puntos, niveles, premios y confeti.", modeCalm: "Tranquilo", modeCalmS: "Solo las tarjetas, con calma, y un contador sencillo. Sin compañero ni premios.", settings: "Ajustes" },
+  tr: { modeLearn: "Öğrenme", modeLearnS: "Arkadaşınla birlikte Kur'an ve hadisi adım adım öğrenmek için kısa dersler.", modeTitle: "Nasıl kaydırmak istersin?", modeText: "Sana uyan deneyimi seç. Ayarlardan istediğin zaman değiştirebilirsin.", modeGame: "Oyun", modeGameS: "Seninle büyüyen bir arkadaş, puanlar, seviyeler, ödüller ve konfeti.", modeCalm: "Sakin", modeCalmS: "Sadece kartlar, sade ve sakin, basit bir sayaçla. Arkadaş ya da ödül yok.", settings: "Ayarlar" },
+  ur: { modeLearn: "سیکھنا", modeLearnS: "اپنے ساتھی کے ساتھ قرآن اور حدیث قدم بہ قدم سیکھنے کے مختصر اسباق۔", modeTitle: "آپ کیسے اسکرول کرنا چاہتے ہیں؟", modeText: "اپنے لیے موزوں تجربہ چنیں۔ آپ اسے کسی بھی وقت ترتیبات میں بدل سکتے ہیں۔", modeGame: "کھیل", modeGameS: "آپ کے ساتھ بڑھنے والا ساتھی، پوائنٹس، لیول، انعامات اور جشن۔", modeCalm: "پُرسکون", modeCalmS: "صرف کارڈز، سادہ اور پُرسکون، ایک سادہ گنتی کے ساتھ۔ نہ ساتھی، نہ انعامات۔", settings: "ترتیبات" },
+  id: { modeLearn: "Belajar", modeLearnS: "Pelajaran singkat untuk belajar Al-Qur'an dan hadis selangkah demi selangkah, bersama temanmu.", modeTitle: "Bagaimana kamu ingin menggulir?", modeText: "Pilih pengalaman yang cocok untukmu. Kamu bisa mengubahnya kapan saja di pengaturan.", modeGame: "Game", modeGameS: "Teman yang tumbuh bersamamu, poin, level, hadiah, dan konfeti.", modeCalm: "Tenang", modeCalmS: "Hanya kartu, tenang dan sederhana, dengan hitungan biasa. Tanpa teman atau hadiah.", settings: "Pengaturan" },
+  bn: { modeLearn: "শেখা", modeLearnS: "তোমার সঙ্গীর সাথে ধাপে ধাপে কুরআন ও হাদিস শেখার ছোট ছোট পাঠ।", modeTitle: "তুমি কীভাবে স্ক্রল করতে চাও?", modeText: "তোমার পছন্দের অভিজ্ঞতা বেছে নাও। সেটিংসে যেকোনো সময় বদলাতে পারো।", modeGame: "খেলা", modeGameS: "তোমার সাথে বেড়ে ওঠা সঙ্গী, পয়েন্ট, লেভেল, পুরস্কার আর কনফেটি।", modeCalm: "শান্ত", modeCalmS: "শুধু কার্ড, শান্ত ও সহজ, সাথে একটা সাধারণ গণনা। কোনো সঙ্গী বা পুরস্কার নেই।", settings: "সেটিংস" },
+  ru: { modeLearn: "Обучение", modeLearnS: "Короткие уроки, чтобы шаг за шагом учить Коран и хадисы вместе со спутником.", modeTitle: "Как ты хочешь листать?", modeText: "Выбери, что тебе ближе. Это можно изменить в любой момент в настройках.", modeGame: "Игра", modeGameS: "Спутник, который растёт вместе с тобой, очки, уровни, награды и конфетти.", modeCalm: "Спокойно", modeCalmS: "Только карточки, тихо и просто, с обычным счётчиком. Без спутника и наград.", settings: "Настройки" },
+  de: { modeLearn: "Lernen", modeLearnS: "Kurze Lektionen, um Koran und Hadithe Schritt für Schritt zu lernen, mit deinem Begleiter.", modeTitle: "Wie möchtest du scrollen?", modeText: "Wähle, was zu dir passt. Du kannst es jederzeit in den Einstellungen ändern.", modeGame: "Spiel", modeGameS: "Ein Begleiter, der mit dir wächst, Punkte, Level, Belohnungen und Konfetti.", modeCalm: "Ruhig", modeCalmS: "Nur die Karten, still und schlicht, mit einem einfachen Zähler. Kein Begleiter, keine Belohnungen.", settings: "Einstellungen" },
 };
 for (const [l, v] of Object.entries(MODE)) if (T[l]) Object.assign(T[l].ui, v);
 
 // The tutorial lines added with one tutorial per mode (Zine, 2026-10-28).
 const TUT = {
  "en": {
+  "tutWeather": "This is the weather: rain, snow, butterflies and more drift over the cards. Turn it on or off, pick one or let it change by itself, and switch its sounds on or off.",
   "tutSound": "Turn the scroll sound on or off here, and pick the one you like. Weather sounds have their own switch below.",
-  "tutMode": "Switch between Calm, Game-like and Learning here, any time.",
+  "tutMode": "Switch between Calm, Game and Learning here, any time.",
   "tutClose": "Tap “{b}” to go back.",
   "tutSettings": "Tap Settings for sounds, weather, language and to change mode.",
   "tutEndCalm": "That's it! Scroll calmly and enjoy your dhikr.",
@@ -117,6 +118,7 @@ const TUT = {
   "tutEndLearn": "That's it! Start your first lesson, bismillah."
  },
  "ar": {
+  "tutWeather": "هذا هو الطقس: مطر وثلج وفراشات وغيرها تمرّ فوق البطاقات. شغّله أو أوقفه، واختر واحدًا أو دعه يتغيّر وحده، وشغّل أصواته أو أوقفها.",
   "tutSound": "من هنا تشغّل صوت التمرير أو توقفه وتختار الصوت الذي يعجبك. لأصوات الطقس مفتاح خاص بها في الأسفل.",
   "tutMode": "من هنا تنتقل بين الوضع الهادئ ووضع اللعبة ووضع التعلّم في أي وقت.",
   "tutClose": "اضغط «{b}» للرجوع.",
@@ -128,8 +130,9 @@ const TUT = {
   "tutEndLearn": "هذا كل شيء! ابدأ درسك الأول، بسم الله."
  },
  "fr": {
+  "tutWeather": "Voici la météo : pluie, neige, papillons et plus encore passent sur les cartes. Active-la ou coupe-la, choisis-en une ou laisse-la changer toute seule, et active ou coupe ses sons.",
   "tutSound": "Active ou coupe le son du défilement ici, et choisis celui que tu préfères. Les sons de la météo ont leur propre bouton plus bas.",
-  "tutMode": "Passe ici entre Calme, Comme un jeu et Apprentissage, à tout moment.",
+  "tutMode": "Passe ici entre Calme, Jeu et Apprentissage, à tout moment.",
   "tutClose": "Appuie sur « {b} » pour revenir.",
   "tutSettings": "Appuie sur Réglages pour les sons, la météo, la langue et pour changer de mode.",
   "tutEndCalm": "C'est tout ! Fais défiler au calme et profite de tes dhikr.",
@@ -139,8 +142,9 @@ const TUT = {
   "tutEndLearn": "C'est tout ! Commence ta première leçon, bismillah."
  },
  "es": {
+  "tutWeather": "Este es el clima: lluvia, nieve, mariposas y más pasan sobre las tarjetas. Actívalo o quítalo, elige uno o deja que cambie solo, y activa o quita sus sonidos.",
   "tutSound": "Activa o quita aquí el sonido al deslizar y elige el que te guste. Los sonidos del clima tienen su propio interruptor abajo.",
-  "tutMode": "Cambia aquí entre Tranquilo, Como un juego y Aprendizaje cuando quieras.",
+  "tutMode": "Cambia aquí entre Tranquilo, Juego y Aprendizaje cuando quieras.",
   "tutClose": "Toca «{b}» para volver.",
   "tutSettings": "Toca Ajustes para los sonidos, el clima, el idioma y para cambiar de modo.",
   "tutEndCalm": "¡Eso es todo! Desliza con calma y disfruta de tu dhikr.",
@@ -150,8 +154,9 @@ const TUT = {
   "tutEndLearn": "¡Eso es todo! Empieza tu primera lección, bismillah."
  },
  "tr": {
+  "tutWeather": "Bu hava durumu: yağmur, kar, kelebekler ve daha fazlası kartların üzerinden geçer. Aç ya da kapat, birini seç ya da kendiliğinden değişsin, seslerini de aç ya da kapat.",
   "tutSound": "Kaydırma sesini buradan açıp kapat ve sevdiğin sesi seç. Hava durumu seslerinin aşağıda kendi düğmesi var.",
-  "tutMode": "Sakin, Oyun gibi ve Öğrenme arasında buradan istediğin zaman geçiş yap.",
+  "tutMode": "Sakin, Oyun ve Öğrenme arasında buradan istediğin zaman geçiş yap.",
   "tutClose": "Geri dönmek için “{b}” düğmesine dokun.",
   "tutSettings": "Sesler, hava durumu, dil ve mod değiştirmek için Ayarlar'a dokun.",
   "tutEndCalm": "Hepsi bu! Sakince kaydır ve zikrinin tadını çıkar.",
@@ -161,8 +166,9 @@ const TUT = {
   "tutEndLearn": "Hepsi bu! İlk dersine başla, bismillah."
  },
  "ur": {
+  "tutWeather": "یہ موسم ہے: بارش، برف، تتلیاں اور بہت کچھ کارڈز کے اوپر سے گزرتا ہے۔ اسے آن یا آف کریں، کوئی ایک چنیں یا خود بدلنے دیں، اور اس کی آوازیں آن یا آف کریں۔",
   "tutSound": "یہاں اسکرول کی آواز آن یا آف کریں اور اپنی پسند کی آواز چنیں۔ موسم کی آوازوں کا الگ بٹن نیچے ہے۔",
-  "tutMode": "یہاں کسی بھی وقت پُرسکون، کھیل جیسا اور سیکھنا کے درمیان بدلیں۔",
+  "tutMode": "یہاں کسی بھی وقت پُرسکون، کھیل اور سیکھنا کے درمیان بدلیں۔",
   "tutClose": "واپس جانے کے لیے «{b}» دبائیں۔",
   "tutSettings": "آوازوں، موسم، زبان اور موڈ بدلنے کے لیے ترتیبات دبائیں۔",
   "tutEndCalm": "بس اتنا ہی! سکون سے اسکرول کریں اور اپنے اذکار سے لطف اٹھائیں۔",
@@ -172,8 +178,9 @@ const TUT = {
   "tutEndLearn": "بس اتنا ہی! اپنا پہلا سبق شروع کریں، بسم اللہ۔"
  },
  "id": {
+  "tutWeather": "Ini cuaca: hujan, salju, kupu-kupu, dan lainnya melayang di atas kartu. Nyalakan atau matikan, pilih satu atau biarkan berganti sendiri, dan nyalakan atau matikan suaranya.",
   "tutSound": "Nyalakan atau matikan suara gulir di sini, lalu pilih yang kamu suka. Suara cuaca punya tombolnya sendiri di bawah.",
-  "tutMode": "Pindah di sini antara Tenang, Seperti game, dan Belajar kapan saja.",
+  "tutMode": "Pindah di sini antara Tenang, Game, dan Belajar kapan saja.",
   "tutClose": "Ketuk “{b}” untuk kembali.",
   "tutSettings": "Ketuk Pengaturan untuk suara, cuaca, bahasa, dan untuk mengganti mode.",
   "tutEndCalm": "Selesai! Menggulirlah dengan tenang dan nikmati zikirmu.",
@@ -183,8 +190,9 @@ const TUT = {
   "tutEndLearn": "Selesai! Mulai pelajaran pertamamu, bismillah."
  },
  "bn": {
+  "tutWeather": "এটা আবহাওয়া: বৃষ্টি, তুষার, প্রজাপতি আর আরও অনেক কিছু কার্ডের ওপর দিয়ে ভেসে যায়। চালু বা বন্ধ করো, একটা বেছে নাও বা নিজে নিজে বদলাতে দাও, আর এর শব্দ চালু বা বন্ধ করো।",
   "tutSound": "এখানে স্ক্রলের শব্দ চালু বা বন্ধ করো আর পছন্দের শব্দ বেছে নাও। আবহাওয়ার শব্দের আলাদা সুইচ নিচে আছে।",
-  "tutMode": "এখানে যেকোনো সময় শান্ত, খেলার মতো আর শেখার মধ্যে বদলাও।",
+  "tutMode": "এখানে যেকোনো সময় শান্ত, খেলা আর শেখার মধ্যে বদলাও।",
   "tutClose": "ফিরে যেতে “{b}” চাপো।",
   "tutSettings": "শব্দ, আবহাওয়া, ভাষা আর মোড বদলাতে সেটিংস চাপো।",
   "tutEndCalm": "ব্যস! শান্তভাবে স্ক্রল করো আর তোমার যিকির উপভোগ করো।",
@@ -194,8 +202,9 @@ const TUT = {
   "tutEndLearn": "ব্যস! তোমার প্রথম পাঠ শুরু করো, বিসমিল্লাহ।"
  },
  "ru": {
+  "tutWeather": "Это погода: дождь, снег, бабочки и не только проплывают над карточками. Включай или выключай её, выбирай одну или пусть меняется сама, и включай или выключай её звуки.",
   "tutSound": "Здесь включай и выключай звук прокрутки и выбирай тот, что нравится. У звуков погоды свой переключатель ниже.",
-  "tutMode": "Здесь можно в любой момент переключаться между режимами «Спокойно», «Как игра» и «Обучение».",
+  "tutMode": "Здесь можно в любой момент переключаться между режимами «Спокойно», «Игра» и «Обучение».",
   "tutClose": "Нажми «{b}», чтобы вернуться.",
   "tutSettings": "Нажми «Настройки», чтобы выбрать звуки, погоду, язык и сменить режим.",
   "tutEndCalm": "Вот и всё! Листай спокойно и наслаждайся зикром.",
@@ -205,8 +214,9 @@ const TUT = {
   "tutEndLearn": "Вот и всё! Начни первый урок, бисмиллях."
  },
  "de": {
+  "tutWeather": "Das ist das Wetter: Regen, Schnee, Schmetterlinge und mehr ziehen über die Karten. Schalte es ein oder aus, wähle eins oder lass es von selbst wechseln, und schalte seine Geräusche ein oder aus.",
   "tutSound": "Schalte hier den Scroll-Ton ein oder aus und wähle den, der dir gefällt. Die Wettergeräusche haben weiter unten einen eigenen Schalter.",
-  "tutMode": "Wechsle hier jederzeit zwischen Ruhig, Wie ein Spiel und Lernen.",
+  "tutMode": "Wechsle hier jederzeit zwischen Ruhig, Spiel und Lernen.",
   "tutClose": "Tippe auf „{b}“, um zurückzugehen.",
   "tutSettings": "Tippe auf Einstellungen für Töne, Wetter, Sprache und um den Modus zu wechseln.",
   "tutEndCalm": "Das war's! Scrolle in Ruhe und genieße deinen Dhikr.",

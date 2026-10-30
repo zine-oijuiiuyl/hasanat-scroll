@@ -105,7 +105,8 @@ export default function Hud() {
             <Text style={s.lvNum}>{t("lv", { n: lv })}</Text>
           </View>
         </Pressable>
-        <Pressable testID="pts" onPress={() => { hapTick(); openView("history"); }} style={{ flex: 1 }}>
+        {/* Just the score: tapping it does nothing, history is behind Done (Zine, 2026-10-30). */}
+        <View testID="pts" style={{ flex: 1 }}>
         <Animated.View ref={target("pts")} style={[s.score, { transform: [{ scale }] }]}>
           <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
             <Text style={s.star}>✦</Text>
@@ -113,7 +114,7 @@ export default function Hud() {
           </View>
           <Text style={s.sub}>{t("pointsSub", { t: levelTitle(lv) })}</Text>
         </Animated.View>
-        </Pressable>
+        </View>
         <View style={{ width: 76, alignItems: "flex-end" }}>
           <Pressable ref={target("done")} testID="done" onPress={() => { hapTick(); openView("summary", { sm: finish() }); }} style={s.done}>
             <Text style={s.doneT}>{t("done")}</Text>

@@ -41,7 +41,7 @@ const HIST = {
   "histAll": "Since you started",
   "histDays": "Day by day",
   "histEmpty": "Nothing yet. Scroll a few cards and they'll show up here.",
-  "histNote": "Every card you scroll to and every tap counts, in both Calm and Game-like."
+  "histNote": "Every card you scroll to and every tap counts, in both Calm and Game."
  },
  "ar": {
   "histTitle": "السجل",
@@ -68,7 +68,7 @@ const HIST = {
   "histAll": "Desde el principio",
   "histDays": "Día a día",
   "histEmpty": "Nada todavía. Desliza algunas tarjetas y aparecerán aquí.",
-  "histNote": "Cuenta cada tarjeta a la que llegas y cada toque, en Tranquilo y en Como un juego."
+  "histNote": "Cuenta cada tarjeta a la que llegas y cada toque, en Tranquilo y en Juego."
  },
  "tr": {
   "histTitle": "Geçmiş",
@@ -77,7 +77,7 @@ const HIST = {
   "histAll": "Başladığından beri",
   "histDays": "Gün gün",
   "histEmpty": "Henüz bir şey yok. Birkaç kart kaydır, burada görünecek.",
-  "histNote": "Kaydırdığın her kart ve her dokunuş sayılır, hem Sakin hem Oyun gibi modda."
+  "histNote": "Kaydırdığın her kart ve her dokunuş sayılır, hem Sakin hem Oyun modunda."
  },
  "ur": {
   "histTitle": "تاریخچہ",
@@ -86,7 +86,7 @@ const HIST = {
   "histAll": "شروع سے اب تک",
   "histDays": "دن بہ دن",
   "histEmpty": "ابھی کچھ نہیں۔ چند کارڈز اسکرول کریں، وہ یہاں نظر آئیں گے۔",
-  "histNote": "ہر کارڈ جس تک آپ پہنچیں اور ہر ٹیپ گنا جاتا ہے، پُرسکون اور کھیل جیسا دونوں میں۔"
+  "histNote": "ہر کارڈ جس تک آپ پہنچیں اور ہر ٹیپ گنا جاتا ہے، پُرسکون اور کھیل دونوں میں۔"
  },
  "id": {
   "histTitle": "Riwayat",
@@ -95,7 +95,7 @@ const HIST = {
   "histAll": "Sejak awal",
   "histDays": "Hari demi hari",
   "histEmpty": "Belum ada. Gulir beberapa kartu dan akan muncul di sini.",
-  "histNote": "Setiap kartu yang kamu capai dan setiap ketukan dihitung, di mode Tenang maupun Seperti game."
+  "histNote": "Setiap kartu yang kamu capai dan setiap ketukan dihitung, di mode Tenang maupun Game."
  },
  "bn": {
   "histTitle": "ইতিহাস",
@@ -104,7 +104,7 @@ const HIST = {
   "histAll": "শুরু থেকে",
   "histDays": "দিন অনুযায়ী",
   "histEmpty": "এখনো কিছু নেই। কয়েকটা কার্ড স্ক্রল করো, এখানে দেখা যাবে।",
-  "histNote": "প্রতিটি কার্ড আর প্রতিটি ট্যাপ গোনা হয়, শান্ত ও খেলার মতো দুই মোডেই।"
+  "histNote": "প্রতিটি কার্ড আর প্রতিটি ট্যাপ গোনা হয়, শান্ত ও খেলা দুই মোডেই।"
  },
  "ru": {
   "histTitle": "История",
@@ -442,6 +442,7 @@ export function Progress() {
             onChange={v => { setSetting("scrollSound", v); }} />
         </View>
         {/* Weather: a switch to turn it off, the choice of weather, and a switch for its sounds (Zine, 2026-10-28). */}
+        <View ref={target("weather")}>
         <Toggle label={t("wxTitle")} value={L.weather !== "off"} onChange={v => setSetting("weather", v ? "auto" : "off")} />
         {L.weather !== "off" ? (
           <>
@@ -450,6 +451,7 @@ export function Progress() {
             <Toggle label={t("wxSound")} value={L.weatherSound !== false} onChange={v => setSetting("weatherSound", v)} />
           </>
         ) : null}
+        </View>
         <Toggle label={t("haptics")} value={L.haptics} onChange={v => setSetting("haptics", v)} />
         {calm || isLearn() ? null : <Toggle label={t("feedBuddy")} value={L.feedBuddy !== false} onChange={v => setSetting("feedBuddy", v)} />}
         <Btn title={"💾 " + t("backup")} onPress={backupProgress} />

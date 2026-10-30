@@ -506,6 +506,8 @@ const IN_SETTINGS = [
   { k: "tutMode", target: "modeSw", next: true },
   { k: "tutClose", target: "close", wait: "close", vars: () => ({ b: t("back") }) },
 ];
+// Game and calm also show the weather settings (Zine, 2026-10-30).
+const WITH_WEATHER = [IN_SETTINGS[0], { k: "tutWeather", target: "weather", next: true }, ...IN_SETTINGS.slice(1)];
 const TOURS = {
   game: [
     { k: "tutSwipe", wait: "scroll", hand: true },
@@ -514,7 +516,7 @@ const TOURS = {
     { k: "tutRepeat", wait: "repeat", tapHand: true },
     { k: "tutBuddy", target: "buddy", next: true },
     { k: "tutLevel", target: "lvl", wait: "open" },
-    ...IN_SETTINGS,
+    ...WITH_WEATHER,
     { k: "tutSins", target: "debt", next: true },
     { k: "tutDone", target: "done", next: true, vars: () => ({ b: t("done") }) },
     { k: "tutEnd", next: true, last: true },
@@ -525,7 +527,7 @@ const TOURS = {
     { k: "tutRepeat", wait: "repeat", tapHand: true },
     { k: "tutSins", target: "debt", next: true },
     { k: "tutSettings", target: "settings", wait: "open" },
-    ...IN_SETTINGS,
+    ...WITH_WEATHER,
     { k: "tutEndCalm", next: true, last: true },
   ],
   learn: [
