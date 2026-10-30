@@ -10,6 +10,7 @@ import { G, subscribe, getVersion, load, onBackground, onForeground, picking } f
 import { getLang, isRTL } from "./src/i18n";
 import { initSounds, resumeAmbient } from "./src/fx";
 import { schedulePrayer } from "./src/prayer";
+import { stopRecite } from "./src/recite";
 import Feed from "./src/Feed";
 import Hud from "./src/Hud";
 import Sheets from "./src/Sheets";
@@ -35,7 +36,7 @@ export default function App() {
     const sub = AppState.addEventListener("change", st => {
       // "inactive" also fires for the location and notification permission pop-ups, which must not end the session.
       if (st === "active") { onForeground(); schedulePrayer(); resumeAmbient(); }
-      else if (st === "background") onBackground();
+      else if (st === "background") { stopRecite(); onBackground(); }
     });
     return () => sub.remove();
   }, []);

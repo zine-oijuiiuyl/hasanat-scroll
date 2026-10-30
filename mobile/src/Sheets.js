@@ -1,4 +1,5 @@
 // Full-screen sheets: session summary, progress and settings, the sins counter, prayer times and the Qibla.
+import { stopRecite } from "./recite";
 import { useEffect, useRef, useState } from "react";
 import { Animated, Easing, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
@@ -368,7 +369,7 @@ function ModeSwitch() {
   return (
     <View ref={target("modeSw")} style={s.modeSw}>
       {[["calm", "🍃", "modeCalm"], ["game", "🎉", "modeGame"], ["learn", "📖", "modeLearn"]].map(([m, e, k]) => (
-        <Pressable key={m} testID={"modeSw-" + m} onPress={() => { if (m !== cur) { hapTick(); setMode(m); } }} style={s.modeSide}>
+        <Pressable key={m} testID={"modeSw-" + m} onPress={() => { if (m !== cur) { hapTick(); stopRecite(); setMode(m); } }} style={s.modeSide}>
           {m === cur ? <LinearGradient colors={GOLD} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={[StyleSheet.absoluteFill, { borderRadius: 999 }]} /> : null}
           <IconText style={[s.modeT, m === cur && { color: "#2a1a00" }]} size={13} gap={4} numberOfLines={1}>{e + " " + t(k)}</IconText>
         </Pressable>
@@ -441,6 +442,7 @@ export function Progress() {
           <Choice value={L.scrollSound || "dial"} options={[["dial", t("sndDial")], ["chime", t("sndChime")], ["glass", t("sndGlass")], ["bubble", t("sndBubble")]]}
             onChange={v => { setSetting("scrollSound", v); }} />
         </View>
+        <Toggle label={t("recite")} value={L.recite !== false} onChange={v => { setSetting("recite", v); if (!v) stopRecite(); }} />
         {/* Weather: a switch to turn it off, the choice of weather, and a switch for its sounds (Zine, 2026-10-28). */}
         <View ref={target("weather")}>
         <Toggle label={t("wxTitle")} value={L.weather !== "off"} onChange={v => setSetting("weather", v ? "auto" : "off")} />
