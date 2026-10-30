@@ -14,6 +14,7 @@ import { hapTick } from "./fx";
 import { HeartButton } from "./Hearts";
 import { Ico } from "./Icons";
 import MuteButton from "./Mute";
+import { cardWords } from "./recite";
 
 function SwipeHint() {
   const a = useRef(new Animated.Value(0)).current;
@@ -46,6 +47,9 @@ const Card = memo(function Card({ card, height, lang, rep, hearted, insetTop, in
     Animated.timing(pulse, { toValue: 1, duration: 280, easing: Easing.out(Easing.quad), useNativeDriver: true }).start();
   }), [card.key, pulse]);
   const scale = pulse.interpolate({ inputRange: [0, 0.4, 1], outputRange: [1, 1.045, 1] });
+  // The word being read aloud glows gold, the ones still to come wait a little dimmer (Zine, 2026-10-30).
+  const [word, setWord] = useState(-1);
+  useEffect(() => on("reciteWord", (idx, i) => { if (idx === card.idx) setWord(i); }), [card.idx]);
   const gold = card.golden && !calm;   // golden cards were drawn before calm mode switched them off
   const colors = gold ? ["#3D2A00", "#8A6110"] : PALETTES[d.pal % PALETTES.length];
   const size = d.ar.length < 20 ? 64 : d.ar.length < 40 ? 46 : 34;
@@ -56,7 +60,11 @@ const Card = memo(function Card({ card, height, lang, rep, hearted, insetTop, in
         <Pattern70 />
         <CardWeather idx={card.idx} height={height} wx={wx} />
         <Text style={[s.kind, gold && { color: C.gold1 }]}>{gold ? t("golden") : kindLabel(d)}</Text>
-        <Animated.Text style={[s.ar, { fontSize: size, lineHeight: size * 1.65 }, gold && s.arGold, { transform: [{ scale }] }]} adjustsFontSizeToFit>{d.ar}</Animated.Text>
+        <Animated.Text style={[s.ar, { fontSize: size, lineHeight: size * 1.65 }, gold && s.arGold, { transform: [{ scale }] }]} adjustsFontSizeToFit>
+          {word < 0 ? d.ar : cardWords(d).map((w, i, all) => (
+            <Text key={i} style={i === word ? (gold ? s.wNowGold : s.wNow) : i > word ? s.wNext : null}>{w}{i < all.length - 1 ? " " : ""}</Text>
+          ))}
+        </Animated.Text>
         <View style={s.meta}>
           <Text style={s.tr}>{d.tr}</Text>
           <Text style={s.en}>{meaning(d)}</Text>
@@ -129,6 +137,9 @@ const s = StyleSheet.create({
   card: { flex: 1, alignItems: "center", paddingHorizontal: 24, gap: 18 },
   kind: { marginTop: "auto", fontSize: 11, fontFamily: F.heavy, letterSpacing: 1.8, color: C.inkFaint, textAlign: "center" },
   ar: { fontFamily: F.ar, color: C.ink, textAlign: "center", writingDirection: "rtl", maxWidth: 540, textShadowColor: "rgba(0,0,0,0.28)", textShadowOffset: { width: 0, height: 8 }, textShadowRadius: 28 },
+  wNow: { color: GOLD[0], textShadowColor: "rgba(255,200,80,0.9)", textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 22 },
+  wNowGold: { color: "#fff", textShadowColor: "rgba(255,255,255,0.9)", textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 22 },
+  wNext: { color: "rgba(255,255,255,0.45)" },
   arGold: { color: C.gold1, textShadowColor: "rgba(255,200,80,0.45)", textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 18 },
   meta: { gap: 6, alignItems: "center", maxWidth: 540 },
   tr: { fontSize: 19, fontFamily: F.bold, fontStyle: "italic", color: C.ink, textAlign: "center" },
