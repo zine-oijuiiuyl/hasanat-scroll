@@ -86,11 +86,11 @@ export default function Hud() {
               <Text style={s.doneT}>{t("settings")}</Text>
             </Pressable>
           </View>
-          {/* Tapping the count opens the history (Zine, 2026-10-28). */}
-          <Pressable testID="count" onPress={() => { hapTick(); openView("history"); }} style={[s.score, { flexDirection: "row", justifyContent: "center", gap: 6 }]}>
+          {/* Just a count: tapping it does nothing, history is behind Done (Zine, 2026-10-30). */}
+          <View testID="count" style={[s.score, { flexDirection: "row", justifyContent: "center", gap: 6 }]}>
             <Ico e="📿" size={22} />
             <Text style={s.pts}>{num(G.calmN || 0)}</Text>
-          </Pressable>
+          </View>
           <View style={{ width: 96, alignItems: "flex-end" }}>
             <Pressable ref={target("done")} testID="done" onPress={() => { hapTick(); openView("history"); }} style={s.done}>
               <Text style={s.doneT}>{t("done")}</Text>
