@@ -21,6 +21,9 @@ function verses(d) {
 
 let player = null, sub = null, timer = null, run = 0;
 
+// The reciting volume slider changes a verse that is already playing too.
+export function setReciteVolume(v) { if (player) try { player.volume = v; } catch (e) {} }
+
 export function stopRecite() {
   run++;
   clearTimeout(timer);
@@ -42,6 +45,7 @@ function playUrls(urls, me) {
         playUrls(urls.slice(1), me);
       }
     });
+    player.volume = G.life.volRecite ?? 1;
     player.play();
   } catch (e) {}
 }
@@ -52,7 +56,7 @@ export function recite(d) {
   const me = run;
   const urls = verses(d);
   if (urls) playUrls(urls, me);
-  else Speech.speak(d.ar, { language: "ar-SA", rate: 0.85 });
+  else Speech.speak(d.ar, { language: "ar-SA", rate: 0.85, volume: G.life.volRecite ?? 1 });
 }
 
 // Read the card you land on, after a short pause so a quick run of swipes doesn't start each one.

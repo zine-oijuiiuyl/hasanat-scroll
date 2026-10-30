@@ -1,5 +1,6 @@
 // Full-screen sheets: session summary, progress and settings, the sins counter, prayer times and the Qibla.
-import { stopRecite } from "./recite";
+import { stopRecite, setReciteVolume } from "./recite";
+import Slider from "@react-native-community/slider";
 import { useEffect, useRef, useState } from "react";
 import { Animated, Easing, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
@@ -16,7 +17,7 @@ import { t, levelTitle, stageName, badgeText, num, isRTL, getLang } from "./i18n
 import { BuddyArt } from "./Buddy";
 import { Panel, Label, Cap, Bar, Tile, Tiles, Btn, Toggle, Choice, LangPicker, s as u } from "./ui";
 import { C, F, GOLD, SHEET_BG } from "./theme";
-import { fx, hapTick } from "./fx";
+import { fx, hapTick, scrollSound, setFxSettings } from "./fx";
 import { target, setScroller } from "./targets";
 import { Lesson, Review, Library, Reader } from "./LearnScreens";
 import { askLocation, hhmm, nextPrayer, pName, setPrayerOn, setReminders, updatePrayer } from "./prayer";
@@ -364,6 +365,30 @@ export function History() {
 }
 
 // Calm, game or learning, as one switch with three sides (Zine, 2026-10-28).
+// One volume slider for each sound, the same three as the mute button (Zine, 2026-10-30). The sliders play
+// as you drag: the weather and a verse already playing change at once, the scroll sound plays when you let go.
+function Volumes() {
+  const L = G.life;
+  const rows = [
+    ["volWx", "muteWx", v => setFxSettings({ volWx: v }), () => {}],
+    ["volScroll", "muteScroll", () => {}, () => scrollSound()],
+    ["volRecite", "muteRecite", v => setReciteVolume(v), () => {}],
+  ];
+  return (
+    <View style={{ gap: 4 }}>
+      <Label>{t("volume")}</Label>
+      {rows.map(([k, lab, live, done]) => (
+        <View key={k} style={s.volRow}>
+          <Text style={s.volT} numberOfLines={1}>{t(lab)}</Text>
+          <Slider testID={k} style={{ flex: 1, height: 36 }} minimumValue={0} maximumValue={1} step={0.05}
+            value={L[k] ?? 1} minimumTrackTintColor={GOLD[0]} maximumTrackTintColor="rgba(255,255,255,0.25)" thumbTintColor="#fff"
+            onValueChange={live} onSlidingComplete={v => { setSetting(k, v); done(); }} />
+        </View>
+      ))}
+    </View>
+  );
+}
+
 function ModeSwitch() {
   const cur = G.life.mode || "game";
   return (
@@ -443,6 +468,7 @@ export function Progress() {
             onChange={v => { setSetting("scrollSound", v); }} />
         </View>
         <Toggle label={t("recite")} value={L.recite !== false} onChange={v => { setSetting("recite", v); if (!v) stopRecite(); }} />
+        <Volumes />
         {/* Weather: a switch to turn it off, the choice of weather, and a switch for its sounds (Zine, 2026-10-28). */}
         <View ref={target("weather")}>
         <Toggle label={t("wxTitle")} value={L.weather !== "off"} onChange={v => setSetting("weather", v ? "auto" : "off")} />
@@ -580,6 +606,8 @@ export default function Sheets() {
 }
 
 const s = StyleSheet.create({
+  volRow: { flexDirection: "row", alignItems: "center", gap: 10 },
+  volT: { width: 90, color: C.inkSoft, fontFamily: F.bold, fontSize: 14 },
   hourRow: { flexDirection: "row", alignItems: "center", gap: 10, paddingLeft: 18 },
   hourT: { width: 104, fontSize: 12, fontFamily: F.bold, color: C.inkSoft, fontVariant: ["tabular-nums"] },
   hourBar: { flex: 1, height: 8, borderRadius: 999, backgroundColor: "rgba(244,239,226,0.1)", overflow: "hidden" },

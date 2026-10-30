@@ -14,9 +14,14 @@ const FILES = {
   charge: require("../assets/sounds/charge.wav"), boom: require("../assets/sounds/boom.wav"),
 };
 
-let settings = { sound: true, haptics: true, scrollSound: "dial" };
+let settings = { sound: true, haptics: true, scrollSound: "dial", volScroll: 1, volWx: 1 };
 let ambWant = null;
-export const setFxSettings = s => { settings = { ...settings, ...s }; ambient(ambWant); };
+export const setFxSettings = s => {
+  const wx = settings.volWx;
+  settings = { ...settings, ...s };
+  ambient(ambWant);
+  if (ambNow && settings.volWx !== wx) fadeTo(ambNow, ambVol(ambNow), 250);
+};
 
 // Weather ambience (scripts/make-ambient.js): one looping player per weather, faded in and out as the
 // cards go by. Quiet on purpose.
@@ -29,6 +34,8 @@ const AMB = {
 };
 const AMB_VOL = { storm: 0.6, rain: 0.55, snow: 0.07, wind: 0.18, embers: 0.9, fireflies: 0.45, birds: 0.6, butterflies: 0.3 };
 const amb = {}, fades = {};
+// The weather volume slider in the settings scales every weather (Zine, 2026-10-30).
+const ambVol = k => AMB_VOL[k] * (settings.volWx ?? 1);
 let ambNow = null;
 function fadeTo(k, to, ms, done) {
   const p = amb[k];
@@ -53,7 +60,7 @@ export function ambient(kind) {
   try {
     if (!amb[k]) { amb[k] = createAudioPlayer(AMB[k]); amb[k].loop = true; amb[k].volume = 0; }
     amb[k].play();
-    fadeTo(k, AMB_VOL[k], 1400);
+    fadeTo(k, ambVol(k), 1400);
   } catch (e) {}
 }
 // iOS stops the players in the background; this starts the current one again on return.
@@ -90,6 +97,7 @@ function play(name) {
   if (!pool || !pool.length) return;
   const p = pool[turn[name]++ % pool.length];
   try {
+    try { p.volume = settings.volScroll ?? 1; } catch (e) {}
     const go = () => { try { p.play(); } catch (e) {} };
     Promise.resolve(p.seekTo(0)).then(go, go);
   } catch (e) {}

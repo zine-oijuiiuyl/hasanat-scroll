@@ -76,15 +76,15 @@ const s = StyleSheet.create({
 });
 
 const UI = {
-  en: { muteWx: "Weather", muteScroll: "Scrolling", muteRecite: "Reciting" },
-  ar: { muteWx: "الطقس", muteScroll: "التمرير", muteRecite: "التلاوة" },
-  fr: { muteWx: "Météo", muteScroll: "Défilement", muteRecite: "Récitation" },
-  es: { muteWx: "Clima", muteScroll: "Deslizar", muteRecite: "Recitación" },
-  tr: { muteWx: "Hava", muteScroll: "Kaydırma", muteRecite: "Okuma" },
-  ur: { muteWx: "موسم", muteScroll: "اسکرول", muteRecite: "تلاوت" },
-  id: { muteWx: "Cuaca", muteScroll: "Gulir", muteRecite: "Bacaan" },
-  bn: { muteWx: "আবহাওয়া", muteScroll: "স্ক্রল", muteRecite: "তিলাওয়াত" },
-  ru: { muteWx: "Погода", muteScroll: "Прокрутка", muteRecite: "Чтение" },
-  de: { muteWx: "Wetter", muteScroll: "Scrollen", muteRecite: "Vorlesen" },
+  en: { volume: "Volume", muteWx: "Weather", muteScroll: "Scrolling", muteRecite: "Reciting" },
+  ar: { volume: "مستوى الصوت", muteWx: "الطقس", muteScroll: "التمرير", muteRecite: "التلاوة" },
+  fr: { volume: "Volume", muteWx: "Météo", muteScroll: "Défilement", muteRecite: "Récitation" },
+  es: { volume: "Volumen", muteWx: "Clima", muteScroll: "Deslizar", muteRecite: "Recitación" },
+  tr: { volume: "Ses düzeyi", muteWx: "Hava", muteScroll: "Kaydırma", muteRecite: "Okuma" },
+  ur: { volume: "آواز کی سطح", muteWx: "موسم", muteScroll: "اسکرول", muteRecite: "تلاوت" },
+  id: { volume: "Volume", muteWx: "Cuaca", muteScroll: "Gulir", muteRecite: "Bacaan" },
+  bn: { volume: "ভলিউম", muteWx: "আবহাওয়া", muteScroll: "স্ক্রল", muteRecite: "তিলাওয়াত" },
+  ru: { volume: "Громкость", muteWx: "Погода", muteScroll: "Прокрутка", muteRecite: "Чтение" },
+  de: { volume: "Lautstärke", muteWx: "Wetter", muteScroll: "Scrollen", muteRecite: "Vorlesen" },
 };
 for (const [l, v] of Object.entries(UI)) if (T[l]) Object.assign(T[l].ui, v);
