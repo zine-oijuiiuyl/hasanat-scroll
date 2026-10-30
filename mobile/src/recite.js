@@ -40,13 +40,26 @@ function timing(s, a) {
     fetch(`${API}/verses/by_key/${k}?words=true&word_fields=text_uthmani`).then(r => r.json()),
     fetch(`${API}/recitations/7/by_ayah/${k}`).then(r => r.json()),
   ]).then(([v, r]) => {
-    const words = ((v.verse && v.verse.words) || []).filter(w => w.char_type_name !== "end").map(w => norm(w.text_uthmani || w.text || ""));
+    // Only real words (no verse-end or pause marks), by their position in the verse, counted from 1.
+    const list = ((v.verse && v.verse.words) || []).filter(w => (w.char_type_name || "word") === "word");
+    const words = list.map(w => norm(w.text_uthmani || w.text || ""));
+    const pos = list.map((w, n) => +w.position || n + 1);
     const f = (r.audio_files || [])[0] || {};
-    const segs = (f.segments || []).filter(g => Array.isArray(g) && g.length >= 3).map(g => g.slice(-3).map(Number));
-    if (!words.length || !segs.length || !f.url) throw new Error("no timings");
-    const base = Math.min(...segs.map(g => g[0]));   // word numbers may start at 0 or 1
-    const t = words.map(() => null);
-    segs.forEach(([i, st, en]) => { if (t[i - base] === null) t[i - base] = [st, en]; });
+    if (!words.length || !(f.segments || []).length || !f.url) throw new Error("no timings");
+    // A segment is [first word, word after the last, start ms, end ms] with words counted from 0, which is the
+    // same as [.., word position, start, end] for a one-word segment. A segment of several words shares its time.
+    const at = {};
+    f.segments.forEach(g => {
+      if (!Array.isArray(g) || g.length < 3) return;
+      const [a, b, st, en] = (g.length >= 4 ? g.slice(-4) : [g[0] - 1, ...g]).map(Number);
+      const n = b > a && b - a <= 8 ? b - a : 1;
+      for (let k = 0; k < n; k++) {
+        const p = n > 1 ? a + 1 + k : b;
+        if (!at[p]) at[p] = [st + ((en - st) * k) / n, st + ((en - st) * (k + 1)) / n];
+      }
+    });
+    const t = pos.map(p => at[p] || null);
+    if (!t.some(Boolean)) throw new Error("no timings");
     return { words, t, url: /^https?:/.test(f.url) ? f.url : "https://verses.quran.com/" + f.url.replace(/^\/+/, "") };
   }).catch(() => { delete timings[k]; return null; });
   return timings[k];
@@ -100,7 +113,7 @@ const reciteOn = () => G.life.recite !== false;
 
 // Play the verse files one after the other, lighting the words as they are said.
 async function playVerses(idx, d, keys, me) {
-  const tm = await Promise.race([Promise.all(keys.map(([s, a]) => timing(s, a))), new Promise(r => setTimeout(() => r(null), 2500))]);
+  const tm = await Promise.race([Promise.all(keys.map(([s, a]) => timing(s, a))), new Promise(r => setTimeout(() => r(null), 4000))]);
   if (me !== run) return;
   const ok = tm && tm.every(Boolean);
   const urls = keys.map(([s, a], f) => (ok ? tm[f].url : EVERYAYAH(s, a)));
@@ -111,7 +124,8 @@ async function playVerses(idx, d, keys, me) {
     tm.forEach((x, f) => x.words.forEach((w, n) => W.push({ w, f, t: x.t[n] })));
     map = align(toks, W);
   }
-  // Without timings, a single verse is lit evenly by the length of each word.
+  // Without timings, a single verse is lit evenly by the length of each word, but only when the card holds the
+  // whole verse as far as we can tell (a long verse with a short card would light the wrong words).
   const lens = toks.map(c => c.length || 0), total = lens.reduce((a, b) => a + b, 0) || 1;
   const step = f => {
     const p = player;
@@ -125,7 +139,7 @@ async function playVerses(idx, d, keys, me) {
       if (cur >= 0 && cur === last && ms > W[map[cur]].t[1] + 300) cur = -1;
       light(idx, cur);
       return;
-    } else if (keys.length === 1 && p.duration > 0) {
+    } else if (keys.length === 1 && p.duration > 0 && p.duration < lens.length * 1.6) {
       let acc = 0;
       const at = (ms / 1000 / p.duration) * total;
       for (let i = 0; i < lens.length; i++) { if (lens[i] && at >= acc) cur = i; acc += lens[i]; }
@@ -201,6 +215,8 @@ on("cardIdx", idx => {
   const el = G.cards[idx], d = el && BY_ID[el.id];
   const keys = d && verseKeys(d);
   if (keys) keys.forEach(([s, a]) => timing(s, a));
+  const nx = G.cards[idx + 1], nd = nx && BY_ID[nx.id], nk = nd && verseKeys(nd);
+  if (nk) nk.forEach(([s, a]) => timing(s, a));
   timer = setTimeout(() => {
     if (me !== run || G.current !== idx) return;
     recite(d, idx);
