@@ -13,6 +13,7 @@ import { C, F, GOLD, tabSpace } from "./theme";
 import { hapTick } from "./fx";
 import { HeartButton } from "./Hearts";
 import { Ico } from "./Icons";
+import MuteButton from "./Mute";
 
 function SwipeHint() {
   const a = useRef(new Animated.Value(0)).current;
@@ -119,6 +120,7 @@ export default function Feed({ version, lang }) {
           bounces={false}
         />
       )}
+      {height > 0 ? <MuteButton bottom={tabSpace(insets) + 44} /> : null}
     </View>
   );
 }
