@@ -23,6 +23,42 @@ def norm(s):
     s = re.sub(r"[ٱآأإ]", "ا", s).replace("ى", "ي").replace("ة", "ه")
     return re.sub(r"[^ء-ي ]", "", s)
 
+# The name of Allah, with whatever is joined in front of it. The voice's phonemizer (espeak) reads it "lillaah" or a
+# short "allah" (Zine, 2026-10-31: "الله is pronounced wrong"), so its phonemes are written here: the long aa, the
+# hamza only at the start of a phrase. The voice has no heavy L, so that stays plain.
+ALLAH = re.compile(r"^(و|ف|ب|ت|ل)?(ا)?لل(ه|هم)$")
+VOWEL = {"\u064F": "u", "\u0650": "i", "\u064E": "a"}
+
+def bare(w):
+    w = re.sub(r"[\u0610-\u061A\u064B-\u065F\u0670\u06D6-\u06ED\u0640]", "", w)
+    return re.sub(r"[^\u0621-\u064A]", "", re.sub(r"[\u0671\u0622\u0623\u0625]", "\u0627", w))
+
+def allah_phonemes(w, after_vowel):
+    b = bare(w)
+    m = ALLAH.match(b)
+    if not m: return None
+    pre, _, end = m.groups()
+    case = next((VOWEL[c] for c in reversed(w) if c in VOWEL), "")
+    tail = "umma" if end == "هم" else case
+    if b == "لله": return "lillˈaːh" + tail
+    if pre in ("ب", "ل"): return {"ب": "b", "ل": "l"}[pre] + "illˈaːh" + tail
+    if pre: return {"و": "w", "ف": "f", "ت": "t"}[pre] + "allˈaːh" + tail
+    return ("" if after_vowel else "ʔa") + "llˈaːh" + tail
+
+def phonemes(voice, text):
+    """A part's phonemes, read as one phrase, with every name of Allah put right."""
+    if text.startswith("\u0671"): text = "\u0627" + text[1:]   # a wasla that starts the phrase is said "a", not "li"
+    words = text.split()
+    chunks = " ".join("".join(x) for x in voice.phonemize(text)).split(" ")
+    if len(chunks) != len(words):   # espeak joined or split words: one word at a time instead
+        chunks = ["".join("".join(x) for x in voice.phonemize(w)) for w in words]
+    out, prev = [], ""
+    for w, c in zip(words, chunks):
+        p = allah_phonemes(w, bool(re.search(r"[aiuː]$", prev)))
+        p = c if p is None else p + re.sub(r"^[^.,:;!?]*", "", c)   # keep the pause marks after the word
+        out.append(p); prev = re.sub(r"[.,:;!?]+$", "", p)
+    return list(" ".join(out))
+
 def long_texts():
     src = open(os.path.join(ROOT, "src", "hadith-long.js")).read()
     return json.loads(src[src.index("export const LONG = ") + 20:].rstrip().rstrip(";"))
@@ -51,7 +87,8 @@ def main():
         for k, (p0, p1) in enumerate(parts):
             text = " ".join(words[p0:p1])
             say = text.replace("ﷺ", "صَلَّى اللَّهُ عَلَيْهِ وَسَلَّمَ")   # the voice can't read the ligature
-            pcm = np.concatenate([np.frombuffer(ch.audio_int16_bytes, np.int16) for ch in voice.synthesize(say, cfg)])
+            wav_f = voice.phoneme_ids_to_audio(voice.phonemes_to_ids(phonemes(voice, say)), cfg)
+            pcm = (np.clip(np.asarray(wav_f, np.float32), -1, 1) * 32767).astype(np.int16)
             # The voice leaves a little air at both ends: time the words over the part that is not silent.
             loud = np.where(np.abs(pcm) > 900)[0]
             s0, s1 = (loud[0], loud[-1]) if len(loud) else (0, len(pcm))
