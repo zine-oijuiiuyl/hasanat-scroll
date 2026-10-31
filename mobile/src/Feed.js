@@ -66,7 +66,7 @@ function usePart(card, P) {
       return Math.max(3500, (x && y ? y[1] - x[0] : (b - a) * 900) + 1500);
     };
     const tick = () => {
-      const quiet = G.life.recite === false;
+      const quiet = G.life.recite === false || !CLIPS[card.id];   // only Qur'an cards are read aloud
       if (G.current !== card.idx) go(0);
       else if (quiet) go((shown.current + 1) % P.p.length);
       tm = setTimeout(tick, len(shown.current));

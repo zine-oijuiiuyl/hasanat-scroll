@@ -115,8 +115,9 @@ export function recite(d, idx = G.current) {
   stopRecite();
   if (!d || !reciteOn() || picking() || isLearn()) return;
   const me = run;
+  // Only the Qur'an is read aloud, by Alafasy. Zine didn't like the iPhone's voice on the other cards (2026-10-31),
+  // so speak() is kept but unused until there is a better voice for them.
   if (CLIPS[d.id]) playClip(idx, CLIPS[d.id], me);
-  else speak(idx, d, me);
 }
 
 // Read the card you land on, after a short pause so a quick run of swipes doesn't start each one.
