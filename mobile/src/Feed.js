@@ -62,7 +62,7 @@ function usePart(card, P) {
     if (!P || P.p.length < 2) return;
     let tm;
     const len = k => {
-      const [a, b] = P.p[k], x = P.t[a], y = P.t[b - 1];
+      const [a, b] = P.p[k] || [0, 0], x = P.t && P.t[a], y = P.t && P.t[b - 1];   // hadith cards have no timings
       return Math.max(3500, (x && y ? y[1] - x[0] : (b - a) * 900) + 1500);
     };
     const tick = () => {
