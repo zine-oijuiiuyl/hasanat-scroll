@@ -14,7 +14,7 @@ import { hapTick } from "./fx";
 import { HeartButton } from "./Hearts";
 import { Ico } from "./Icons";
 import MuteButton from "./Mute";
-import { cardWords } from "./recite";
+import { cardWords, hasVoice } from "./recite";
 import { CLIPS } from "./recite-data";
 import { LONG } from "./hadith-long";
 
@@ -66,7 +66,7 @@ function usePart(card, P) {
       return Math.max(3500, (x && y ? y[1] - x[0] : (b - a) * 900) + 1500);
     };
     const tick = () => {
-      const quiet = G.life.recite === false;
+      const quiet = G.life.recite === false || !hasVoice(card.id);   // nothing reads this card: turn on a timer
       if (G.current !== card.idx) go(0);
       else if (quiet) go((shown.current + 1) % P.p.length);
       tm = setTimeout(tick, len(shown.current));

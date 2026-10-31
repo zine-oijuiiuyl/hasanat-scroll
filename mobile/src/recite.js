@@ -1,23 +1,21 @@
 // Hearing the card read aloud (Zine, 2026-10-30). Cards from the Qur'an play Mishary Alafasy's recitation, cut to
-// exactly the words on the card and bundled in the app (scripts/make-recitations.py, src/recite-data.js); the dhikr,
-// duas and hadith play recordings by Piper's Arabic voice "kareem" (src/voice-data.js). On by default, with a switch in the settings. Each card loops.
-// The word being read lights up on the card (Zine, 2026-10-30): for a verse, from the word timings that come with the
-// clip; for the phone's voice, from its word-by-word progress. Sent as the "reciteWord" event (card, word).
-import * as Speech from "expo-speech";
+// exactly the words on the card and bundled in the app (scripts/make-recitations.py, src/recite-data.js); the dhikr
+// and duas play Hamad Al-Duraihim's reading of Hisn al-Muslim, cut the same way (scripts/make-human-voice.py,
+// src/voice-data.js). Zine didn't like the iPhone's voice nor an AI voice (2026-10-31), so cards with no human
+// recording (most hadith and seerah cards) stay silent. On by default, with a switch in the settings. Each card loops.
+// The word being read lights up on the card (Zine, 2026-10-30), from the word timings that come with each clip.
+// Sent as the "reciteWord" event (card, word).
 import { createAudioPlayer } from "expo-audio";
 import { G, on, emit, isLearn, picking } from "./game";
 import { BY_ID, T } from "./web-data";
 import { CLIPS } from "./recite-data";
-import { LONG } from "./hadith-long";
 import { VOICE } from "./voice-data";
 
 // The card's Arabic split into the words drawn one by one on the card (Feed.js uses the same split).
 export const cardWords = d => d.ar.split(/\s+/).filter(Boolean);
 
-// Letters only, to measure words for the phone's voice.
-const norm = w => w
-  .replace(/[ؐ-ًؚ-ٰٟۖ-ۭـ]/g, "")
-  .replace(/[^ء-يٱ]/g, "");
+// Whether a card has a recording (the others turn their parts on a timer, Feed.js).
+export const hasVoice = id => !!(CLIPS[id] || VOICE[id]);
 
 let player = null, sub = null, timer = null, tick = null, run = 0, lit = null;
 
@@ -36,7 +34,6 @@ export function stopRecite() {
   run++;
   clearTimeout(timer);
   clearInterval(tick);
-  Speech.stop().catch(() => {});
   if (sub) { try { sub.remove(); } catch (e) {} sub = null; }
   if (player) { try { player.pause(); player.remove(); } catch (e) {} player = null; }
   if (lit) { emit("reciteWord", lit[0], -1); lit = null; }
@@ -75,49 +72,10 @@ function playClip(idx, c, me) {
   } catch (e) {}
 }
 
-// The phone's voice tells where it is in the text; until it does (or if it never does), guess from the length.
-function speak(idx, d, me) {
-  // A hadith card with its fuller text is read whole; the card shows it part by part (Feed.js).
-  const words = LONG[d.id] ? LONG[d.id].w : cardWords(d);
-  const text = words.join(" ");
-  const starts = [];
-  let from = 0;
-  words.forEach(w => { const at = text.indexOf(w, from); starts.push(at); from = at + w.length; });
-  const lens = words.map(w => norm(w).length || 1), total = lens.reduce((a, b) => a + b, 0);
-  let heard = false, t0 = 0;
-  const guess = () => {
-    if (heard || me !== run) return;
-    const at = (Date.now() - t0) / 105;   // about 105 ms a letter at this speed
-    let acc = 0, cur = 0;
-    for (let i = 0; i < lens.length; i++) { if (at >= acc) cur = i; acc += lens[i]; }
-    if (at < total) light(idx, cur);
-  };
-  Speech.speak(text, {
-    language: "ar-SA", rate: 0.85, volume: G.life.volRecite ?? 1,
-    onStart: () => { t0 = Date.now(); clearInterval(tick); tick = setInterval(guess, 80); },
-    onBoundary: e => {
-      if (me !== run || !e) return;
-      heard = true;
-      const c = e.charIndex ?? -1;
-      let cur = -1;
-      starts.forEach((st, i) => { if (st <= c) cur = i; });
-      if (cur >= 0) light(idx, cur);
-    },
-    onDone: () => {
-      if (me !== run) return;
-      clearInterval(tick);
-      light(idx, -1);
-      timer = setTimeout(() => { if (me === run) speak(idx, d, me); }, REST);
-    },
-  });
-}
-
 export function recite(d, idx = G.current) {
   stopRecite();
   if (!d || !reciteOn() || picking() || isLearn()) return;
   const me = run;
-  // The Qur'an is recited by Alafasy; the other cards play their recording by an Arabic neural voice
-  // (scripts/make-voice.py). Zine didn't like the iPhone's voice (2026-10-31), so speak() is no longer called.
   const c = CLIPS[d.id] || VOICE[d.id];
   if (c) playClip(idx, c, me);
 }
