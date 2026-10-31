@@ -2,7 +2,8 @@
 // so there are no licences to track. Each file loops seamlessly: steady noise is cross-faded end into start,
 // and short events (drops, crackles, chirps, chimes) wrap around the loop point.
 // Rain, birds and storm (Mixkit) and wind and embers (Pixabay, by SoundReality) are recordings Zine sent
-// (2026-10-28), looped and levelled by hand, not made here.
+// (2026-10-28), looped and levelled by hand, not made here. Butterflies is a meadow recording since 2026-10-31
+// (scripts/make-meadow.py), not made here either.
 // Run: node scripts/make-ambient.js [names...]   (no names renders all)
 const fs = require("fs");
 const path = require("path");
@@ -77,15 +78,4 @@ if (want("fireflies")) {
     }
   });
   wav("fireflies", mix([air, 1], [crick, 0.06]), 0.45);
-}
-// Butterflies: soft, low wind chimes alone. The first version's chimes were too high and loud, and its breeze
-// sounded like strong wind (Zine, 2026-10-28), so the breeze is gone and the chimes are an octave lower and rounder.
-if (want("butterflies")) {
-  const chimes = new Float32Array(N);
-  const SCALE = [523.25, 587.33, 659.25, 783.99, 880];
-  for (let t0 = rnd(0, 1); t0 < LEN; t0 += rnd(0.9, 2.4)) {
-    const hz = SCALE[Math.floor(rnd(0, SCALE.length))], a = rnd(0.5, 1);
-    event(chimes, Math.floor(t0 * RATE), Math.floor(2.4 * RATE), t => a * Math.min(1, t / 0.02) * Math.exp(-t / 0.7) * (sine(t, hz) + 0.15 * sine(t, hz * 2)));
-  }
-  wav("butterflies", chimes, 0.2);
 }

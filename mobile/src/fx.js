@@ -30,9 +30,11 @@ const AMB = {
   storm: require("../assets/sounds/amb-storm.wav"), snow: require("../assets/sounds/amb-snow.wav"),
   wind: require("../assets/sounds/amb-wind.wav"), embers: require("../assets/sounds/amb-embers.wav"),
   fireflies: require("../assets/sounds/amb-fireflies.wav"), birds: require("../assets/sounds/amb-birds.wav"),
+  // Butterflies: a meadow, a little stream with birds far off, in place of the synthesized chimes (Zine, 2026-10-31).
+  // Both recordings are CC0, from the Blanket app: "Stream" by gluckose and "Birds" by kvgarlic (freesound.org).
   butterflies: require("../assets/sounds/amb-butterflies.wav"),
 };
-const AMB_VOL = { storm: 0.6, rain: 0.55, snow: 0.07, wind: 0.18, embers: 0.9, fireflies: 0.45, birds: 0.6, butterflies: 0.3 };
+const AMB_VOL = { storm: 0.6, rain: 0.55, snow: 0.07, wind: 0.18, embers: 0.9, fireflies: 0.45, birds: 0.6, butterflies: 0.45 };
 const amb = {}, fades = {};
 // The weather volume slider in the settings scales every weather (Zine, 2026-10-30).
 const ambVol = k => AMB_VOL[k] * (settings.volWx ?? 1);
