@@ -77,7 +77,8 @@ def parts_of(words):
     for i, w in enumerate(words):
         n = i - a + 1
         stop = w.endswith((".", "،", ":", "؛"))
-        if i + 1 == len(words) or n >= PART_MAX or (stop and n >= PART_MIN and len(words) - i - 1 >= 3):
+        left = len(words) - i - 1   # never leave a last part of one or two words
+        if i + 1 == len(words) or (n >= PART_MAX and left >= 3) or (stop and n >= PART_MIN and left >= 3):
             out.append([a, i + 1]); a = i + 1
     return out
 

@@ -1,6 +1,6 @@
 // Hearing the card read aloud (Zine, 2026-10-30). Cards from the Qur'an play Mishary Alafasy's recitation, cut to
 // exactly the words on the card and bundled in the app (scripts/make-recitations.py, src/recite-data.js); the dhikr,
-// duas and hadith are read by the phone's Arabic voice. On by default, with a switch in the settings. Each card loops.
+// duas and hadith play recordings by Piper's Arabic voice "kareem" (src/voice-data.js). On by default, with a switch in the settings. Each card loops.
 // The word being read lights up on the card (Zine, 2026-10-30): for a verse, from the word timings that come with the
 // clip; for the phone's voice, from its word-by-word progress. Sent as the "reciteWord" event (card, word).
 import * as Speech from "expo-speech";
@@ -9,6 +9,7 @@ import { G, on, emit, isLearn, picking } from "./game";
 import { BY_ID, T } from "./web-data";
 import { CLIPS } from "./recite-data";
 import { LONG } from "./hadith-long";
+import { VOICE } from "./voice-data";
 
 // The card's Arabic split into the words drawn one by one on the card (Feed.js uses the same split).
 export const cardWords = d => d.ar.split(/\s+/).filter(Boolean);
@@ -115,9 +116,10 @@ export function recite(d, idx = G.current) {
   stopRecite();
   if (!d || !reciteOn() || picking() || isLearn()) return;
   const me = run;
-  // Only the Qur'an is read aloud, by Alafasy. Zine didn't like the iPhone's voice on the other cards (2026-10-31),
-  // so speak() is kept but unused until there is a better voice for them.
-  if (CLIPS[d.id]) playClip(idx, CLIPS[d.id], me);
+  // The Qur'an is recited by Alafasy; the other cards play their recording by an Arabic neural voice
+  // (scripts/make-voice.py). Zine didn't like the iPhone's voice (2026-10-31), so speak() is no longer called.
+  const c = CLIPS[d.id] || VOICE[d.id];
+  if (c) playClip(idx, c, me);
 }
 
 // Read the card you land on, after a short pause so a quick run of swipes doesn't start each one.
