@@ -79,7 +79,7 @@ function usePart(card, P) {
 
 // `wx` (the weather setting) and `calm` are props only so that a card already on screen redraws when the mode or
 // the weather changes; the card is memoised and would otherwise keep its old look until it scrolled away.
-const Card = memo(function Card({ card, height, lang, rep, hearted, insetTop, insetBottom, wx, calm }) {
+const Card = memo(function Card({ card, height, lang, rep, insetTop, insetBottom, wx, calm }) {
   const d = BY_ID[card.id];
   const pulse = useRef(new Animated.Value(0)).current;
   useEffect(() => on("repeat", key => {
@@ -140,17 +140,26 @@ const Card = memo(function Card({ card, height, lang, rep, hearted, insetTop, in
           <Text style={s.tapHint}>{t("tapHint")}</Text>
         </View>
         {/* Tapping repeats the dhikr only in the middle of the card, away from the top bar and the bottom
-            (Zine, 2026-10-28). It sits over the text and under the heart. */}
+            (Zine, 2026-10-28). It sits over the text; the heart is drawn over the feed (FixedHeart). */}
         <Pressable
           testID={"card-" + card.idx}
           onPress={() => { if (G.current === card.idx) { hapTick(); repeatCard(card.idx); } }}
           style={{ position: "absolute", left: 0, right: 0, top: insetTop + 165, bottom: insetBottom + 134 }}
         />
-        <HeartButton id={card.id} on={hearted} style={{ bottom: insetBottom + 44, right: 40 }} />
       </LinearGradient>
     </View>
   );
 });
+
+// The heart stays in its place on the screen while the cards scroll under it (Zine, 2026-11-01), and hearts
+// whichever card is showing. Feed redraws it when a heart changes (version), and it follows the current card.
+function FixedHeart({ bottom }) {
+  const [idx, setIdx] = useState(G.current);
+  useEffect(() => on("cardIdx", setIdx), []);
+  const el = G.cards[idx];
+  if (!el) return null;
+  return <HeartButton id={el.id} on={isHearted(el.id)} style={{ bottom, right: 40 }} />;
+}
 
 export default function Feed({ version, lang }) {
   const [height, setHeight] = useState(0);
@@ -166,7 +175,7 @@ export default function Feed({ version, lang }) {
   }, [height]);
   useEffect(() => { if (height && G.current < 0) setCurrent(0); }, [height, tab, G.feedRun]);
   const renderItem = useCallback(({ item }) => (
-    <Card card={item} height={height} lang={lang} rep={item.rep} hearted={isHearted(item.id)} insetTop={insets.top} insetBottom={tabSpace(insets)} wx={wx} calm={calm} />
+    <Card card={item} height={height} lang={lang} rep={item.rep} insetTop={insets.top} insetBottom={tabSpace(insets)} wx={wx} calm={calm} />
   ), [height, lang, insets.top, insets.bottom, wx, calm]);
   return (
     <View style={StyleSheet.absoluteFill} onLayout={e => setHeight(e.nativeEvent.layout.height)}>
@@ -191,6 +200,7 @@ export default function Feed({ version, lang }) {
           bounces={false}
         />
       )}
+      {height > 0 ? <FixedHeart bottom={tabSpace(insets) + 44} /> : null}
       {height > 0 ? <MuteButton bottom={tabSpace(insets) + 44} /> : null}
     </View>
   );
