@@ -57,8 +57,12 @@ export function BuddyLayer() {
 
 function Floater({ gold, onDone }) {
   const a = useRef(new Animated.Value(0)).current;
-  const dx = useRef(Math.random() * 140 - 70).current;
-  useEffect(() => { Animated.timing(a, { toValue: 1, duration: 900, easing: Easing.out(Easing.quad), useNativeDriver: true }).start(onDone); }, [a, onDone]);
+  const [dx] = useState(() => Math.random() * 140 - 70);
+  // The parent hands a new onDone on every render; reading it through a ref keeps the animation from restarting
+  // (and the restart from removing every older "+1" at once) each time another one appears.
+  const done = useRef(onDone);
+  done.current = onDone;
+  useEffect(() => { Animated.timing(a, { toValue: 1, duration: 900, easing: Easing.out(Easing.quad), useNativeDriver: true }).start(() => done.current()); }, [a]);
   return (
     <Animated.Text style={[s.floater, gold && s.floaterG, {
       opacity: a.interpolate({ inputRange: [0, 0.6, 1], outputRange: [1, 0.9, 0] }),
@@ -83,7 +87,7 @@ export function Floaters() {
 function Burst({ gold, from, onDone }) {
   const { width: W, height: H } = Dimensions.get("window");
   const a = useRef(new Animated.Value(0)).current;
-  const parts = useRef(Array.from({ length: 70 }, () => {
+  const [parts] = useState(() => Array.from({ length: 70 }, () => {
     const fromBuddy = from === "buddy";
     const ang = fromBuddy ? -(0.08 + Math.random() * 0.55) * Math.PI : -Math.random() * Math.PI;
     const sp = 350 + Math.random() * 550;
@@ -93,8 +97,10 @@ function Burst({ gold, from, onDone }) {
       vx: Math.cos(ang) * sp, vy: Math.sin(ang) * sp, rot: Math.random() * 720 - 360,
       col: cols[Math.random() * cols.length | 0], w: 6 + Math.random() * 6, h: 8 + Math.random() * 8,
     };
-  })).current;
-  useEffect(() => { Animated.timing(a, { toValue: 1, duration: 2200, easing: Easing.linear, useNativeDriver: true }).start(onDone); }, [a, onDone]);
+  }));
+  const done = useRef(onDone);
+  done.current = onDone;
+  useEffect(() => { Animated.timing(a, { toValue: 1, duration: 2200, easing: Easing.linear, useNativeDriver: true }).start(() => done.current()); }, [a]);
   // Position over time with gravity, sampled so Animated can interpolate it on the native thread.
   const T = 2.2, g = 900, steps = [0, 0.1, 0.2, 0.35, 0.5, 0.7, 0.85, 1];
   return parts.map((p, i) => (

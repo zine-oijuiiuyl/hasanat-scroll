@@ -1,11 +1,12 @@
 // The game: scoring, combo, levels, badges, buddy growth and moods, the sins counter and sessions.
 // Ported from the web app (index.html). State lives here; screens re-render through subscribe().
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { LIB, BY_ID, LANGS, RULES, isMilestone, levelFor, stageFor, BADGES, STAGES } from "./web-data";
+import { LIB, BY_ID, LANGS, RULES, PR_METHODS, isMilestone, levelFor, stageFor, BADGES, STAGES } from "./web-data";
 import "./hadith";
 import "./more";
-import { t, levelTitle, levelLine, badgeText, stageName, stageLine, setLangRaw, pickLang, getLang, num } from "./i18n";
+import { t, levelTitle, levelLine, badgeText, setLangRaw, pickLang, getLang, num } from "./i18n";
 import { fx, scrollSound, setFxSettings, ambient } from "./fx";
+import { sanitizeLife, parseBackup } from "./safe";
 
 // Zine chose a shorter wait for the native app (2026-10-25): normal swipes grow the combo, only flicks under 0.5s don't.
 RULES.minDwellMs = 500;
@@ -15,6 +16,10 @@ RULES.minDwellMs = 500;
 
 export const KEY = "hasanat.lifetime.v2";
 export const fresh = () => ({ seen: 0, said: 0, sessions: 0, best: 0, per: {}, streak: 0, bestStreak: 0, lastDay: null, badges: [], golden: 0, sound: true, gender: null, lang: null, debt: null, debtsCleared: 0, haptics: true, scrollSound: "dial", lastSeen: 0, tourDone: undefined, rating: 0, rateLater: 0, hearts: [] });
+
+// What the saved progress may hold (safe.js checks every field against these).
+const lifeOpts = () => ({ langs: Object.keys(LANGS), methods: Object.keys(PR_METHODS), scrollSounds: ["dial", "chime", "glass", "bubble"], tabs: ["dhikr", "dua", "muh", "quran"] });
+export const cleanLife = raw => sanitizeLife(raw, fresh, lifeOpts());
 
 // ---------- Change notification ----------
 const listeners = new Set();
@@ -194,7 +199,7 @@ function scoreCard(el, quiet, repeat) {
   S.said[id] = (S.said[id] || 0) + 1;
   logCount();
   if (golden) S.golden++;
-  const grew = tick(el);
+  tick(el);
   G.life.lastSeen = Date.now(); save();
   if (G.buddyMood !== "happy" && ++G.moodCards >= 3) { G.moodCards = 0; moodCheerUp(); }
   const cleared = lowerDebt();
@@ -481,22 +486,18 @@ export function backupText() {
   for (const [k, v] of Object.entries(G.S.said)) snapLife.per[k] = (snapLife.per[k] || 0) + v;
   return JSON.stringify({ app: "hasanat-scroll", v: 2, life: snapLife }, null, 1);
 }
+// A backup file can come from anywhere, so it is size-checked, parsed and cleaned field by field (safe.js).
 export function restoreText(text) {
-  try {
-    const data = JSON.parse(text);
-    if (!data || data.app !== "hasanat-scroll" || typeof data.life !== "object") throw 0;
-    G.life = Object.assign(fresh(), data.life);
-    if (G.life.gender && G.life.tourDone === undefined) G.life.tourDone = true;
-    G.buddyMood = "happy";
-    G.S = newSession(); G.undo = null;   // the backup already holds the session in progress
-    if (LANGS[G.life.lang]) setLangRaw(G.life.lang);
-    save(); syncFx(); changed();
-    toast("💾", t("restored"), "");
-    return true;
-  } catch (e) {
-    toast("⚠️", t("badFile"), "");
-    return false;
-  }
+  const r = parseBackup(text, fresh, lifeOpts());
+  if (!r.ok) { toast("⚠️", t("badFile"), ""); return false; }
+  G.life = r.life;
+  if (G.life.gender && G.life.tourDone === undefined) G.life.tourDone = true;
+  G.buddyMood = "happy";
+  G.S = newSession(); G.undo = null;   // the backup already holds the session in progress
+  if (LANGS[G.life.lang]) setLangRaw(G.life.lang);
+  save(); syncFx(); changed();
+  toast("💾", t("restored"), "");
+  return true;
 }
 
 // ---------- Interactive tutorial: do each thing yourself, it moves on when you have ----------
@@ -591,8 +592,27 @@ export function onForeground() {
 export async function load() {
   try {
     const raw = await AsyncStorage.getItem(KEY);
-    if (raw) G.life = Object.assign(fresh(), JSON.parse(raw));
-  } catch (e) {}
+    if (raw) {
+      try { G.life = cleanLife(JSON.parse(raw)); }
+      catch (e) {
+        // Unreadable progress is set aside, not thrown away, so it can still be recovered by hand.
+        AsyncStorage.setItem(KEY + ".unreadable", raw).catch(() => {});
+        G.life = fresh();
+      }
+    }
+  } catch (e) { G.life = fresh(); }
+  try { prepare(); } catch (e) {
+    // Saved progress the app can't use must never keep it from opening: start again from the defaults.
+    G.life = fresh();
+    try { prepare(); } catch (e2) { G.S = G.S || newSession(); }
+  }
+  G.loaded = true;
+  changed();
+  showMood();
+  const l = G.life;
+  if (l.lastSeen && Date.now() - l.lastSeen > AWAY_MS && l.gender) setTimeout(() => { if (!G.view && G.tourStep < 0) offerReview(); }, 2500);
+}
+function prepare() {
   const l = G.life;
   setLangRaw(LANGS[l.lang] ? l.lang : pickLang());
   if (!["dial", "chime", "glass", "bubble"].includes(l.scrollSound)) l.scrollSound = "dial";   // silent, pop and wind were removed
@@ -605,10 +625,6 @@ export async function load() {
   G.S = newSession();
   syncFx();
   resetFeed();
-  G.loaded = true;
-  changed();
-  showMood();
-  if (l.lastSeen && Date.now() - l.lastSeen > AWAY_MS && l.gender) setTimeout(() => { if (!G.view && G.tourStep < 0) offerReview(); }, 2500);
 }
 
 export { STAGES, BADGES };

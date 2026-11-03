@@ -1,6 +1,5 @@
 // The learning path: three tracks (Qur'an, Hadith, Dhikr) of units and lessons unlocked one after another,
 // exercises made from what each lesson teaches, spaced-repetition memory checks and their rewards.
-import "./learn-i18n";
 import { QNAMES, QUNITS, HMETA, HUNITS, HSKIP } from "./learn-data";
 import { LIB, BY_ID } from "./web-data";
 import { surah, hadith, QURAN_ED, hadithEd } from "./content";
@@ -101,6 +100,7 @@ export async function loadItem(key) {
   const [k, a, b] = key.split(":");
   if (k === "q") {
     const s = +a, n = +b, c = await surah(s, lang);
+    if (!Number.isInteger(n) || n < 1 || !c.ar[n - 1]) throw new Error("no such ayah");
     // Some ayat recur in a surah with a different ayah after each (ar-Rahman, ash-Shu'ara, al-Qamar).
     // Then every ayah that follows it somewhere is kept out of the wrong answers, and the ayah before is shown too.
     const flat = flatOf(c), same = [];

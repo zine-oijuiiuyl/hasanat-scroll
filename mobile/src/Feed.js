@@ -73,7 +73,7 @@ function usePart(card, P) {
     };
     tm = setTimeout(tick, len(0));
     return () => clearTimeout(tm);
-  }, [P, card.idx, go]);
+  }, [P, card.idx, card.id, go]);
   return [part, fade];
 }
 
@@ -167,16 +167,17 @@ export default function Feed({ version, lang }) {
   const list = useRef(null);
   const tab = G.tab;
   const wx = G.life.weather || "auto", calm = isCalm();
-  useEffect(() => { list.current && list.current.scrollToOffset({ offset: 0, animated: false }); }, [tab, G.feedRun]);
+  const feedRun = G.feedRun, insetTop = insets.top, insetBottom = tabSpace(insets);
+  useEffect(() => { if (list.current) list.current.scrollToOffset({ offset: 0, animated: false }); }, [tab, feedRun]);
   const onScroll = useCallback(e => {
     if (!height) return;
     const idx = Math.round(e.nativeEvent.contentOffset.y / height);
     if (idx >= 0 && idx !== G.current) setCurrent(idx);
   }, [height]);
-  useEffect(() => { if (height && G.current < 0) setCurrent(0); }, [height, tab, G.feedRun]);
+  useEffect(() => { if (height && G.current < 0) setCurrent(0); }, [height, tab, feedRun]);
   const renderItem = useCallback(({ item }) => (
-    <Card card={item} height={height} lang={lang} rep={item.rep} insetTop={insets.top} insetBottom={tabSpace(insets)} wx={wx} calm={calm} />
-  ), [height, lang, insets.top, insets.bottom, wx, calm]);
+    <Card card={item} height={height} lang={lang} rep={item.rep} insetTop={insetTop} insetBottom={insetBottom} wx={wx} calm={calm} />
+  ), [height, lang, insetTop, insetBottom, wx, calm]);
   return (
     <View style={StyleSheet.absoluteFill} onLayout={e => setHeight(e.nativeEvent.layout.height)}>
       {height > 0 && (

@@ -8,7 +8,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { G, closeView, openView, stageNow, emit, showToast, subscribe, on, isLearn } from "./game";
 import {
   L, TRACKS, TRACK_KEYS, unitTitle, unitSub, lessonItems, lessonLabel, unitAt, loadItems, lessonExercises, reviewExercises,
-  finishLesson, finishReview, setOf, SET, SET_BONUS, dueKeys, dueCount, boxOf, MASTER, masteredCount, learnedCount, MEDALS, medalName, REVIEW_SIZE, setTrack, backToPath,
+  finishLesson, finishReview, setOf, SET_BONUS, dueKeys, dueCount, boxOf, MASTER, masteredCount, learnedCount, MEDALS, medalName, REVIEW_SIZE, setTrack, backToPath,
 } from "./learn";
 import { BuddyArt } from "./Buddy";
 import { Pattern70 } from "./Pattern";

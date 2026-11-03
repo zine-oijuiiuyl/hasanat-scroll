@@ -7,13 +7,14 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Sharing from "expo-sharing";
 import * as DocumentPicker from "expo-document-picker";
+import { MAX_BACKUP } from "./safe";
 import { File, Paths } from "expo-file-system";
-import { BY_ID, STAGES, BADGES, levelFor, levelProgress, stageProgress, threshold, PR_NAMES, PR_METHODS, prayerDay } from "./web-data";
+import { BY_ID, STAGES, BADGES, levelFor, levelProgress, stageProgress, threshold, PR_NAMES, PR_METHODS, prayerDay, T } from "./web-data";
 import {
   G, closeView, keepScrolling, resetSession, openView, openCinematic, tabOf, lifeTaps, stageNow, sTaps, askToRate, rate, rateLater,
   setSetting, swapBuddy, startTour, isCalm, isLearn, setMode, countNow, countToday, countAll, dayKey, wipeEverything, backupText, restoreText, digits, startDebt, removeDebt,
 } from "./game";
-import { t, levelTitle, stageName, badgeText, num, isRTL, getLang } from "./i18n";
+import { t, levelTitle, stageName, badgeText, num, getLang } from "./i18n";
 import { BuddyArt } from "./Buddy";
 import { Panel, Label, Cap, Bar, Tile, Tiles, Btn, Toggle, Choice, LangPicker, s as u } from "./ui";
 import { C, F, GOLD, SHEET_BG } from "./theme";
@@ -25,7 +26,7 @@ import { QiblaCompass } from "./Qibla";
 import { SheetMiner } from "./Rock";
 import { HeartedPanel } from "./Hearts";
 import { WEATHERS } from "./Weather";
-import { T } from "./web-data";
+import { Ico, IconText } from "./Icons";
 
 // The liquid bubble scroll sound (Zine, 2026-10-28). Translations are mine, like the rest of the app's strings.
 const BUBBLE = { en: "Bubble", ar: "فقاعة", fr: "Bulle", es: "Burbuja", tr: "Baloncuk", ur: "بلبلہ", id: "Gelembung", bn: "বুদবুদ", ru: "Пузырёк", de: "Blase" };
@@ -130,7 +131,6 @@ const HIST = {
 for (const [l, v] of Object.entries(HIST)) if (T[l]) Object.assign(T[l].ui, v);
 const WX_SOUND = { en: "Weather sounds", ar: "أصوات الطقس", fr: "Sons de la météo", es: "Sonidos del clima", tr: "Hava sesleri", ur: "موسم کی آوازیں", id: "Suara cuaca", bn: "আবহাওয়ার শব্দ", ru: "Звуки погоды", de: "Wettergeräusche" };
 for (const [l, v] of Object.entries(WX_SOUND)) if (T[l]) T[l].ui.wxSound = v;
-import { Ico, IconText } from "./Icons";
 
 const TAB_ORDER = [["dhikr", "tabDhikr"], ["dua", "tabDua"], ["quran", "tabQuran"], ["muh", "tabHadith"]];
 const fmtTime = ms => { const x = Math.round(ms / 1000); return x >= 60 ? `${Math.floor(x / 60)}m ${x % 60}s` : `${x}s`; };
@@ -215,7 +215,7 @@ function CountUp({ to, evolved }) {
     const iv = setInterval(() => {
       i++; setN(Math.round(to * i / steps));
       if (i % 3 === 0) fx.seen();
-      if (i >= steps) { clearInterval(iv); evolved ? fx.evolve() : fx.party(); }
+      if (i >= steps) { clearInterval(iv); if (evolved) fx.evolve(); else fx.party(); }
     }, 40);
     return () => clearInterval(iv);
   }, [to, evolved]);
@@ -301,7 +301,10 @@ async function restoreProgress() {
   try {
     const r = await DocumentPicker.getDocumentAsync({ type: ["application/json", "public.json", "*/*"], copyToCacheDirectory: true });
     if (r.canceled || !r.assets || !r.assets[0]) return;
-    restoreText(await new File(r.assets[0].uri).text());
+    const f = new File(r.assets[0].uri);
+    // A backup is a few kilobytes; refuse anything big before reading it into memory.
+    if ((r.assets[0].size || f.size || 0) > MAX_BACKUP) return restoreText("");
+    restoreText(await f.text());
   } catch (e) { restoreText(""); }
 }
 

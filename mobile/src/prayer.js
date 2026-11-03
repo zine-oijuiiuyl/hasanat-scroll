@@ -5,6 +5,7 @@ import * as Notifications from "expo-notifications";
 import { PR_NAMES, prayerDay, guessMethod } from "./web-data";
 import { G, save, changed, toast } from "./game";
 import { t } from "./i18n";
+import { roundCoord } from "./safe";
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({ shouldShowBanner: true, shouldShowList: true, shouldPlaySound: true, shouldSetBadge: false }),
@@ -54,7 +55,8 @@ export async function askLocation() {
     if (perm.status !== "granted") return t("prDenied");
     const pos = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
     const old = G.life.prayer || {};
-    G.life.prayer = { lat: pos.coords.latitude, lng: pos.coords.longitude, method: old.method || guessMethod(), hanafi: !!old.hanafi, remind: !!old.remind, before: old.before || 0, on: old.on || {} };
+    // Kept to about a kilometre (safe.js): enough for prayer times and the Qibla.
+    G.life.prayer = { lat: roundCoord(pos.coords.latitude), lng: roundCoord(pos.coords.longitude), method: old.method || guessMethod(), hanafi: !!old.hanafi, remind: !!old.remind, before: old.before || 0, on: old.on || {} };
     save(); changed(); schedulePrayer();
     return prayerDay(new Date(), G.life.prayer) ? "" : t("prFar");
   } catch (e) {

@@ -1,9 +1,9 @@
 // The Qibla compass: the direction of the Kaaba worked out from the phone's location, and a dial
 // that turns with the phone's compass so the Kaaba mark shows which way to face.
 import { memo, useEffect, useRef, useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 import Animated, { useAnimatedStyle, useFrameCallback, useSharedValue } from "react-native-reanimated";
-import Svg, { Circle, G as SvgG, Line, Path, Rect, Text as SvgText } from "react-native-svg";
+import Svg, { Circle, G as SvgG, Line, Rect, Text as SvgText } from "react-native-svg";
 import * as Location from "expo-location";
 import { T } from "./web-data";
 import { t, num } from "./i18n";
@@ -92,9 +92,7 @@ export function QiblaCompass({ lat, lng }) {
     angle.value += (target.value - angle.value) * (1 - Math.exp(-dt / 70));
   });
   const spinStyle = useAnimatedStyle(() => ({ transform: [{ rotate: `${angle.value}deg` }] }));
-  const last = useRef(0), was = useRef(false), events = useRef(0);
-  // A hidden meter (long-press the dial) that shows how smooth the screen is and how often the compass reports.
-  const [meter, setMeter] = useState(null);
+  const last = useRef(0), was = useRef(false);
 
   useEffect(() => {
     let sub = null, alive = true, got = false;
@@ -108,11 +106,10 @@ export function QiblaCompass({ lat, lng }) {
       last.current = next;
       target.value = next;
       if (!got) { got = true; angle.value = next; setNoCompass(false); }
-      events.current++;
       setTurn(Math.round(turnTo(qibla, v)));
     }).then(s => { if (alive) sub = s; else s.remove(); }, () => alive && setNoCompass(true));
     return () => { alive = false; clearTimeout(wait); if (sub) sub.remove(); };
-  }, [qibla]);
+  }, [qibla, angle, target]);
 
   const facing = turn != null && Math.abs(turn) <= 4;
   useEffect(() => {
@@ -120,25 +117,12 @@ export function QiblaCompass({ lat, lng }) {
     if (turn != null && Math.abs(turn) > 10) was.current = false; else if (facing) was.current = true;
   }, [facing, turn]);
 
-  useEffect(() => {
-    if (!meter) return;
-    let frames = 0, raf = 0, alive = true;
-    const tick = () => { frames++; if (alive) raf = requestAnimationFrame(tick); };
-    raf = requestAnimationFrame(tick);
-    events.current = 0;
-    const id = setInterval(() => { setMeter({ fps: frames, per: events.current }); frames = 0; events.current = 0; }, 1000);
-    return () => { alive = false; cancelAnimationFrame(raf); clearInterval(id); };
-  }, [!!meter]);
-
   return (
     <View style={s.wrap}>
       <View style={[s.pointer, facing && { borderBottomColor: "#4fd1a5" }]} />
-      <Pressable onLongPress={() => setMeter(m => m ? null : { fps: 0, per: 0 })} delayLongPress={600}>
-        <Animated.View style={spinStyle} shouldRasterizeIOS renderToHardwareTextureAndroid>
-          <Dial qibla={qibla} facing={facing} />
-        </Animated.View>
-      </Pressable>
-      {meter ? <Text style={s.meter}>JS {meter.fps} fps · compass {meter.per}/s</Text> : null}
+      <Animated.View style={spinStyle} shouldRasterizeIOS renderToHardwareTextureAndroid>
+        <Dial qibla={qibla} facing={facing} />
+      </Animated.View>
       <Text style={[s.status, facing && { color: "#9ff0c4" }]}>
         {noCompass ? t("qbNoCompass", { d: Math.round(qibla) })
           : turn == null ? "…"
@@ -155,5 +139,4 @@ const s = StyleSheet.create({
   pointer: { width: 0, height: 0, borderLeftWidth: 13, borderRightWidth: 13, borderBottomWidth: 20, borderLeftColor: "transparent", borderRightColor: "transparent", borderBottomColor: C.gold1, marginBottom: -6 },
   status: { fontFamily: F.heavy, fontSize: 22, color: C.ink, textAlign: "center" },
   info: { fontFamily: F.bold, fontSize: 14, color: C.gold2, textAlign: "center" },
-  meter: { fontFamily: F.bold, fontSize: 12, color: C.inkFaint },
 });
