@@ -62,7 +62,7 @@ const MORE = [
  ],
  [
   "dk_rabbil",
-  "dhikr",
+  "quran",   // a verse (al-Fatiha 1:2): in the Qur'an tab, not Dhikr (Zine, 2026-11-03)
   "ٱلْحَمْدُ لِلَّٰهِ رَبِّ ٱلْعَٰلَمِينَ",
   "Alhamdulillahi rabbil-'alamin",
   "All praise is for Allah, Lord of the worlds",
