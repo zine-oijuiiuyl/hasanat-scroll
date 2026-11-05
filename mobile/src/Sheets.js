@@ -2,7 +2,7 @@
 import { stopRecite, setReciteVolume } from "./recite";
 import Slider from "@react-native-community/slider";
 import { useEffect, useRef, useState } from "react";
-import { Animated, Easing, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { Animated, Easing, Linking, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Sharing from "expo-sharing";
@@ -27,6 +27,7 @@ import { SheetMiner } from "./Rock";
 import { HeartedPanel } from "./Hearts";
 import { WEATHERS } from "./Weather";
 import { Ico, IconText } from "./Icons";
+import { supportLink } from "./support";
 
 // The liquid bubble scroll sound (Zine, 2026-10-28). Translations are mine, like the rest of the app's strings.
 const BUBBLE = { en: "Bubble", ar: "فقاعة", fr: "Bulle", es: "Burbuja", tr: "Baloncuk", ur: "بلبلہ", id: "Gelembung", bn: "বুদবুদ", ru: "Пузырёк", de: "Blase" };
@@ -281,9 +282,28 @@ export function Summary({ sm }) {
       <Label>{t("histTitle")}</Label>
       <HistoryBody now={sm.taps} />
       {askToRate() ? <Rate ask later /> : null}
+      <Support />
       <Panel><LangPicker /></Panel>
       <Text style={u.note}>{t("disclaimer")}</Text>
     </Sheet>
+  );
+}
+
+// A quiet, optional donation link (src/support.js). Never pops up on its own.
+function Support() {
+  const [soon, setSoon] = useState(false);
+  const open = () => {
+    const url = supportLink();
+    if (url) Linking.openURL(url).catch(() => {});
+    else setSoon(true);
+  };
+  return (
+    <Panel>
+      <Label>{t("supTitle")}</Label>
+      <Text style={[u.note, { textAlign: "left" }]}>{t("supLine")}</Text>
+      <Btn title={t("supBtn")} onPress={open} testID="support" />
+      {soon ? <Text style={s.faint}>{t("supSoon")}</Text> : null}
+    </Panel>
   );
 }
 
