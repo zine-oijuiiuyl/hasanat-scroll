@@ -1,15 +1,11 @@
 // Prayer times, worked out on the phone from its location (no server), with local reminders.
 // Unlike the web app, the reminders are real iPhone notifications that ring even when the app is closed.
 import * as Location from "expo-location";
-import * as Notifications from "expo-notifications";
+import { addReminder, askNotify, clearReminders } from "./notify";
 import { PR_NAMES, prayerDay, guessMethod } from "./web-data";
 import { G, save, changed, toast } from "./game";
 import { t } from "./i18n";
 import { roundCoord } from "./safe";
-
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({ shouldShowBanner: true, shouldShowList: true, shouldPlaySound: true, shouldSetBadge: false }),
-});
 
 export const pName = k => t("pr_" + k);
 export const hhmm = d => d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
@@ -27,8 +23,7 @@ export function nextPrayer(pr) {
 // iOS keeps at most 64 pending notifications, so this books the next few days and is redone on every open.
 export async function schedulePrayer() {
   try {
-    const all = await Notifications.getAllScheduledNotificationsAsync();
-    await Promise.all(all.filter(n => String(n.identifier).startsWith("prayer-")).map(n => Notifications.cancelScheduledNotificationAsync(n.identifier)));
+    await clearReminders("prayer-");
     const pr = G.life.prayer;
     if (!pr || !pr.remind) return;
     const now = Date.now();
@@ -38,11 +33,7 @@ export async function schedulePrayer() {
       for (const i of [0, 2, 3, 4, 5]) {
         const k = PR_NAMES[i], at = day[i].getTime() - (pr.before || 0) * 6e4;
         if (pr.on[k] === false || at < now + 5000) continue;
-        await Notifications.scheduleNotificationAsync({
-          identifier: `prayer-${k}-${at}`,
-          content: { title: t("prNotifT", { p: pName(k) }), body: pr.before ? t("prNotifSoon", { n: pr.before }) : t("prNotifNow"), sound: true },
-          trigger: { type: Notifications.SchedulableTriggerInputTypes.DATE, date: new Date(at) },
-        });
+        await addReminder(`prayer-${k}-${at}`, at, t("prNotifT", { p: pName(k) }), pr.before ? t("prNotifSoon", { n: pr.before }) : t("prNotifNow"));
       }
     }
   } catch (e) {}
@@ -69,8 +60,8 @@ export async function setReminders(onOff) {
   if (!pr) return "";
   let msg = "";
   if (onOff) {
-    const p = await Notifications.requestPermissionsAsync().catch(() => ({ granted: false }));
-    if (!p.granted) msg = t("prNoPerm");
+    const k = await askNotify().catch(() => "prNoPerm");
+    if (k) msg = t(k);
   }
   pr.remind = onOff; save(); changed(); schedulePrayer();
   return msg;
@@ -87,3 +78,4 @@ export function setPrayerOn(k, v) {
   pr.on = { ...pr.on, [k]: v }; save(); changed(); schedulePrayer();
 }
 export { toast };
+export { WEB_NOTE } from "./notify";

@@ -1,10 +1,10 @@
 // The Qibla compass: the direction of the Kaaba worked out from the phone's location, and a dial
 // that turns with the phone's compass so the Kaaba mark shows which way to face.
 import { memo, useEffect, useRef, useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 import Animated, { useAnimatedStyle, useFrameCallback, useSharedValue } from "react-native-reanimated";
 import Svg, { Circle, G as SvgG, Line, Rect, Text as SvgText } from "react-native-svg";
-import * as Location from "expo-location";
+import { askHeading, headingNeedsTap, watchHeading } from "./heading";
 import { T } from "./web-data";
 import { t, num } from "./i18n";
 import { C, F } from "./theme";
@@ -25,6 +25,9 @@ const QB = {
 };
 const KEYS = ["qbTitle", "qbFacing", "qbLeft", "qbRight", "qbInfo", "qbIntro", "qbFlat", "qbNoCompass"];
 for (const [l, v] of Object.entries(QB)) if (T[l]) KEYS.forEach((k, i) => { T[l].ui[k] = v[i]; });
+// The web app asks for the compass with a tap (iPhone Safari needs one).
+const QB_START = { en: "Turn on the compass", ar: "شغّل البوصلة", fr: "Activer la boussole", es: "Activar la brújula", tr: "Pusulayı aç", ur: "قطب نما چالو کریں", id: "Nyalakan kompas", bn: "কম্পাস চালু করো", ru: "Включить компас", de: "Kompass einschalten" };
+for (const [l, v] of Object.entries(QB_START)) if (T[l]) T[l].ui.qbStart = v;
 
 // ---------- The direction ----------
 const KAABA = [21.422487, 39.826206];
@@ -83,6 +86,8 @@ export function QiblaCompass({ lat, lng }) {
   // Whole degrees left to turn, so the text only re-renders when the number changes.
   const [turn, setTurn] = useState(null);
   const [noCompass, setNoCompass] = useState(false);
+  // On the web, iPhone Safari only gives the compass after a tap and a yes.
+  const [needTap, setNeedTap] = useState(headingNeedsTap);
   // The compass reports a few dozen times a second, unevenly. JS only sets where the dial should be;
   // on the UI thread the dial eases toward it every frame, so it moves at the screen's full rate.
   const target = useSharedValue(0), angle = useSharedValue(0);
@@ -98,8 +103,8 @@ export function QiblaCompass({ lat, lng }) {
     let sub = null, alive = true, got = false;
     // No reading after a few seconds means there is no compass to use.
     const wait = setTimeout(() => { if (alive && !got) setNoCompass(true); }, 4000);
-    Location.watchHeadingAsync(h => {
-      const v = h.trueHeading >= 0 ? h.trueHeading : h.magHeading;
+    if (needTap) { clearTimeout(wait); return () => { alive = false; }; }
+    watchHeading(v => {
       if (!(v >= 0)) return;
       // Turn the short way round, so 359° to 1° doesn't spin the dial backwards.
       const next = last.current + (((-v - last.current) % 360 + 540) % 360 - 180);
@@ -109,7 +114,7 @@ export function QiblaCompass({ lat, lng }) {
       setTurn(Math.round(turnTo(qibla, v)));
     }).then(s => { if (alive) sub = s; else s.remove(); }, () => alive && setNoCompass(true));
     return () => { alive = false; clearTimeout(wait); if (sub) sub.remove(); };
-  }, [qibla, angle, target]);
+  }, [qibla, angle, target, needTap]);
 
   const facing = turn != null && Math.abs(turn) <= 4;
   useEffect(() => {
@@ -124,11 +129,17 @@ export function QiblaCompass({ lat, lng }) {
         <Dial qibla={qibla} facing={facing} />
       </Animated.View>
       <Text style={[s.status, facing && { color: "#9ff0c4" }]}>
-        {noCompass ? t("qbNoCompass", { d: Math.round(qibla) })
+        {needTap ? null
+          : noCompass ? t("qbNoCompass", { d: Math.round(qibla) })
           : turn == null ? "…"
           : facing ? "✓ " + t("qbFacing")
           : t(turn > 0 ? "qbRight" : "qbLeft", { d: Math.abs(turn) })}
       </Text>
+      {needTap ? (
+        <Pressable testID="qiblaStart" onPress={async () => { const ok = await askHeading(); setNeedTap(false); if (!ok) setNoCompass(true); }} style={({ pressed }) => [s.start, pressed && { opacity: 0.7 }]}>
+          <Text style={s.startTx}>🧭 {t("qbStart")}</Text>
+        </Pressable>
+      ) : null}
       <Text style={s.info}>{t("qbInfo", { d: Math.round(qibla), k: num(Math.round(km)) })}</Text>
     </View>
   );
@@ -138,5 +149,7 @@ const s = StyleSheet.create({
   wrap: { alignItems: "center", gap: 14 },
   pointer: { width: 0, height: 0, borderLeftWidth: 13, borderRightWidth: 13, borderBottomWidth: 20, borderLeftColor: "transparent", borderRightColor: "transparent", borderBottomColor: C.gold1, marginBottom: -6 },
   status: { fontFamily: F.heavy, fontSize: 22, color: C.ink, textAlign: "center" },
+  start: { backgroundColor: C.gold1, borderRadius: 999, paddingVertical: 12, paddingHorizontal: 22 },
+  startTx: { fontFamily: F.heavy, fontSize: 16, color: "#2a1a00", textAlign: "center" },
   info: { fontFamily: F.bold, fontSize: 14, color: C.gold2, textAlign: "center" },
 });

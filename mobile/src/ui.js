@@ -1,5 +1,5 @@
 // Small shared pieces for the full-screen sheets.
-import { Pressable, StyleSheet, Switch, Text, View } from "react-native";
+import { Platform, Pressable, StyleSheet, Switch, Text, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { LANGS } from "./web-data";
 import { getLang, t } from "./i18n";
@@ -39,10 +39,14 @@ export function Btn({ title, onPress, primary, danger, style, testID }) {
   );
 }
 
+// The web switch has no visible off track of its own.
+const WEB = Platform.OS === "web";
+const WEB_TRACK = { false: "rgba(255,255,255,0.22)", true: C.gold2 };
+
 export const Toggle = ({ label, value, onChange }) => (
   <View style={s.toggle}>
     <Text style={s.toggleT}>{label}</Text>
-    <Switch value={!!value} onValueChange={v => { hapTick(); onChange(v); }} trackColor={{ true: C.gold2 }} />
+    <Switch value={!!value} onValueChange={v => { hapTick(); onChange(v); }} trackColor={WEB ? WEB_TRACK : { true: C.gold2 }} {...(WEB ? { thumbColor: "#fff", activeThumbColor: "#fff" } : null)} />
   </View>
 );
 

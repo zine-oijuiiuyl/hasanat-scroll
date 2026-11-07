@@ -49,6 +49,16 @@
     },
     "updates": {
       "url": "https://u.expo.dev/449bdd6c-4533-4805-831c-31159366ac5b"
+    },
+    "experiments": {
+      "baseUrl": "/hasanat-scroll"
+    },
+    "web": {
+      "name": "Hasanat Scroll",
+      "shortName": "Hasanat",
+      "backgroundColor": "#061a18",
+      "themeColor": "#061a18",
+      "favicon": "./assets/icon.png"
     }
   }
 }

@@ -5,7 +5,7 @@
 // recording (most hadith and seerah cards) stay silent. On by default, with a switch in the settings. Each card loops.
 // The word being read lights up on the card (Zine, 2026-10-30), from the word timings that come with each clip.
 // Sent as the "reciteWord" event (card, word).
-import { createAudioPlayer } from "expo-audio";
+import { createAudioPlayer } from "./audio";
 import { G, on, emit, isLearn, picking } from "./game";
 import { BY_ID, T } from "./web-data";
 import { CLIPS } from "./recite-data";

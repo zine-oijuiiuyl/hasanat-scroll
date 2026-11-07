@@ -5,7 +5,7 @@ hash, so run this after editing index.html:  python3 mobile/scripts/web-csp.py
 """
 import base64, hashlib, os, re
 
-PAGE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "index.html")
+PAGE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "legacy-web", "index.html")
 s = open(PAGE, encoding="utf8").read()
 hashes = " ".join("'sha256-" + base64.b64encode(hashlib.sha256(x.encode()).digest()).decode() + "'"
                   for x in re.findall(r"<script>(.*?)</script>", s, flags=re.S))

@@ -2,7 +2,7 @@
 import { stopRecite, setReciteVolume } from "./recite";
 import Slider from "@react-native-community/slider";
 import { useEffect, useRef, useState } from "react";
-import { Animated, Easing, Linking, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { Animated, Easing, Linking, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Sharing from "expo-sharing";
@@ -21,7 +21,7 @@ import { C, F, GOLD, SHEET_BG } from "./theme";
 import { fx, hapTick, scrollSound, setFxSettings } from "./fx";
 import { target, setScroller } from "./targets";
 import { Lesson, Review, Library, Reader } from "./LearnScreens";
-import { askLocation, hhmm, nextPrayer, pName, setPrayerOn, setReminders, updatePrayer } from "./prayer";
+import { WEB_NOTE, askLocation, hhmm, nextPrayer, pName, setPrayerOn, setReminders, updatePrayer } from "./prayer";
 import { QiblaCompass } from "./Qibla";
 import { SheetMiner } from "./Rock";
 import { HeartedPanel } from "./Hearts";
@@ -309,6 +309,17 @@ function Support() {
 
 async function backupProgress() {
   const name = `dhikr-scroll-backup-${new Date().toISOString().slice(0, 10)}.json`;
+  if (Platform.OS === "web") {
+    // The browser saves the file (iPhone: the share sheet or Files opens).
+    try {
+      const url = URL.createObjectURL(new Blob([backupText()], { type: "application/json" }));
+      const a = document.createElement("a");
+      a.href = url; a.download = name; a.rel = "noopener";
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
+    } catch (e) {}
+    return;
+  }
   try {
     const f = new File(Paths.cache, name);
     if (f.exists) f.delete();
@@ -321,6 +332,11 @@ async function restoreProgress() {
   try {
     const r = await DocumentPicker.getDocumentAsync({ type: ["application/json", "public.json", "*/*"], copyToCacheDirectory: true });
     if (r.canceled || !r.assets || !r.assets[0]) return;
+    if (Platform.OS === "web") {
+      const wf = r.assets[0].file;
+      if (!wf || (wf.size || 0) > MAX_BACKUP) return restoreText("");
+      return restoreText(await wf.text());
+    }
     const f = new File(r.assets[0].uri);
     // A backup is a few kilobytes; refuse anything big before reading it into memory.
     if ((r.assets[0].size || f.size || 0) > MAX_BACKUP) return restoreText("");
@@ -513,7 +529,7 @@ export function Progress() {
       </Panel>
       {/* Rating sits last in every mode (Zine, 2026-10-29). */}
       <Rate />
-      <Text style={u.note}>{t("disclaimer")}{"\n"}Recitation: Mishary Alafasy (everyayah.com). Word timings: quran-align by Charles Parker, CC BY 4.0. Verse meanings: QuranEnc.com. Transliteration: Tanzil.net. Hadith texts: hadith-api by fawazahmed0. Dhikr and duas read by Hamad Al-Duraihim (Hisn al-Muslim recordings, via Adhkar-json by rn0x). Meadow sound: gluckose and kvgarlic (freesound.org, CC0).{"\n"}Expo v1</Text>
+      <Text style={u.note}>{t("disclaimer")}{"\n"}Recitation: Mishary Alafasy (everyayah.com). Word timings: quran-align by Charles Parker, CC BY 4.0. Verse meanings: QuranEnc.com. Transliteration: Tanzil.net. Hadith texts: hadith-api by fawazahmed0. Dhikr and duas read by Hamad Al-Duraihim (Hisn al-Muslim recordings, via Adhkar-json by rn0x). Meadow sound: gluckose and kvgarlic (freesound.org, CC0).{"\n"}{Platform.OS === "web" ? "Web v42" : "Expo v1"}</Text>
     </Sheet>
   );
 }
@@ -584,6 +600,7 @@ export function Prayer() {
           {pr.remind ? <>
             <Choice label={t("prBefore")} value={pr.before || 0} options={[0, 5, 10, 15, 30].map(n => [n, n ? t("prMin", { n }) : t("prOnTime")])} onChange={v => updatePrayer({ before: v })} />
             {[0, 2, 3, 4, 5].map(i => <Toggle key={i} label={pName(PR_NAMES[i])} value={pr.on[PR_NAMES[i]] !== false} onChange={v => setPrayerOn(PR_NAMES[i], v)} />)}
+            {WEB_NOTE ? <Text style={s.faint}>{t("prNote")}</Text> : null}
           </> : null}
         </Panel>
       </> : null}

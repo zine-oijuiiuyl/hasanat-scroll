@@ -1,7 +1,7 @@
 // Qur'an and hadith texts for the learning path. Downloaded one surah or one hadith at a time from
 // fawazahmed0/quran-api and fawazahmed0/hadith-api (public domain), then kept on the phone so the
 // library and memory checks work offline.
-import { Directory, File, Paths } from "expo-file-system";
+import { dropText, readText, writeText } from "./textcache";
 
 const HOSTS = [
   (repo, path) => `https://cdn.jsdelivr.net/gh/fawazahmed0/${repo}@1/${path}`,
@@ -39,15 +39,6 @@ export const hadithEd = (col, lang) => {
 const mem = new Map();
 // Some texts carry HTML line breaks and tags.
 const clean = s => String(s || "").replace(/<br\s*\/?>/gi, "\n").replace(/<[^>]+>/g, "").replace(/[ \t]+/g, " ").trim();
-let dir = null;
-function store() {
-  if (!dir) {
-    dir = new Directory(Paths.document, "learn");
-    try { if (!dir.exists) dir.create({ idempotent: true }); } catch (_) {}
-  }
-  return dir;
-}
-
 // Downloads are limited in time and size, and only text from the expected shape is kept (2026-11-03): a slow
 // network can't leave a lesson loading forever, and a broken or tampered file is never saved to the phone.
 const TIMEOUT_MS = 15000, MAX_BYTES = 2 * 1024 * 1024;
@@ -67,16 +58,15 @@ async function fetchText(url) {
 
 async function getJSON(repo, path, name, valid) {
   if (mem.has(name)) return mem.get(name);
-  let f = null;
   try {
-    f = new File(store(), name);
-    if (f.exists) {
-      const j = JSON.parse(await f.text());
+    const saved = await readText(name);
+    if (saved != null) {
+      const j = JSON.parse(saved);
       if (valid(j)) { mem.set(name, j); return j; }
-      f.delete();   // a saved copy that isn't right is fetched again
+      await dropText(name);   // a saved copy that isn't right is fetched again
     }
   } catch (_) {
-    try { if (f && f.exists) f.delete(); } catch (_e) {}
+    await dropText(name);
   }
   let last;
   for (const host of HOSTS) {
@@ -84,7 +74,7 @@ async function getJSON(repo, path, name, valid) {
       const text = await fetchText(host(repo, path));
       const j = JSON.parse(text);
       if (!valid(j)) throw new Error("unexpected data");
-      try { if (f) Promise.resolve(f.write(text)).catch(() => {}); } catch (_) {}
+      Promise.resolve().then(() => writeText(name, text)).catch(() => {});
       mem.set(name, j);
       return j;
     } catch (e) { last = e; }

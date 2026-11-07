@@ -1,6 +1,6 @@
 // Sounds and haptics. The sounds are the web app's tones rendered to files by scripts/make-sounds.js.
-import { createAudioPlayer, setAudioModeAsync } from "expo-audio";
-import * as Haptics from "expo-haptics";
+import { createAudioPlayer, setAudioModeAsync } from "./audio";
+import * as Haptics from "./haptics";
 
 const FILES = {
   // The scroll sounds. They no longer climb in pitch (Zine, 2026-10-28), so only step 0 is used.

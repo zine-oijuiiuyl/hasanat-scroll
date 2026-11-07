@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <!-- Only this site's own scripts run. Styles are inline because React Native Web writes them at run time.
+         Learning texts come from jsDelivr / raw GitHub (src/content.js). -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob:; media-src 'self' data: blob:; connect-src 'self' https://cdn.jsdelivr.net https://raw.githubusercontent.com; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+    <meta name="referrer" content="no-referrer" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no" />
+    <title>Hasanat Scroll</title>
+    <meta name="description" content="Scroll through dhikr, duas, Qur'an and the life of the Prophet ﷺ, learn them by heart and keep count." />
+    <meta name="theme-color" content="#061a18" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Hasanat" />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="icon-180.png" />
+    <link rel="icon" type="image/png" href="icon-192.png" />
+    <style id="expo-reset">
+      html, body { height: 100%; background: #061a18; }
+      body { overflow: hidden; margin: 0; overscroll-behavior: none; -webkit-tap-highlight-color: transparent; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
+      #root { display: flex; height: 100%; flex: 1; }
+      input, textarea { -webkit-user-select: text; user-select: text; }
+    </style>
+  </head>
+  <body>
+    <noscript>Hasanat Scroll needs JavaScript.</noscript>
+    <div id="root"></div>
+    <script src="sw-register.js" defer></script>
+  </body>
+</html>
