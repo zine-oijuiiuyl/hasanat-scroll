@@ -1,11 +1,27 @@
 // Prayer times, worked out on the phone from its location (no server), with local reminders.
-// Unlike the web app, the reminders are real iPhone notifications that ring even when the app is closed.
+// Unlike the web app, the reminders are real phone notifications that ring even when the app is closed.
+import { Platform } from "react-native";
 import * as Location from "expo-location";
 import { addReminder, askNotify, clearReminders } from "./notify";
-import { PR_NAMES, prayerDay, guessMethod } from "./web-data";
+import { PR_NAMES, prayerDay, guessMethod, T } from "./web-data";
 import { G, save, changed, toast } from "./game";
 import { t } from "./i18n";
 import { roundCoord } from "./safe";
+
+// The permission messages name the iPhone's settings; Android phones get their own (my translations).
+const ANDROID_PERM = {
+  en: ["Location is blocked. Allow it in Settings → Apps → Hasanat Scroll → Permissions → Location, then try again.", "Notifications are blocked. Allow them in Settings → Apps → Hasanat Scroll → Notifications."],
+  ar: ["الموقع محظور. اسمح به من الإعدادات ← التطبيقات ← Hasanat Scroll ← الأذونات ← الموقع، ثم حاول مرة أخرى.", "الإشعارات محظورة. اسمح بها من الإعدادات ← التطبيقات ← Hasanat Scroll ← الإشعارات."],
+  fr: ["La localisation est bloquée. Autorise-la dans Paramètres → Applications → Hasanat Scroll → Autorisations → Position, puis réessaie.", "Les notifications sont bloquées. Autorise-les dans Paramètres → Applications → Hasanat Scroll → Notifications."],
+  es: ["La ubicación está bloqueada. Permítela en Ajustes → Aplicaciones → Hasanat Scroll → Permisos → Ubicación y vuelve a intentarlo.", "Las notificaciones están bloqueadas. Permítelas en Ajustes → Aplicaciones → Hasanat Scroll → Notificaciones."],
+  tr: ["Konum engellendi. Ayarlar → Uygulamalar → Hasanat Scroll → İzinler → Konum'dan izin ver ve tekrar dene.", "Bildirimler engellendi. Ayarlar → Uygulamalar → Hasanat Scroll → Bildirimler'den izin ver."],
+  ur: ["مقام بند ہے۔ ترتیبات ← ایپس ← Hasanat Scroll ← اجازتیں ← مقام میں اجازت دیں، پھر دوبارہ کوشش کریں۔", "اطلاعات بند ہیں۔ ترتیبات ← ایپس ← Hasanat Scroll ← اطلاعات میں اجازت دیں۔"],
+  id: ["Lokasi diblokir. Izinkan di Setelan → Aplikasi → Hasanat Scroll → Izin → Lokasi, lalu coba lagi.", "Notifikasi diblokir. Izinkan di Setelan → Aplikasi → Hasanat Scroll → Notifikasi."],
+  bn: ["লোকেশন বন্ধ আছে। সেটিংস → অ্যাপস → Hasanat Scroll → অনুমতি → লোকেশন থেকে অনুমতি দাও, তারপর আবার চেষ্টা করো।", "নোটিফিকেশন বন্ধ আছে। সেটিংস → অ্যাপস → Hasanat Scroll → নোটিফিকেশন থেকে অনুমতি দাও।"],
+  ru: ["Доступ к геолокации запрещён. Разреши его в Настройки → Приложения → Hasanat Scroll → Разрешения → Местоположение и попробуй снова.", "Уведомления отключены. Разреши их в Настройки → Приложения → Hasanat Scroll → Уведомления."],
+  de: ["Der Standort ist blockiert. Erlaube ihn unter Einstellungen → Apps → Hasanat Scroll → Berechtigungen → Standort und versuche es erneut.", "Mitteilungen sind blockiert. Erlaube sie unter Einstellungen → Apps → Hasanat Scroll → Benachrichtigungen."],
+};
+if (Platform.OS === "android") for (const [l, [loc, notif]] of Object.entries(ANDROID_PERM)) if (T[l]) Object.assign(T[l].ui, { prDenied: loc, prNoPerm: notif });
 
 export const pName = k => t("pr_" + k);
 export const hhmm = d => d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
