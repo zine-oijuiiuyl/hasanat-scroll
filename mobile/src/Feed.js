@@ -284,8 +284,8 @@ export default function Feed({ version, lang }) {
           bounces={false}
         />
       )}
-      {height > 0 ? <FixedHeart bottom={tabSpace(insets) + 44} /> : null}
-      {height > 0 ? <MuteButton bottom={tabSpace(insets) + 44} /> : null}
+      {height > 0 ? <FixedHeart bottom={tabSpace(insets) + 14} /> : null}
+      {height > 0 ? <MuteButton bottom={tabSpace(insets) + 14} /> : null}
     </View>
   );
 }
