@@ -8,6 +8,7 @@ import { t, meaning } from "./i18n";
 import { Panel, Label, s as u } from "./ui";
 import { C, F } from "./theme";
 import { hapTick, hapOk } from "./fx";
+import { target } from "./targets";
 
 // Translations are mine, like the rest of the app's strings.
 const HT = {
@@ -23,6 +24,20 @@ const HT = {
   de: ["Gemerkte Karten", "Tippe auf ♥ bei einer Karte, um sie hier zu behalten."],
 };
 for (const [l, v] of Object.entries(HT)) if (T[l]) { T[l].ui.hrtTitle = v[0]; T[l].ui.hrtEmpty = v[1]; }
+// The tutorial step that points at the heart (Zine, 2026-11-09).
+const TUT_HEART = {
+  en: "Tap the heart to keep a card you love. Your hearted cards wait for you on the Done screen.",
+  ar: "اضغط القلب لتحفظ بطاقة أعجبتك. تجد البطاقات المفضلة في شاشة الإنهاء.",
+  fr: "Touche le cœur pour garder une carte que tu aimes. Tes cartes aimées t'attendent sur l'écran Terminé.",
+  es: "Toca el corazón para guardar una tarjeta que te guste. Tus favoritas te esperan en la pantalla Listo.",
+  tr: "Sevdiğin bir kartı saklamak için kalbe dokun. Beğendiğin kartlar Bitti ekranında seni bekler.",
+  ur: "پسندیدہ کارڈ محفوظ کرنے کے لیے دل دبائیں۔ آپ کے پسندیدہ کارڈز ختم کی اسکرین پر ملیں گے۔",
+  id: "Ketuk hati untuk menyimpan kartu yang kamu suka. Kartu yang kamu sukai ada di layar Selesai.",
+  bn: "পছন্দের কার্ড রাখতে হৃদয়ে চাপো। পছন্দের কার্ডগুলো শেষ পর্দায় পাবে।",
+  ru: "Нажми на сердце, чтобы сохранить понравившуюся карточку. Любимые карточки ждут тебя на экране «Готово».",
+  de: "Tippe auf das Herz, um eine Karte zu behalten, die dir gefällt. Deine gemerkten Karten findest du im Fertig-Bildschirm.",
+};
+for (const [l, v] of Object.entries(TUT_HEART)) if (T[l]) T[l].ui.tutHeart = v;
 
 // The heart is pink-red when on, without the gold (Zine, 2026-10-28).
 const HEART = "M12 20.6 C11.6 20.6 11.3 20.4 11 20.2 C6.4 16.6 2.6 13.2 2.6 9 C2.6 6.1 4.9 3.8 7.7 3.8 C9.5 3.8 11 4.7 12 6.2 C13 4.7 14.5 3.8 16.3 3.8 C19.1 3.8 21.4 6.1 21.4 9 C21.4 13.2 17.6 16.6 13 20.2 C12.7 20.4 12.4 20.6 12 20.6Z";
@@ -48,7 +63,7 @@ export function HeartButton({ id, on, style }) {
   };
   const scale = pop.interpolate({ inputRange: [0, 0.35, 0.65, 1], outputRange: [1, 1.45, 0.9, 1] });
   return (
-    <Pressable onPress={press} hitSlop={14} testID={"heart-" + id} style={[s.btn, style]} accessibilityRole="button" accessibilityState={{ selected: on }}>
+    <Pressable ref={target("heart")} onPress={press} hitSlop={14} testID={"heart-" + id} style={[s.btn, style]} accessibilityRole="button" accessibilityState={{ selected: on }}>
       <Animated.View style={{ transform: [{ scale }] }}><HeartIcon on={on} size={34} /></Animated.View>
     </Pressable>
   );

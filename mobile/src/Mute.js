@@ -10,6 +10,7 @@ import { t } from "./i18n";
 import { C, F } from "./theme";
 import { hapTick } from "./fx";
 import { stopRecite } from "./recite";
+import { target } from "./targets";
 
 function Speaker({ off, size = 26, color = "#fff" }) {
   return (
@@ -59,7 +60,7 @@ export default function MuteButton({ bottom }) {
           })}
         </View>
       ) : null}
-      <Pressable testID="mute" hitSlop={14} onPress={() => { hapTick(); if (open) setOpen(false); else toggleAll(); }}
+      <Pressable ref={target("mute")} testID="mute" hitSlop={14} onPress={() => { hapTick(); if (open) setOpen(false); else toggleAll(); }}
         onLongPress={() => { hapTick(); setOpen(true); }} delayLongPress={350} style={[s.btn, side, { bottom: bottom + lift }]}>
         <Speaker off={allOff} />
       </Pressable>
@@ -76,15 +77,15 @@ const s = StyleSheet.create({
 });
 
 const UI = {
-  en: { volume: "Volume", muteWx: "Weather", muteScroll: "Scrolling", muteRecite: "Reciting" },
-  ar: { volume: "مستوى الصوت", muteWx: "الطقس", muteScroll: "التمرير", muteRecite: "التلاوة" },
-  fr: { volume: "Volume", muteWx: "Météo", muteScroll: "Défilement", muteRecite: "Récitation" },
-  es: { volume: "Volumen", muteWx: "Clima", muteScroll: "Deslizar", muteRecite: "Recitación" },
-  tr: { volume: "Ses düzeyi", muteWx: "Hava", muteScroll: "Kaydırma", muteRecite: "Okuma" },
-  ur: { volume: "آواز کی سطح", muteWx: "موسم", muteScroll: "اسکرول", muteRecite: "تلاوت" },
-  id: { volume: "Volume", muteWx: "Cuaca", muteScroll: "Gulir", muteRecite: "Bacaan" },
-  bn: { volume: "ভলিউম", muteWx: "আবহাওয়া", muteScroll: "স্ক্রল", muteRecite: "তিলাওয়াত" },
-  ru: { volume: "Громкость", muteWx: "Погода", muteScroll: "Прокрутка", muteRecite: "Чтение" },
-  de: { volume: "Lautstärke", muteWx: "Wetter", muteScroll: "Scrollen", muteRecite: "Vorlesen" },
+  en: { volume: "Volume", muteWx: "Weather", muteScroll: "Scrolling", muteRecite: "Reciting", tutMute: "This is the sound button. Tap it to mute everything, tap again to bring the sound back. Hold it to choose weather, scrolling or reciting." },
+  ar: { volume: "مستوى الصوت", muteWx: "الطقس", muteScroll: "التمرير", muteRecite: "التلاوة", tutMute: "هذا زر الصوت. اضغطه لكتم كل شيء، واضغطه مرة أخرى لإعادة الصوت. اضغط مطوّلًا لتختار الطقس أو التمرير أو التلاوة." },
+  fr: { volume: "Volume", muteWx: "Météo", muteScroll: "Défilement", muteRecite: "Récitation", tutMute: "Voici le bouton du son. Touche-le pour tout couper, touche encore pour le remettre. Appuie longuement pour choisir météo, défilement ou récitation." },
+  es: { volume: "Volumen", muteWx: "Clima", muteScroll: "Deslizar", muteRecite: "Recitación", tutMute: "Este es el botón de sonido. Tócalo para silenciar todo y otra vez para recuperarlo. Mantenlo pulsado para elegir clima, deslizar o recitación." },
+  tr: { volume: "Ses düzeyi", muteWx: "Hava", muteScroll: "Kaydırma", muteRecite: "Okuma", tutMute: "Bu ses düğmesi. Her şeyi susturmak için dokun, sesi geri getirmek için tekrar dokun. Hava, kaydırma ya da okuma seçmek için basılı tut." },
+  ur: { volume: "آواز کی سطح", muteWx: "موسم", muteScroll: "اسکرول", muteRecite: "تلاوت", tutMute: "یہ آواز کا بٹن ہے۔ سب خاموش کرنے کے لیے دبائیں، آواز واپس لانے کے لیے پھر دبائیں۔ موسم، اسکرول یا تلاوت چننے کے لیے دبائے رکھیں۔" },
+  id: { volume: "Volume", muteWx: "Cuaca", muteScroll: "Gulir", muteRecite: "Bacaan", tutMute: "Ini tombol suara. Ketuk untuk mematikan semua suara, ketuk lagi untuk menyalakannya. Tahan untuk memilih cuaca, gulir, atau bacaan." },
+  bn: { volume: "ভলিউম", muteWx: "আবহাওয়া", muteScroll: "স্ক্রল", muteRecite: "তিলাওয়াত", tutMute: "এটা শব্দের বোতাম। সব বন্ধ করতে চাপো, আবার চাপলে শব্দ ফিরে আসবে। আবহাওয়া, স্ক্রল বা তিলাওয়াত বেছে নিতে চেপে ধরে রাখো।" },
+  ru: { volume: "Громкость", muteWx: "Погода", muteScroll: "Прокрутка", muteRecite: "Чтение", tutMute: "Это кнопка звука. Нажми, чтобы выключить всё, нажми ещё раз, чтобы вернуть звук. Удерживай, чтобы выбрать погоду, прокрутку или чтение." },
+  de: { volume: "Lautstärke", muteWx: "Wetter", muteScroll: "Scrollen", muteRecite: "Vorlesen", tutMute: "Das ist der Ton-Knopf. Tippe, um alles stumm zu schalten, und noch einmal, um den Ton zurückzuholen. Halte ihn gedrückt, um Wetter, Scrollen oder Vorlesen zu wählen." },
 };
 for (const [l, v] of Object.entries(UI)) if (T[l]) Object.assign(T[l].ui, v);
