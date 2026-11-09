@@ -1,8 +1,8 @@
 // The endless vertical feed: one card per screen, snapping like the web app.
 import { memo, useCallback, useEffect, useRef, useState } from "react";
-import { Animated, Easing, FlatList, Pressable, StyleSheet, Text, View } from "react-native";
+import { Animated, Dimensions, Easing, FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import Svg, { Path } from "react-native-svg";
+import Svg, { Path, Circle, Line, Text as SvgText, G as SvgG } from "react-native-svg";
 import { Pattern70 } from "./Pattern";
 import { CardWeather } from "./Weather";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -17,6 +17,7 @@ import MuteButton from "./Mute";
 import { cardWords, hasVoice } from "./recite";
 import { CLIPS } from "./recite-data";
 import { LONG } from "./hadith-long";
+import { PLAIN } from "./names";
 
 function SwipeHint() {
   const a = useRef(new Animated.Value(0)).current;
@@ -77,9 +78,91 @@ function usePart(card, P) {
   return [part, fade];
 }
 
+
+// ---------- The 99 Names (Zine, 2026-11-09) ----------
+// A dial of all 99 names, the same drawing on every card, turned so the name on show sits under the gold marker.
+const STEP = 360 / 99;
+// Each name runs along the radius, like the spokes of a wheel, so all 99 fit around it.
+const RadialName = ({ c, r, text, size, fill }) => (
+  <SvgText x={c} y={c - r} fontSize={size} fill={fill} textAnchor="middle" alignmentBaseline="middle" transform={`rotate(-90 ${c} ${c - r})`}>{text}</SvgText>
+);
+const ringR = D => ({ c: D / 2, rName: D / 2 - 26, rTick: D / 2 - 52, size: D < 330 ? 8 : 9 });
+const Ring = memo(function Ring({ D }) {
+  const { c, rName, rTick, size } = ringR(D);
+  return (
+    <Svg width={D} height={D}>
+      <Circle cx={c} cy={c} r={c - 2} stroke="rgba(232,200,120,0.16)" strokeWidth={1} fill="none" />
+      <Circle cx={c} cy={c} r={rTick - 14} stroke="rgba(232,200,120,0.10)" strokeWidth={1} fill="none" />
+      <Circle cx={c} cy={c} r={c * 0.42} stroke="rgba(232,200,120,0.08)" strokeWidth={1} fill="rgba(255,255,255,0.015)" />
+      <Circle cx={c} cy={c} r={c * 0.3} stroke="rgba(232,200,120,0.06)" strokeWidth={1} fill="none" />
+      {PLAIN.map((nm, i) => (
+        <SvgG key={i} rotation={i * STEP} originX={c} originY={c}>
+          <Line x1={c} y1={c - rTick} x2={c} y2={c - rTick + (i % 11 === 0 ? 10 : 5)} stroke="rgba(244,239,226,0.28)" strokeWidth={1} />
+          <RadialName c={c} r={rName} text={nm} size={size} fill="rgba(244,239,226,0.30)" />
+        </SvgG>
+      ))}
+    </Svg>
+  );
+});
+// The name under the marker, in gold, drawn over the dial once it has turned.
+function RingTop({ D, n }) {
+  const { c, rName, size } = ringR(D);
+  return <Svg width={D} height={D} pointerEvents="none"><RadialName c={c} r={rName} text={PLAIN[n]} size={size + 1} fill="#f1cf7a" /></Svg>;
+}
+
+function NameCard({ card, d, height, rep, insetTop, insetBottom, wx, lang }) {
+  const W = Dimensions.get("window").width;
+  const room = height - insetTop - insetBottom - 380;
+  const D = Math.round(Math.max(240, Math.min(W - 24, room, 420)));
+  // The dial turns one notch to this name when its card comes into view.
+  const turn = useRef(new Animated.Value(G.current === card.idx ? 0 : 1)).current;
+  useEffect(() => {
+    const go = idx => {
+      if (idx !== card.idx) { turn.setValue(1); return; }
+      Animated.timing(turn, { toValue: 0, duration: 700, easing: Easing.out(Easing.back(1.6)), useNativeDriver: true }).start();
+    };
+    return on("cardIdx", go);
+  }, [card.idx, turn]);
+  const rot = turn.interpolate({ inputRange: [0, 1], outputRange: [-d.n * STEP + "deg", -(d.n - 1) * STEP + "deg"] });
+  const mean = lang === "ar" ? "" : meaning(d);
+  const size = d.ar.length > 14 ? 34 : d.ar.length > 9 ? 46 : 58;
+  return (
+    <View style={{ height }}>
+      <LinearGradient colors={["#101826", "#070a12", "#05070c"]} start={{ x: 0.5, y: 0 }} end={{ x: 0.5, y: 1 }} style={[s.card, { paddingTop: insetTop + 150, paddingBottom: insetBottom + 120, gap: 10 }]}>
+        <CardWeather idx={card.idx} height={height} wx={wx} />
+        <View style={{ width: D, height: D + 14, alignItems: "center", justifyContent: "center" }}>
+          <Animated.View style={{ position: "absolute", top: 14, width: D, height: D, transform: [{ rotate: rot }] }}>
+            <Ring D={D} />
+          </Animated.View>
+          {/* The marker over the name on show */}
+          <View pointerEvents="none" style={[s.nmDot, { top: 2 }]} />
+          <View pointerEvents="none" style={[s.nmLine, { top: 14 + 56, height: 34 }]} />
+          <Animated.View pointerEvents="none" style={{ position: "absolute", top: 14, opacity: turn.interpolate({ inputRange: [0, 0.3], outputRange: [1, 0], extrapolate: "clamp" }) }}><RingTop D={D} n={d.n} /></Animated.View>
+          <View style={[s.nmGlow, { width: D * 0.6, height: D * 0.6, borderRadius: D * 0.3, top: 14 + D * 0.2 }]} />
+          <Text style={[s.nmAr, { fontSize: size, lineHeight: size * 1.7, maxWidth: D * 0.7, marginTop: 14 }]} adjustsFontSizeToFit numberOfLines={2}>{d.ar}</Text>
+        </View>
+        <Text style={s.nmTr}>{d.tr}</Text>
+        {mean ? <Text style={s.nmMean}>{mean}</Text> : null}
+        <Text style={s.nmSay}>{t("nameSay")}</Text>
+        <Text style={s.nmCount}>{String(d.n + 1).padStart(2, "0")} / 99</Text>
+        {rep > 0 ? <View style={[s.rep, { flexDirection: "row", alignItems: "center", gap: 5 }]}><Ico e="📿" size={18} /><Text style={s.repT}>×{rep}</Text></View> : null}
+        <Pressable
+          testID={"card-" + card.idx}
+          onPress={() => { if (G.current === card.idx) { hapTick(); repeatCard(card.idx); } }}
+          style={{ position: "absolute", left: 0, right: 0, top: insetTop + 165, bottom: insetBottom + 134 }}
+        />
+      </LinearGradient>
+    </View>
+  );
+}
+
 // `wx` (the weather setting) and `calm` are props only so that a card already on screen redraws when the mode or
 // the weather changes; the card is memoised and would otherwise keep its old look until it scrolled away.
-const Card = memo(function Card({ card, height, lang, rep, insetTop, insetBottom, wx, calm }) {
+const Card = memo(function Card(p) {
+  const d = BY_ID[p.card.id];
+  return d.kind === "name" ? <NameCard {...p} d={d} /> : <TextCard {...p} />;
+});
+function TextCard({ card, height, lang, rep, insetTop, insetBottom, wx, calm }) {
   const d = BY_ID[card.id];
   const pulse = useRef(new Animated.Value(0)).current;
   useEffect(() => on("repeat", key => {
@@ -149,7 +232,7 @@ const Card = memo(function Card({ card, height, lang, rep, insetTop, insetBottom
       </LinearGradient>
     </View>
   );
-});
+}
 
 // The heart stays in its place on the screen while the cards scroll under it (Zine, 2026-11-01), and hearts
 // whichever card is showing. Feed redraws it when a heart changes (version), and it follows the current card.
@@ -208,6 +291,14 @@ export default function Feed({ version, lang }) {
 }
 
 const s = StyleSheet.create({
+  nmDot: { position: "absolute", width: 12, height: 12, borderRadius: 6, backgroundColor: "#f1cf7a", shadowColor: "#f1cf7a", shadowOpacity: 0.9, shadowRadius: 8, shadowOffset: { width: 0, height: 0 } },
+  nmLine: { position: "absolute", width: 1.5, backgroundColor: "rgba(241,207,122,0.7)" },
+  nmGlow: { position: "absolute", backgroundColor: "rgba(241,207,122,0.05)" },
+  nmAr: { fontFamily: F.ar, color: "#f7f0de", textAlign: "center", writingDirection: "rtl", textShadowColor: "rgba(241,207,122,0.35)", textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 18 },
+  nmTr: { fontFamily: F.heavy, fontSize: 30, color: "#f7f0de", textAlign: "center", letterSpacing: 0.3 },
+  nmMean: { fontFamily: F.heavy, fontSize: 18, color: "#e8c878", textAlign: "center", paddingHorizontal: 20 },
+  nmSay: { fontFamily: F.ui, fontStyle: "italic", fontSize: 14, color: "rgba(244,239,226,0.55)", textAlign: "center", marginTop: 6 },
+  nmCount: { fontFamily: F.bold, fontSize: 12, letterSpacing: 4, color: "rgba(244,239,226,0.45)" },
   card: { flex: 1, alignItems: "center", paddingHorizontal: 24, gap: 18 },
   kind: { marginTop: "auto", fontSize: 11, fontFamily: F.heavy, letterSpacing: 1.8, color: C.inkFaint, textAlign: "center" },
   ar: { fontFamily: F.ar, color: C.ink, textAlign: "center", writingDirection: "rtl", maxWidth: 540, textShadowColor: "rgba(0,0,0,0.28)", textShadowOffset: { width: 0, height: 8 }, textShadowRadius: 28 },

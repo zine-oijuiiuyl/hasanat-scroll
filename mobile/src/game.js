@@ -4,6 +4,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { LIB, BY_ID, LANGS, RULES, PR_METHODS, isMilestone, levelFor, stageFor, BADGES, STAGES } from "./web-data";
 import "./hadith";
 import "./more";
+import { NAMES } from "./names";
 import { t, levelTitle, levelLine, badgeText, setLangRaw, pickLang, getLang, num } from "./i18n";
 import { fx, scrollSound, setFxSettings, ambient } from "./fx";
 import { sanitizeLife, parseBackup } from "./safe";
@@ -18,7 +19,7 @@ export const KEY = "hasanat.lifetime.v2";
 export const fresh = () => ({ seen: 0, said: 0, sessions: 0, best: 0, per: {}, streak: 0, bestStreak: 0, lastDay: null, badges: [], golden: 0, sound: true, gender: null, lang: null, debt: null, debtsCleared: 0, haptics: true, scrollSound: "dial", lastSeen: 0, tourDone: undefined, rating: 0, rateLater: 0, hearts: [] });
 
 // What the saved progress may hold (safe.js checks every field against these).
-const lifeOpts = () => ({ langs: Object.keys(LANGS), methods: Object.keys(PR_METHODS), scrollSounds: ["dial", "chime", "glass", "bubble"], tabs: ["dhikr", "dua", "muh", "quran"] });
+const lifeOpts = () => ({ langs: Object.keys(LANGS), methods: Object.keys(PR_METHODS), scrollSounds: ["dial", "chime", "glass", "bubble"], tabs: ["dhikr", "dua", "muh", "quran", "names"] });
 export const cleanLife = raw => sanitizeLife(raw, fresh, lifeOpts());
 
 // ---------- Change notification ----------
@@ -94,9 +95,11 @@ function showMood() {
 }
 
 // ---------- Feed ----------
-export const tabOf = d => d.kind === "dua" ? "dua" : d.kind === "seerah" || d.kind === "hadith" ? "muh" : d.kind === "quran" ? "quran" : "dhikr";
+export const tabOf = d => d.kind === "name" ? "names" : d.kind === "dua" ? "dua" : d.kind === "seerah" || d.kind === "hadith" ? "muh" : d.kind === "quran" ? "quran" : "dhikr";
 let bag = [], lastId = null, nextIdx = 0, lastIdx = -1;
 function pick() {
+  // The 99 Names come in their order, from Ar-Rahman, and start again after the last.
+  if (G.tab === "names") return NAMES[nextIdx % NAMES.length];
   // The "muh" tab is now Hadith: only sayings of the Prophet ﷺ, not the cards about his life (Zine, 2026-10-28).
   if (!bag.length) bag = LIB.filter(d => tabOf(d) === G.tab && (G.tab !== "muh" || d.hadith)).flatMap(d => Array(d.w).fill(d)).sort(() => Math.random() - .5);
   let d = bag.pop();
@@ -106,7 +109,7 @@ function pick() {
 }
 function makeCard() {
   const d = pick();
-  const golden = !isCalm() && nextIdx > 3 && Math.random() < RULES.goldenChance;
+  const golden = !isCalm() && G.tab !== "names" && nextIdx > 3 && Math.random() < RULES.goldenChance;
   const idx = nextIdx++;
   return { key: G.tab + ":" + idx, idx, id: d.id, golden, counted: false, rep: 0, repAt: 0 };
 }
@@ -623,7 +626,7 @@ function prepare() {
   if (l.gender && l.tourDone === undefined) { l.tourDone = true; save(); }   // people who were here before the tutorial existed
   if (l.allTime === undefined) { l.allTime = l.said; save(); }   // the history starts here; earlier points count in the total
   if (l.tourDone && !l.tourSeen) { l.tourSeen = { [l.mode || "game"]: true }; save(); }   // before there was one tutorial per mode
-  G.tab = ["dhikr", "dua", "muh", "quran"].includes(l.tab) ? l.tab : "dhikr";
+  G.tab = ["dhikr", "dua", "muh", "quran", "names"].includes(l.tab) ? l.tab : "dhikr";
   G.page = l.mode === "learn" ? "learn" : "scroll";
   G.buddyMood = l.lastSeen ? moodFor((Date.now() - l.lastSeen) / 36e5) : "happy";
   G.S = newSession();
