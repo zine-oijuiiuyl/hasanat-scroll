@@ -1,11 +1,12 @@
-// The 99 Names of Allah as a fifth feed tab (Zine, 2026-11-09): one card per name, in order, each with a dial of
-// all the names that turns to the one on show (NameCard in Feed.js).
+// The 99 Names of Allah as a fifth feed tab (Zine, 2026-11-09): one card per name, in order,
+// with the same look as the other tabs.
 import { LIB, BY_ID, NEW_T, T } from "./web-data";
 import { NAME_ROWS } from "./names-data";
 
 const LANG_COL = { en: 2, fr: 3, es: 4, tr: 5, ur: 6, id: 7, bn: 8, ru: 9, de: 10 };
 export const NAMES = NAME_ROWS.map(([ar, tr, en], n) => {
-  const d = { id: "nm_" + String(n + 1).padStart(2, "0"), ar, tr, en, src: "", kind: "name", pal: 0, w: 1, i: LIB.length, n };
+  // Cards in the app's own colours, like the other tabs (Zine, 2026-11-09); the source line shows the count.
+  const d = { id: "nm_" + String(n + 1).padStart(2, "0"), ar, tr, en, src: String(n + 1).padStart(2, "0") + " / 99", kind: "name", pal: n, w: 1, i: LIB.length, n };
   LIB.push(d);
   BY_ID[d.id] = d;
   return d;
@@ -14,8 +15,6 @@ for (const [l, col] of Object.entries(LANG_COL)) {
   if (!NEW_T[l]) NEW_T[l] = {};
   NAMES.forEach((d, n) => { NEW_T[l][d.id] = NAME_ROWS[n][col]; });
 }
-// The names around the dial, without their vowel marks so they stay readable when small.
-export const PLAIN = NAME_ROWS.map(r => r[0].replace(/[ً-ْٰ]/g, "").replace(/ٱ/g, "ا"));
 
 // Translations are mine, like the rest of the app's strings.
 const UI = {
