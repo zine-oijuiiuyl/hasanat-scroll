@@ -100,3 +100,12 @@ test("fields from a later version are kept when simple, and bad known fields don
   assert.equal(out.gender, null);
   assert.equal(out.learn.futureN, 3);
 });
+
+test("the adhan setting is on unless switched off, with a known voice", () => {
+  const base = { lat: 21.42, lng: 39.83, method: "mwl" };
+  assert.equal(clean({ prayer: base }).prayer.adhan, true);
+  assert.equal(clean({ prayer: base }).prayer.adhanVoice, "makkah");
+  assert.equal(clean({ prayer: { ...base, adhan: false, adhanVoice: "madinah" } }).prayer.adhan, false);
+  assert.equal(clean({ prayer: { ...base, adhan: false, adhanVoice: "madinah" } }).prayer.adhanVoice, "madinah");
+  assert.equal(clean({ prayer: { ...base, adhanVoice: "<script>" } }).prayer.adhanVoice, "makkah");
+});

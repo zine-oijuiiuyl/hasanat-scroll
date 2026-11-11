@@ -12,6 +12,9 @@ import { initSounds, resumeAmbient } from "./src/fx";
 import { schedulePrayer } from "./src/prayer";
 import { stopRecite } from "./src/recite";
 import { listenBack } from "./src/back";
+import { onNotificationTap } from "./src/notify";
+import { adhanFromNotification } from "./src/adhan";
+import AdhanBar from "./src/AdhanBar";
 import Feed from "./src/Feed";
 import Hud from "./src/Hud";
 import Sheets from "./src/Sheets";
@@ -40,14 +43,16 @@ export default function App() {
 
   useEffect(() => {
     initSounds();
-    load().then(schedulePrayer);
+    // Tapping the prayer notification plays the adhan (adhan.js); the saved settings are loaded first.
+    let unTap = () => {};
+    load().then(() => { schedulePrayer(); unTap = onNotificationTap(adhanFromNotification); });
     const sub = AppState.addEventListener("change", st => {
       // "inactive" also fires for the location and notification permission pop-ups, which must not end the session.
       if (st === "active") { onForeground(); schedulePrayer(); resumeAmbient(); }
       else if (st === "background") { stopRecite(); onBackground(); }
     });
     const unBack = listenBack();
-    return () => { sub.remove(); unBack(); };
+    return () => { sub.remove(); unBack(); unTap(); };
   }, []);
 
   const ready = fontsReady && G.loaded;
@@ -80,6 +85,7 @@ export default function App() {
           <ErrorBoundary key={G.tourStep === -1 ? "off" : "on"} quiet onReset={endTour}>
             <Tour />
           </ErrorBoundary>
+          <AdhanBar />
         </View>
       </ErrorBoundary>
     </SafeAreaProvider>

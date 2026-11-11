@@ -16,6 +16,7 @@ async function show(title, body) {
     else new Notification(title, opts);
   } catch (e) {}
 }
+// The adhan itself plays in the page (adhan.js), so the web reminder stays a plain one.
 export async function addReminder(id, at, title, body) {
   const ms = at - Date.now();
   // Timers further off than a day are booked again on the next open.
@@ -32,3 +33,4 @@ export async function askNotify() {
   } catch (e) {}
   return Notification.permission === "granted" ? "" : "prNoPerm";
 }
+export const onNotificationTap = () => () => {};

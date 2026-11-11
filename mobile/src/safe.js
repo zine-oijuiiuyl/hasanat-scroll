@@ -52,6 +52,9 @@ function prayer(v, methods) {
     hanafi: v.hanafi === true, remind: v.remind === true,
     before: int(v.before, 0, 120),
     on: map(v.on, k => /^[a-z]{3,8}$/.test(k), x => (typeof x === "boolean" ? x : undefined), 10),
+    // The adhan (adhan.js): on unless switched off, and which voice.
+    adhan: v.adhan !== false,
+    adhanVoice: oneOf(v.adhanVoice, ["makkah", "madinah", "melodic"], "makkah"),
   };
 }
 

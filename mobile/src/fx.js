@@ -54,7 +54,7 @@ function fadeTo(k, to, ms, done) {
 export function ambient(kind) {
   ambWant = kind;
   // Only the "Weather sounds" switch controls these; "Sounds" is for the scroll sound (Zine, 2026-10-28).
-  const k = settings.weatherSound !== false && AMB[kind] ? kind : null;
+  const k = settings.weatherSound !== false && !held && AMB[kind] ? kind : null;
   if (k === ambNow) return;
   if (ambNow) fadeTo(ambNow, 0, 900, p => p.pause());
   ambNow = k;
@@ -65,6 +65,9 @@ export function ambient(kind) {
     fadeTo(k, ambVol(k), 1400);
   } catch (e) {}
 }
+// The weather sound goes quiet while the adhan plays (adhan.js) and comes back after it.
+let held = false;
+export function holdAmbient(on) { held = !!on; ambient(ambWant); }
 // iOS stops the players in the background; this starts the current one again on return.
 export function resumeAmbient() {
   if (ambNow && amb[ambNow]) try { amb[ambNow].play(); } catch (e) {}

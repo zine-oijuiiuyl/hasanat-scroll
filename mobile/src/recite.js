@@ -74,7 +74,7 @@ function playClip(idx, c, me) {
 
 export function recite(d, idx = G.current) {
   stopRecite();
-  if (!d || !reciteOn() || picking() || isLearn()) return;
+  if (!d || !reciteOn() || picking() || isLearn() || G.adhan) return;   // nothing is read over the adhan
   const me = run;
   const c = CLIPS[d.id] || VOICE[d.id];
   if (c) playClip(idx, c, me);

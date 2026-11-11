@@ -2,11 +2,12 @@
 // Unlike the web app, the reminders are real phone notifications that ring even when the app is closed.
 import { Platform } from "react-native";
 import * as Location from "expo-location";
-import { addReminder, askNotify, clearReminders } from "./notify";
+import { addReminder, askNotify, clearReminders, WEB_NOTE } from "./notify";
 import { PR_NAMES, prayerDay, guessMethod, T } from "./web-data";
 import { G, save, changed, toast } from "./game";
 import { t } from "./i18n";
 import { roundCoord } from "./safe";
+import { VOICES, adhanOn, armAdhan, voiceOf } from "./adhan";
 
 // The permission messages name the iPhone's settings; Android phones get their own (my translations).
 const ANDROID_PERM = {
@@ -37,19 +38,26 @@ export function nextPrayer(pr) {
 }
 
 // iOS keeps at most 64 pending notifications, so this books the next few days and is redone on every open.
+// With the adhan on, a notification at the prayer time itself rings with the adhan (adhan.js), next to the
+// reminder some minutes before when one is set; both stay under that limit (5 days x 5 prayers x 2).
 export async function schedulePrayer() {
+  armAdhan();
   try {
     await clearReminders("prayer-");
     const pr = G.life.prayer;
-    if (!pr || !pr.remind) return;
-    const now = Date.now();
+    const adhan = adhanOn(pr);
+    if (!pr || (!pr.remind && !adhan)) return;
+    const voice = voiceOf(pr), now = Date.now();
     for (let off = 0; off < 5; off++) {
       const day = prayerDay(new Date(now + off * 864e5), pr);
       if (!day) return;
       for (const i of [0, 2, 3, 4, 5]) {
-        const k = PR_NAMES[i], at = day[i].getTime() - (pr.before || 0) * 6e4;
-        if (pr.on[k] === false || at < now + 5000) continue;
-        await addReminder(`prayer-${k}-${at}`, at, t("prNotifT", { p: pName(k) }), pr.before ? t("prNotifSoon", { n: pr.before }) : t("prNotifNow"));
+        const k = PR_NAMES[i], time = day[i].getTime(), before = pr.remind ? pr.before || 0 : 0;
+        if (pr.on[k] === false) continue;
+        if (pr.remind && before && time - before * 6e4 > now + 5000) await addReminder(`prayer-${k}-${time - before * 6e4}`, time - before * 6e4, t("prNotifT", { p: pName(k) }), t("prNotifSoon", { n: before }));
+        if (time < now + 5000) continue;
+        if (adhan) await addReminder(`prayer-adhan-${k}-${time}`, time, t("prNotifT", { p: pName(k) }), t("adhanNow", { p: pName(k) }), { voice, sound: VOICES[voice].sound, k });
+        else if (pr.remind && !before) await addReminder(`prayer-${k}-${time}`, time, t("prNotifT", { p: pName(k) }), t("prNotifNow"));
       }
     }
   } catch (e) {}
@@ -63,7 +71,9 @@ export async function askLocation() {
     const pos = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
     const old = G.life.prayer || {};
     // Kept to about a kilometre (safe.js): enough for prayer times and the Qibla.
-    G.life.prayer = { lat: roundCoord(pos.coords.latitude), lng: roundCoord(pos.coords.longitude), method: old.method || guessMethod(), hanafi: !!old.hanafi, remind: !!old.remind, before: old.before || 0, on: old.on || {} };
+    G.life.prayer = { lat: roundCoord(pos.coords.latitude), lng: roundCoord(pos.coords.longitude), method: old.method || guessMethod(), hanafi: !!old.hanafi, remind: !!old.remind, before: old.before || 0, on: old.on || {}, adhan: old.adhan !== false, adhanVoice: old.adhanVoice || "makkah" };
+    // The adhan is on from the start, so it asks for notifications right away (once; later it just checks).
+    if (G.life.prayer.adhan) await askNotify().catch(() => {});
     save(); changed(); schedulePrayer();
     return prayerDay(new Date(), G.life.prayer) ? "" : t("prFar");
   } catch (e) {
@@ -80,6 +90,18 @@ export async function setReminders(onOff) {
     if (k) msg = t(k);
   }
   pr.remind = onOff; save(); changed(); schedulePrayer();
+  return msg;
+}
+
+export async function setAdhan(onOff) {
+  const pr = G.life.prayer;
+  if (!pr) return "";
+  let msg = "";
+  if (onOff) {
+    const k = await askNotify().catch(() => "prNoPerm");
+    if (k && !WEB_NOTE) msg = t(k);
+  }
+  pr.adhan = onOff; save(); changed(); schedulePrayer();
   return msg;
 }
 

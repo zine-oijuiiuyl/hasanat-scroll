@@ -12,7 +12,7 @@ import { File, Paths } from "expo-file-system";
 import { BY_ID, STAGES, BADGES, levelFor, levelProgress, stageProgress, threshold, PR_NAMES, PR_METHODS, prayerDay, T } from "./web-data";
 import {
   G, closeView, keepScrolling, resetSession, openView, openCinematic, tabOf, lifeTaps, stageNow, sTaps, askToRate, rate, rateLater,
-  setSetting, swapBuddy, startTour, isCalm, isLearn, setMode, countNow, countToday, countAll, dayKey, wipeEverything, backupText, restoreText, digits, startDebt, removeDebt,
+  setSetting, swapBuddy, toast, startTour, isCalm, isLearn, setMode, countNow, countToday, countAll, dayKey, wipeEverything, backupText, restoreText, digits, startDebt, removeDebt,
 } from "./game";
 import { t, levelTitle, stageName, badgeText, num, getLang } from "./i18n";
 import { BuddyArt } from "./Buddy";
@@ -21,7 +21,8 @@ import { C, F, GOLD, SHEET_BG } from "./theme";
 import { fx, hapTick, scrollSound, setFxSettings } from "./fx";
 import { target, setScroller } from "./targets";
 import { Lesson, Review, Library, Reader } from "./LearnScreens";
-import { WEB_NOTE, askLocation, hhmm, nextPrayer, pName, setPrayerOn, setReminders, updatePrayer } from "./prayer";
+import { WEB_NOTE, askLocation, hhmm, nextPrayer, pName, setAdhan, setPrayerOn, setReminders, updatePrayer } from "./prayer";
+import { VOICES, adhanNote, adhanOn, playAdhan, stopAdhan, voiceOf } from "./adhan";
 import { QiblaCompass } from "./Qibla";
 import { SheetMiner } from "./Rock";
 import { HeartedPanel } from "./Hearts";
@@ -497,6 +498,8 @@ export function Progress() {
       <Panel>
         {calm ? <Label>{t("settings")}</Label> : null}
         <Btn title={"🕌 " + t("prTitle")} onPress={() => openView("prayer")} testID="prayerOpen" />
+        {/* The adhan switch is here too once prayer times are set up (Zine wanted it in the settings). */}
+        {L.prayer ? <Toggle label={t("adhan")} value={adhanOn(L.prayer)} onChange={async v => { if (!v) stopAdhan(); const m = await setAdhan(v); if (m) toast("🕌", m); }} /> : null}
         <Btn title={"🧭 " + t("qbTitle")} onPress={() => openView("qibla")} testID="qiblaOpen" />
         <Btn title={"⚖️ " + (L.debt ? t("debtNew") : t("debtTitle"))} onPress={() => openView("debt")} />
         <LangPicker />
@@ -529,7 +532,7 @@ export function Progress() {
       </Panel>
       {/* Rating sits last in every mode (Zine, 2026-10-29). */}
       <Rate />
-      <Text style={u.note}>{t("disclaimer")}{"\n"}Recitation: Mishary Alafasy (everyayah.com). Word timings: quran-align by Charles Parker, CC BY 4.0. Verse meanings: QuranEnc.com. Transliteration: Tanzil.net. Hadith texts: hadith-api by fawazahmed0. Dhikr and duas read by Hamad Al-Duraihim (Hisn al-Muslim recordings, via Adhkar-json by rn0x). Meadow sound: gluckose and kvgarlic (freesound.org, CC0).{"\n"}{Platform.OS === "web" ? "Web v42" : Platform.OS === "android" ? "Android v1" : "Expo v1"}</Text>
+      <Text style={u.note}>{t("disclaimer")}{"\n"}Recitation: Mishary Alafasy (everyayah.com). Word timings: quran-align by Charles Parker, CC BY 4.0. Verse meanings: QuranEnc.com. Transliteration: Tanzil.net. Hadith texts: hadith-api by fawazahmed0. Dhikr and duas read by Hamad Al-Duraihim (Hisn al-Muslim recordings, via Adhkar-json by rn0x). Meadow sound: gluckose and kvgarlic (freesound.org, CC0). Adhan: Seyfula Islam and ejaz215 (CC BY 3.0), Adam-synagda (CC0), via Wikimedia Commons.{"\n"}{Platform.OS === "web" ? "Web v42" : Platform.OS === "android" ? "Android v2" : "Expo v2"}</Text>
     </Sheet>
   );
 }
@@ -595,17 +598,38 @@ export function Prayer() {
           <Choice label={t("prMethod")} value={pr.method} options={Object.entries(PR_METHODS).map(([k, m]) => [k, m.n])} onChange={v => updatePrayer({ method: v })} />
           <Toggle label={t("prHanafi")} value={pr.hanafi} onChange={v => updatePrayer({ hanafi: v })} />
         </Panel>
+        <AdhanPanel pr={pr} setMsg={setMsg} />
         <Panel>
           <Toggle label={t("prRem")} value={pr.remind} onChange={async v => setMsg(await setReminders(v))} />
           {pr.remind ? <>
             <Choice label={t("prBefore")} value={pr.before || 0} options={[0, 5, 10, 15, 30].map(n => [n, n ? t("prMin", { n }) : t("prOnTime")])} onChange={v => updatePrayer({ before: v })} />
-            {[0, 2, 3, 4, 5].map(i => <Toggle key={i} label={pName(PR_NAMES[i])} value={pr.on[PR_NAMES[i]] !== false} onChange={v => setPrayerOn(PR_NAMES[i], v)} />)}
             {WEB_NOTE ? <Text style={s.faint}>{t("prNote")}</Text> : null}
           </> : null}
+          {/* Which prayers get the reminder and the adhan. */}
+          {pr.remind || adhanOn(pr) ? [0, 2, 3, 4, 5].map(i => <Toggle key={i} label={pName(PR_NAMES[i])} value={pr.on[PR_NAMES[i]] !== false} onChange={v => setPrayerOn(PR_NAMES[i], v)} />) : null}
         </Panel>
       </> : null}
       <Text style={u.note}>{t("prDisc")}</Text>
     </Sheet>
+  );
+}
+
+// The adhan at prayer time (adhan.js): on/off, the voice, and a button to hear it first.
+function AdhanPanel({ pr, setMsg }) {
+  const on = adhanOn(pr), voice = voiceOf(pr);
+  const hearing = !!G.adhan && !G.adhan.k;
+  const label = { makkah: t("adhanMakkah"), madinah: t("adhanMadinah"), melodic: t("adhanMelodic") };
+  return (
+    <Panel>
+      <Toggle label={t("adhan")} value={on} onChange={async v => { if (!v) stopAdhan(); setMsg(await setAdhan(v)); }} />
+      {on ? <>
+        <Choice label={t("adhanVoice")} value={voice} options={Object.keys(VOICES).map(k => [k, label[k]])}
+          onChange={v => { updatePrayer({ adhanVoice: v }); if (G.adhan && !G.adhan.k) playAdhan(null, v); }} />
+        <Btn title={hearing ? t("adhanStop") : "🔊 " + t("adhanListen")} onPress={() => (hearing ? stopAdhan() : playAdhan(null, voice))} testID="adhanListen" />
+        <Text style={s.faint}>{adhanNote()}</Text>
+      </> : null}
+      <Text style={s.faint}>{t("adhanCredit")}</Text>
+    </Panel>
   );
 }
 
