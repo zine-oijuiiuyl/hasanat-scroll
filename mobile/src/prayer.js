@@ -38,6 +38,7 @@ export function nextPrayer(pr) {
 }
 
 // iOS keeps at most 64 pending notifications, so this books the next few days and is redone on every open.
+// On the iPhone (Expo Go) the notification can't ring with the adhan, so it says to tap it (adhan.js).
 // With the adhan on, a notification at the prayer time itself rings with the adhan (adhan.js), next to the
 // reminder some minutes before when one is set; both stay under that limit (5 days x 5 prayers x 2).
 export async function schedulePrayer() {
@@ -56,7 +57,7 @@ export async function schedulePrayer() {
         if (pr.on[k] === false) continue;
         if (pr.remind && before && time - before * 6e4 > now + 5000) await addReminder(`prayer-${k}-${time - before * 6e4}`, time - before * 6e4, t("prNotifT", { p: pName(k) }), t("prNotifSoon", { n: before }));
         if (time < now + 5000) continue;
-        if (adhan) await addReminder(`prayer-adhan-${k}-${time}`, time, t("prNotifT", { p: pName(k) }), t("adhanNow", { p: pName(k) }), { voice, sound: VOICES[voice].sound, k });
+        if (adhan) await addReminder(`prayer-adhan-${k}-${time}`, time, t("prNotifT", { p: pName(k) }), Platform.OS === "android" ? t("adhanNow", { p: pName(k) }) : t("adhanTap"), { voice, sound: VOICES[voice].sound, k });
         else if (pr.remind && !before) await addReminder(`prayer-${k}-${time}`, time, t("prNotifT", { p: pName(k) }), t("prNotifNow"));
       }
     }
